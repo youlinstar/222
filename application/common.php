@@ -168,7 +168,14 @@ function getDwz($short_id = 1 , $url = '')
             }else{
                 return callback(404, '错误');
             }
-            
+            break;
+        case 'kongkong':
+            $api_url=$short->api_url;
+            $res=httpRequest($api_url.$url,'GET');
+            if(isset($res) && !empty($res)){
+                return callback(200, 'success', '', $res);
+            }
+            return callback(404, '错误');
             break;
     }
 }
