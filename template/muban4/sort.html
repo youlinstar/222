@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="pixel-ratio-1">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>分类</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="screen-orientation" content="portrait">
+    <meta name="x5-orientation" content="portrait">
+    <meta name="full-screen" content="yes">
+    <meta name="x5-fullscreen" content="true">
+</head>
+<body>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.documentElement.style.fontSize = document.documentElement.clientWidth / 30 + 'px'
+    });
+</script>
+<link rel="stylesheet" href="__STATIC__/common/css/weui.min.css">
+<link rel="stylesheet" href="__STATIC__/common/css/wx.css">
+<link rel="stylesheet" href="__STATIC__/common/lib/vant/css/index.css"/>
+<link rel="stylesheet" href="__STATIC__/common/lib/el-ui/css/index.css">
+<link rel="stylesheet" href="__STATIC__/muban1/css/main.css">
+<script src="__STATIC__/common/lib/vue/vue.js"></script>
+<script src="__STATIC__/common/lib/vant/js/vant.min.js"></script>
+<script src="__STATIC__/common/js/jquery.min.js"></script>
+<script src="__STATIC__/common/lib/layer/layer.js"></script>
+<script src="__STATIC__/common/lib/el-ui/index.js"></script>
+<script src="__STATIC__/common/js/clipboard/clipboard.min.js"></script>
+<script src="__STATIC__/common/js/base64.min.js"></script>
+<script src="//cdn.jsdelivr.net/npm/xgplayer@2.9.6/browser/index.js" charset="utf-8"></script>
+<style>
+    html,
+    body {
+        height: 100%;
+    }
+
+    image {
+        height: auto;
+    }
+
+    [v-cloak] {
+        display: none;
+    }
+
+    uni-page-body {
+        height: 100%;
+    }
+    .wrap {
+        height: 100%;
+    }
+    .index,
+    .play {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    .view {
+        flex: 1;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .v-body {
+        min-height: 101%;
+        padding-bottom: 0.20rem;
+    }
+    .weui-search-bar {
+        position: relative;
+        padding: 8px 10px;
+        display: -webkit-box;
+        display: -webkit-flex;
+        display: flex;
+        box-sizing: border-box;
+        background-color: #efeff4;
+        -webkit-text-size-adjust: 100%;
+        -webkit-box-align: center;
+        -webkit-align-items: center;
+        align-items: center;
+    }
+
+    .search-keywords ul li {
+        margin-bottom: 10px;
+        margin-left: 8px;
+        width: calc(17.29% - 12px);
+        text-align: center;
+        color: #666666;
+        background-color: #EAEAEA;
+        padding: 0 0!important;
+        border-radius: 10px;
+        float: left;
+        height: 41px;
+        line-height: 41px;
+    }
+    .likelist li{
+        margin-bottom:10px;
+        height:60px;
+        overflow:hidden;
+        display:block;
+    }
+    .likelist li img{
+        width:30%;
+        display:block;
+        float:left;
+        height:60px;
+    }
+    .likelist p{
+        width:70%;
+        float:left;
+        height:60px;
+        line-height:25px;
+        padding:5px 10px;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+    }
+    .pay-title{
+        padding:10px 0;
+        color:#ff2600;
+        text-align: center;
+        font-size:16px;
+    }
+    .pay-item {
+        width: 90%;
+        height: 40px;
+        line-height: 40px;
+        margin:0 auto 3% auto;
+        border-radius: 5px;
+        text-align: center;
+        font-size:16px;
+        color:#fff;
+    }
+    .pay-item:nth-of-type(1){
+        background-color: #FF6665;
+    }
+    .pay-item:nth-of-type(2){
+        background-color: #7ED4D5;
+    }
+    .pay-item:nth-of-type(3){
+        background-color: #2AB16E;
+    }
+    .pay-item:nth-of-type(4){
+        background-color: #FFC67F;
+    }
+    .pay-item:active{
+        background-color:#FF6665;
+    }
+    .pay-item:last-child {
+        margin-bottom: 10px;
+    }
+    .pay-item a{
+        font-size:16px;
+    }
+    .pay-item:last-child{
+        margin-bottom:10px;
+    }
+    .weui-search-bar__cancel-btn1{
+        display: block;
+        margin-left: 10px;
+        line-height: 28px;
+        color: #09bb07;
+        white-space: nowrap;
+    }
+    input::-ms-input-placeholder{
+        text-align: center;
+    }
+    input::-webkit-input-placeholder {
+        text-align: center;
+    }
+    .times{
+        position: absolute;
+        left:2px;
+        top:3px;
+        background-color: rgba(0,0,0,0.8);
+        color:#fff;
+        padding:1px 6px;
+        border-radius:20px;
+        font-size:10px;
+        z-index:9;
+    }
+</style>
+<div id="app" class="wrap root">
+    <div class="index">
+        <div class="view" id="index_view">
+            <div class="v-body">
+                <div class="weui-search-bar" id="searchBar">
+                    <form class="weui-search-bar__form">
+                        <div class="weui-search-bar__box">
+                            <i class="weui-icon-search"></i>
+                            <input type="text" class="weui-search-bar__input" id="searchInput" placeholder="搜索" required="">
+                            <a href="javascript:" class="weui-icon-clear" id="searchClear"></a>
+                        </div>
+                        <label class="weui-search-bar__label" id="searchText">
+                            <input type="text"  style="width: 98%;height: 100%;border: 0;outline: none" id="keys" placeholder="请输入搜索内容" required="">
+                            <input type="hidden" name="ldk" value="{:input('ldk')}">
+                        </label>
+                    </form>
+                    <a href="javascript:" class="weui-search-bar__cancel-btn1" id="searchSubmit1">搜索</a>
+                </div>
+                <?php if(!isset($_GET['type'])):?>
+                    <div class="search-keywords">
+                        <h3 class="his" style="display:none;">历史搜索<i class="fa fa-trash" onclick="javascript:ClearHis();"></i></h3>
+                        <ul class="his hiswords" style="display:none;"></ul>
+                        <ul v-if="cat" style="padding-top:15px;">
+                            <li :data-words="item.name" v-for="(item,index) in cat">
+                                <a style="color: black" :href="'?ldk={:input('ldk')}&type=search&keyword=&cid='+item.id">
+                                    {{item.name}}
+                                </a>
+                            </li>
+                            <div style="clear:both;"></div>
+                        </ul>
+                    </div>
+                <?php endif;?>
+                <div v-if="list.length>0" id="list">
+                    <div class="list">
+                        <van-list v-model="loading" :finished="finished" finished-text="没有更多了" @load="doGetList" offset="150" direction="down">
+                            <div class="van-clearfix">
+                                <lazy-component>
+                                    <li class="list-item" v-for="item in list" @click="doPay(item)">
+                                        <div v-if="item.img" class="thumb">
+                                            <span class="times" v-if="item.times">时长:{{item.times}}</span>
+                                            <img v-lazy="item.img" :src="item.img" width="100%">
+                                            <p class="plays">
+                                                <span>{{item.rand}}人看过</span>
+                                                <span>{{item.money}}元观看</span>
+                                            </p>
+                                        </div>
+                                        <p class="name">{{item.title}}</p>
+                                    </li>
+                                </lazy-component>
+                            </div>
+                        </van-list>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <ul>
+                <li>
+                    <a href="/vlist?ldk={:input('ldk')}">
+                        <img src="__STATIC__/muban1/img/tab-home.png">
+                        <span>首页</span>
+                    </a>
+                </li>
+                {if(input('payed',0)==0)}
+                    <li class="active">
+                        <a href="/vsort?ldk={:input('ldk')}">
+                            <img src="__STATIC__/muban1/img/tab-cate-current.png">
+                            <span>分类</span>
+                        </a>
+                    </li>
+                {else/}
+                    <li>
+                        <a href="/vsort?ldk={:input('ldk')}">
+                            <img src="__STATIC__/muban1/img/tab-cate.png">
+                            <span>分类</span>
+                        </a>
+                    </li>
+                {/if}
+                {if(input('payed',0)==1)}
+                    <li class="active">
+                        <a href="/vsort?ldk={:input('ldk')}&payed=1">
+                            <img src="__STATIC__/muban1/img/tab-cart-current.png" >
+                            <span>已购</span>
+                        </a>
+                    </li>
+                {else/}
+                    <li>
+                        <a href="/vsort?ldk={:input('ldk')}&payed=1">
+                            <img src="__STATIC__/muban1/img/tab-cart.png" >
+                            <span>已购</span>
+                        </a>
+                    </li>
+                {/if}
+            </ul>
+        </div>
+    </div>
+    <!--打赏代码-->
+    <!--打赏代码-->
+    <div id="WX-window-TKEy5SPt5wisSxt-Shade" v-if="dialog.pay.status" class="WX-window-shade">
+        <div id="WX-window-TKEy5SPt5wisSxt-box" class="WX-window-box animated fadeInUp">
+            <div class="WX-Window-main" style="width:90%"><h2>打赏后观影</h2>
+                <div class="WX-Window-body">
+                    <div class="ds_tankuang" v-if="ds_try_see==0">
+                        <img :src="ds_img" style="width:100%;height:130px">
+                    </div>
+                    <div id="try_mse" style="width:100%;" v-else></div>
+                    <div class="pay-title">付费即可观看完整视频</div>
+                    <li v-for="(item,index) in dialog.pay.pay" class="pay-item" @click="linkTo(item.url)">
+                        {{item.name}}
+                    </li>
+                    <p style="color:#f74550;line-height:25px;margin:10px auto;">
+                        温馨提示：推荐使用浏览器打开收藏观看。<br>
+                    </p>
+                </div>
+                <div class="WX-Window-footer">
+                    <a @click="dialog.pay.status=false,dialog.pay.pay=[]"
+                       href="javascript:void(0);" style="width:calc(95% - 10px);" class="WX-Window-btn cannel">关闭</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function(){
+        $("#searchSubmit1").click(function(){
+            var keys = $("#keys").val();
+            location.href="/vsort?ldk={:input('ldk')}&type=search&keyword="+keys;
+        });
+    });
+    var dy = "{:config('setting.douyin')}"; //todo 是否开启抖音落地隐链防封
+    Vue.config.productionTip = false;
+    Vue.config.lang = 'zh-CN';
+    Vue.use(vant.Lazyload, {
+        lazyComponent: true,
+    });
+    new Vue({
+        el: '#app',
+        data: {
+            try_player:'',
+            list: [],
+            cat:[],
+            vid: 0,
+            ds_img:"",
+            ds_title:"",
+            ds_url:"",
+            ds_try_see:0,
+            loading: false,
+            finished: false,
+            msg:'没有更多了',
+            params: {
+                ldk: "{:input('ldk')}",
+                page: 1,
+                limit: 50,
+                encode:1,
+                cid:"{:input('cid')}",
+                key:"{:input('keyword')}",
+                payed:"{:input('payed')}"
+            },
+            catParam:{
+                limit:20,
+                ldk: "{:input('ldk')}",
+                encode:1,
+            },
+            dialog: {
+                fav: {
+                    status: false,
+                    url: "",
+                },
+                pay: {
+                    status: false,
+                    data: []
+                }
+            }
+        },
+        mounted: function () {
+            this.getCat();
+            this.doGetList();
+        },
+        methods: {
+            createPlayer(url){
+                let self=this;
+                self.try_player=new Player({
+                    "id": 'try_mse',
+                    "url": url,
+                    "playsinline": true,
+                    "controls": false,
+                    "x5-video-player-fullscreen": "false",
+                    "x5-video-orientation": "portraint",
+                    "x5-video-player-type": "h5",
+                    "fluid": true,
+                    "autoplay": true
+                });
+            },
+            doRate(){
+                return parseInt(Math.random()*(10000-90) + 90);
+            },
+            linkTo (e) {
+                layer.msg("正在调起支付...", {
+                    icon: 16,
+                    time: 3000
+                });
+                if (dy == "1") {
+                    document.form.action = e;
+                    document.form.submit();
+                    return
+                }
+                location.href = e;
+            },
+            doCopyUrl() {
+                let vm = this;
+                var clipboard = new Clipboard("#doCopyValue");
+                clipboard.on('success', function (e) {
+                    vm.$message.success('复制成功');
+                    clipboard.destroy();
+                });
+                clipboard.on('error', function (e) {
+                    vm.$message.errot('复制失败');
+                    console.log(e);
+                });
+            },
+            doPay(item) {
+                let vm = this;
+                vm.vid = item.id;
+                vm.ds_img = item.img;
+                vm.ds_title = item.title;
+                vm.ds_try_see=item.try_see;
+                if (item.pay == 1) {
+                    if (dy == "1") {
+                        document.form.action = item.url;
+                        document.form.submit();
+                        return;
+                    }
+                    window.location.href = item.url;
+                    return;
+                }
+                $.ajax({
+                    url: "/api/resource/play?ldk={:input('ldk')}&vid="+item.id+"&money="+item.money,
+                    type: 'GET',
+                    dataType: 'JSON',
+                    data: {},
+                    complete: function (XMLHttpRequest, textStatus) {
+                    },
+                    success: function (res) {
+                        if(res.code===200){
+                            vm.dialog.pay.pay = res.data;
+                            vm.dialog.pay.status = true;
+                            if(item.try_see>0){
+                                setTimeout(function () {
+                                    vm.createPlayer(item.video_url);
+                                    vm.try_player.start();
+                                    //监听
+                                    vm.try_player.on('timeupdate',function(e){
+                                        var currentTime = parseInt(e.currentTime);
+                                        if(currentTime >= vm.ds_try_see){
+                                            e.pause();
+                                        }
+                                    });
+                                },100);
+                            }
+                        }else{
+                            layer.msg(res.msg);
+                        }
+                    }
+                });
+            },
+            doGetList() {
+                let vm = this;
+                vm.loading=true;
+                $.ajax({
+                    url: '/api/resource/getList',
+                    type: 'GET',
+                    dataType: 'JSON',
+                    data: vm.params,
+                    complete: function (XMLHttpRequest, textStatus) {
+                    },
+                    success: function (res) {
+                        vm.loading = false;
+                        if (res.code == 200) {
+                            let temp = res.data.list;
+                            if(vm.params.encode==1){
+                                temp=JSON.parse(Base64.decode(res.data.list));
+                            }
+                            vm.params.page++;
+                            vm.list = vm.list.concat(temp);
+                            if (vm.list.length == res.data.total) {
+                                vm.finished = true;
+                            }
+                        } else {
+                            vm.finished = true;
+                        }
+                    }
+                });
+            },
+            getCat() {
+                let vm = this;
+                $.ajax({
+                    url: '/api/resource/getSort',
+                    type: 'GET',
+                    dataType: 'JSON',
+                    data: vm.catParam,
+                    complete: function (XMLHttpRequest, textStatus) {
+                    },
+                    success: function (res) {
+                        if(res.code===200){
+                            if(vm.catParam.encode==1){
+                                vm.cat=JSON.parse(Base64.decode(res.data));
+                            }else{
+                                vm.cat = res.data;
+                            }
+                        }
+                    }
+                });
+            },
+        }
+    })
+</script>
+</body>
+</html>

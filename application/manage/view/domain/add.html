@@ -1,0 +1,93 @@
+{include file="common/head"/}
+<div class="layui-fluid">
+    <div class="table-body">
+        <div class="layui-card">
+            <form class="layui-form layui-form-pane" lay-filter="agent">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">域名</label>
+                    <div class="layui-input-inline from-inline-7">
+                        <input type="text" name="row[domain]" lay-verify="required" lay-reqText="请输入域名" placeholder="{:lang('pleaseEnter')}域名" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">类型</label>
+                    <div class="layui-input-inline from-inline-7">
+                        <select name="row[type]" lay-filter="tags" lay-search>
+                            <option value="1">入口域名</option>
+                            <option value="2">落地域名</option>
+                            <option value="3">支付域名</option>
+                            <option value="4">标识域名</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">绑定的用户ID</label>
+                    <div class="layui-input-inline from-inline-7">
+                        <select name="row[uid]" lay-filter="users" lay-search>
+                            <option value="0">不绑定用户</option>
+                            {volist name="agent" id="v"}
+                                <option value="{$v.id}">{$v.username}【{$v.id}】</option>
+                            {/volist}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button type="button" class="layui-btn" lay-submit="" lay-filter="submit">{:lang('submit')}</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{include file="common/foot"/}
+<script>
+layui.use(['form','upload','layedit'], function(){
+    var form = layui.form,$= layui.jquery,upload = layui.upload,layedit = layui.layedit;
+    //编辑器
+    layedit.build('content',{
+        height: 180, //设置编辑器高度
+        uploadImage: {
+            url: '{:url("UpFiles/editUpload")}',
+            type: 'post'
+        }
+    }); //建立编辑器
+    //图片上传
+    var uploadInst = upload.render({
+        elem: '#onUpload',
+        url: '{:url("UpFiles/upload")}',
+        done: function(res){
+            if(res.status===200){
+                $('#thumb').val(res.url);
+                $('#Image').attr('src',res.url);
+            }else{
+                //如果上传失败
+                return layer.msg('上传失败');
+            }
+        },
+        error: function(){
+            //演示失败状态，并实现重传
+            var preview = $('#preview');
+            preview.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-mini onReload">重试</a>');
+            preview.find('.onReload').on('click', function(){
+                uploadInst.upload();
+            });
+        }
+    });
+    form.on('submit(submit)', function (data) {
+        loading =layer.load(1, {shade: [0.1,'#fff']});
+        $.post("", data.field, function (res) {
+            layer.close(loading);
+            if (res.status===200){
+                layer.msg('添加成功',{time: 1000, icon: 1},function(){
+                    var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                    parent.layer.close(index);//再执行关闭
+                });
+            } else {
+                layer.msg(res.msg, {time: 1000, icon: 2});
+            }
+        });
+    })
+});
+</script>

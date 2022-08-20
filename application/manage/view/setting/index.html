@@ -1,0 +1,84 @@
+{include file="common/head"/}
+{include file="common/foot"/}
+<script src="__STATIC__/ueditor/ueditor.config.js" type="text/javascript"></script>
+<script src="__STATIC__/ueditor/ueditor.all.min.js" type="text/javascript"></script>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <form class="layui-form layui-form-pane">
+            <div class="layui-tab layui-tab-brief" lay-filter="setting">
+                <ul class="layui-tab-title">
+                    {volist name="groups" id="v"}
+                        {if ($key=='web')}
+                            <li lay-id="{$key}" class="layui-this">{$v}</li>
+                        {else/}
+                            <li lay-id="{$key}">{$v}</li>
+                        {/if}
+                    {/volist}
+                </ul>
+                <div class="layui-tab-content">
+                    {volist name="groups" id="v"}
+                        {if ($key=='web')}
+                            <div class="layui-tab-item layui-show">
+                                    {foreach $config[$key] as $k=>$v}
+                                    <div class="layui-form-item">
+                                        <label class="layui-form-label">{$v['title']}</label>
+                                        {$v|paramform=$form,###|raw}
+                                    </div>
+                                    {/foreach}
+                            </div>
+                        {else/}
+                            <div class="layui-tab-item">
+                                {foreach $config[$key] as $k=>$v}
+                                    <div class="layui-form-item">
+                                        <label class="layui-form-label">{$v['title']}</label>
+                                        {$v|paramform=$form,###|raw}
+                                    </div>
+                                {/foreach}
+
+                            </div>
+                        {/if}
+                    {/volist}
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button type="button" class="layui-btn" lay-submit=""  lay-filter="myform">{:lang('submit')}</button>
+                            <button type="reset" class="layui-btn layui-btn-primary">{:lang('reset')}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    layui.use(['form', 'layer','element','laydate'], function (){
+        var form = layui.form, layer = layui.layer,$ = layui.jquery, element = layui.element,laydate = layui.laydate;
+        //日期
+        laydate.render({
+            elem: '#ctime', //指定元素
+            type:'datetime',
+            format:'yyyy-MM-dd HH:mm:ss'
+        });
+        var layid = location.hash.replace(/^#page=/, '');
+        if(!layid){layid='web';}
+        element.tabChange('page',layid);
+        form.on('submit(myform)',function(data){
+            loading = layer.load(1, { shade: [0.1, '#fff'] });
+            $.post("{:url('setting/index')}", data.field, function (res) {
+                layer.close(loading);
+                if (res.status === 200){
+                    layer.msg(res.msg, { icon: 1, time: 1000 }, function () {
+                        location.href = res.url;
+                    });
+                } else {
+                    layer.msg(res.msg, { icon: 2, time: 1000 });
+                }
+            });
+        });
+
+        element.on('tab(setting)', function(data){
+            location.hash = 'page='+this.getAttribute('lay-id');
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,587 @@
+{include file="common/head"/}
+<style>
+    .layui-table-cell{height: inherit;}
+
+    .layui-table td, .layui-table th {
+        padding: 8px 15px !important;
+    }
+    .stat-box{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 60px;
+        padding: 10px 0 15px 0;
+    }
+    .stat-box .stat-icon {
+        text-align: center;
+        width: 48px;
+        height: 48px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin: 0 10px 0 0;
+    }
+    .stat-box .one {
+        background-color: #74E3CF;
+        border: #D8FFF8 4px solid;
+    }
+    .stat-box .two {
+        background-color: #83D587;
+        border: #E8FFDB 4px solid;
+    }
+    .stat-box .three {
+        background-color: #FF7B8C;
+        border: #FFE7E9 4px solid;
+    }
+    .stat-box .four {
+        background-color: #FFCD31;
+        border: #FFF3E1 4px solid;
+    }
+    .stat-box .stat-icon i {
+        font-size: 24px;
+        color: #fff;
+    }
+    .stat-box .stat-info {
+        text-align: left;
+        width: 60%;
+        height: 60px;
+        position: relative;
+        margin-left:10px;
+    }
+    .stat-box .stat-info::before {
+        position: absolute;
+        content: '';
+        width: 1px;
+        top: 10%;
+        bottom: 10%;
+        right: 0;
+        background-color: #eee;
+    }
+    .layui-col-md2:last-child .stat-info::before{
+        width:0;
+    }
+    .stat-box .stat-info .stat-num {
+        color: #000;
+        font-size: 28px;
+        padding-top:5px;
+    }
+    .stat-box .stat-info .stat-name {
+        padding-top:5px;
+        font-size: 14px;
+    }
+    .layui-name{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: normal;
+    }
+    .layui-name .name{
+
+    }
+    .layui-name .info{
+
+    }
+
+    @media screen and (max-width: 768px){
+        .layui-card .layui-row{
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .layui-card .layui-row .layui-col-md2{
+            width:50%;
+        }
+    }
+    .no-items{
+        padding:7px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom:#eee 1px solid;
+        cursor: pointer;
+    }
+</style>
+<div class="layui-fluid">
+    <div class="admin-head">
+        <ul>
+            <li class="on">订单列表</li>
+        </ul>
+    </div>
+    <div class="layui-card">
+        <div class="layui-row">
+                
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon two">
+                                <i class="icon icon-icon-test"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="today_order">{$data.today_order}</div>
+                                <div class="stat-name">今日订单(笔)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon three">
+                                <i class="icon icon-jine"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="today_money">{$data.today_money}</div>
+                                <div class="stat-name">今日金额(元)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon two">
+                                <i class="icon icon-icon-test"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="yesterday_order">{$data.yesterday_order}</div>
+                                <div class="stat-name">昨日订单(笔)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon three">
+                                <i class="icon icon-jine"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="yesterday_money">{$data.yesterday_money}</div>
+                                <div class="stat-name">昨日金额(元)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon two">
+                                <i class="icon icon-icon-test"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="total_order">{$data.total_order}</div>
+                                <div class="stat-name">累计订单(笔)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon three">
+                                <i class="icon icon-jine"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="total_money">{$data.total_money}</div>
+                                <div class="stat-name">累计金额(元)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+               
+            </div>
+        <div class="layui-row">
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon two">
+                                <i class="icon icon-icon-test"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="today_kl_order">{$data.today_kl_order}</div>
+                                <div class="stat-name">今日扣量(笔)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon three">
+                                <i class="icon icon-jine"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="today_kl_money">{$data.today_kl_money}</div>
+                                <div class="stat-name">今日扣量金额(元)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon two">
+                                <i class="icon icon-icon-test"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="yesterday_kl_order">{$data.yesterday_kl_order}</div>
+                                <div class="stat-name">昨日扣量(笔)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon three">
+                                <i class="icon icon-jine"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="yesterday_kl_money">{$data.yesterday_kl_money}</div>
+                                <div class="stat-name">昨日扣量金额(元)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon two">
+                                <i class="icon icon-icon-test"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="total_kl_order">{$data.total_kl_order}</div>
+                                <div class="stat-name">累计扣量(笔)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon three">
+                                <i class="icon icon-jine"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="total_kl_money">{$data.total_kl_money}</div>
+                                <div class="stat-name">累计扣量金额(元)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+    </div>
+    <div class="table-body">
+        <div class="search-tool">
+            <form class="layui-form">
+                <div class="layui-inline">
+                   <input type="text" class="layui-input" placeholder="检索日期" id="ondate" style="width:200px;">
+                    <span class="item-icon"><i class="layui-icon layui-icon-date"></i></span>
+                </div>
+                <div class="layui-inline">
+                    <select id="online" lay-filter="onstatus">
+                        <option value="">全部订单</option>
+                        <option value="1">已支付</option>
+                        <option value="0">未支付</option>
+                    </select>
+                </div>
+                <div class="layui-inline">
+                    <input type="text" class="layui-input" placeholder="订单号 / id" id="search" style="width:200px;" />
+                    <span class="item-icon" id="onsearch"><i class="icon icon-search"></i></span>
+                </div>
+            </form>
+        </div>
+        <table id="list" lay-filter="list"></table>
+        <div class="search-tool">
+            <form class="layui-form">
+                <div class="layui-inline">
+                   <input type="text" class="layui-input" placeholder="检索日期" id="paydate" style="width:200px;">
+                    <span class="item-icon"><i class="layui-icon layui-icon-date"></i></span>
+                </div>
+            </form>
+        </div>
+        <table id="paylist" lay-filter="paylist"></table>
+    </div>
+</div>
+
+{include file="common/foot"/}
+<script type="text/html" id="action">
+
+    <a class="layui-btn layui-btn-sm" lay-event="edit">{:lang('edit')}</a>
+
+    <a class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del">{:lang('del')}</a>
+</script>
+
+<script type="text/html" id="statusTpl">
+    {{# if(d.status==1){ }}
+        <span class="green">支付成功</span>
+    {{# }else{ }}
+        <span class="red">未支付</span>
+    {{# } }}
+</script>
+
+<script type="text/html" id="table-toolbar">
+    <div class="layui-btn-container">
+        <button class="layui-btn" lay-event="openAll"><i class="icon icon-qiyong"></i> 批量启用</button>
+        <button class="layui-btn" lay-event="closeAll"><i class="icon icon-jinyong"></i> 批量禁用</button>
+        <button class="layui-btn layui-btn-danger" lay-event="delAll"><i class="layui-icon layui-icon-delete"></i> 批量删除</button>
+    </div>
+</script>
+<script>
+    var dateVal='',statusVal='',searchVal='',onlineVal='';
+    layui.use(['table','element','form','laydate'],function(){
+        var table = layui.table, $ = layui.jquery,laydate = layui.laydate,form=layui.form,element = layui.element;
+        var tableIn = table.render({
+            id: 'list',
+            elem: '#list',
+            url: '{:url("index")}',
+            toolbar:'#table-toolbar',
+            method:'get',
+            page:true,
+            response:{
+                statusName:'status',
+                statusCode:200,
+                msgName:'msg',
+                countName:'total',
+                dataName:'data',
+            },
+            cols: [[
+                {type: 'checkbox',title:'ID',align:'center',width:50},
+                {field: 'user',title: '用户ID',align:'center',width:150,templet:function(d){
+                    return d.user.username+'【'+d.user.id+'】';
+                }},
+                {field: 'agent',title: '上级代理ID',align:'center',width:130,templet:function(d){
+                    if(d.agent){
+                        return d.agent.username+'【'+d.agent.id+'】';
+                    }else{
+                        return '-';
+                    }
+                }},
+                {field: 'ordno',align:'center',title: '订单号',width:200},
+                {field: 'type', align: 'center',title: '类型',width:80,templet:function(d){
+                    if(d.type===1){
+                        return '<span class="blue_block">单片</span>';
+                    }else if(d.type===2){
+                        return '<span class="orange_block">包天</span>';
+                    }else if(d.type===3){
+                        return '<span class="green_block">包周</span>';
+                    }else{
+                        return '<span class="red_block">包月</span>';
+                    }
+                }},
+                {field: 'money', align: 'center',title: '金额(元)',width:80},
+                {field: 'pay',align:'center',title: '支付渠道',width:180,templet:function(d){
+                    if(d.pay){
+                        return d.pay.title;
+                    }else{
+                        return ' - ';
+                    }
+                }},
+                {if ($auth->group_id==1)}
+                    {field: 'is_kl',align:'center',title: '扣量',width:100,templet:function(d){
+                        if(d.is_kl==1){
+                            return '<span class="red">扣量</span>';
+                        }else{
+                            return '<span class="green">未扣量</span>';
+                        }
+                    }},
+                {/if}
+                {field:'status',width:80,title: '支付状态',align:'center',templet:'#statusTpl'},
+                {field: 'ptime_text', align: 'center',title: '支付时间',width:150},
+                {field: 'ctime_text', align: 'center',title: '下单时间',width:150},
+                {align: 'center',toolbar:'#action',width:280}
+            ]]
+        });
+        
+        table.render({
+            id: 'paylist',
+            elem: '#paylist',
+            url: '{:url("getlist")}',
+            method:'get',
+            page:false,
+            response:{
+                statusName:'status',
+                statusCode:200,
+                msgName:'msg',
+                countName:'total',
+                dataName:'data',
+            },
+            cols: [[
+                {type: 'checkbox',title:'ID',align:'center',width:50},
+                {field: 'start', align: 'center',title: '开始时间',width:130},
+                {field: 'end', align: 'center',title: '结束时间',width:130},
+                {field: 'title',align:'center',title: '支付渠道',width:200},
+                {field: 'money', align: 'center',title: '订单金额(元)',width:100},
+                {field: 'order', align: 'center',title: '订单(笔)',width:100},
+                {field: 'klmoney', align: 'center',title: '扣量金额(元)',width:100},
+                {field: 'klorder', align: 'center',title: '扣量(笔)',width:100}
+                
+                // {align: 'center',toolbar:'#action',width:280}
+            ]]
+        });
+        
+        //选择日期
+        laydate.render({
+            elem: '#paydate',
+            range: '-',
+            done:function(value, date, endDate){
+                dateVal=value, onlineVal=$('#paydate').val();
+                var params={};
+
+                if(onlineVal){
+                    params['status']=onlineVal
+                }
+                table.reload('paylist',{
+                    where:{
+                        date:dateVal,
+                        filter:JSON.stringify(params)
+                    }
+                });
+            }
+        });
+        
+        //选择日期
+        laydate.render({
+            elem: '#ondate',
+            range: '-',
+            done:function(value, date, endDate){
+                dateVal=value, onlineVal=$('#online').val(),searchVal=$('#search').val();
+                var params={};
+
+                if(onlineVal){
+                    params['status']=onlineVal
+                }
+                table.reload('list',{
+                    where:{
+                        date:dateVal,
+                        search:searchVal,
+                        filter:JSON.stringify(params)
+                    }
+                });
+            }
+        });
+        //下拉选项
+        form.on('select(onstatus)', function(data){
+            dateVal=$('#ondate').val(),onlineVal=data.value,searchVal=$('#search').val();
+            var params={};
+            if(onlineVal){
+                params['status']=onlineVal
+            }
+            table.reload('list',{
+                where:{
+                    date:dateVal,
+                    search:searchVal,
+                    filter:JSON.stringify(params)
+                }
+            });
+        });
+
+        //搜索关键字
+        $('#onsearch').on('click',function(e){
+            dateVal=$('#ondate').val(),onlineVal=$('#online').val(),searchVal=$('#search').val();
+            var params={};
+            if(onlineVal){
+                params['status']=onlineVal
+            }
+            table.reload('list',{
+                where:{
+                    date:dateVal,
+                    search:searchVal,
+                    filter:JSON.stringify(params)
+                }
+            });
+        });
+        //行列表操作项事件
+        table.on('tool(list)', function(obj) {
+            var data = obj.data;
+            if(obj.event === 'del'){
+                layer.confirm('你确定要删除吗？', {icon: 3}, function (index) {
+                    $.post("{:url('del')}",{ids:data.id},function(res){
+                        if(res.status===200){
+                            layer.msg('删除成功',{time:1000,icon:1});
+                            tableIn.reload();
+                        }else{
+                            layer.msg(res.msg,{time:1000,icon:2});
+                        }
+                    });
+                    layer.close(index);
+                });
+            }else if(obj.event === 'edit'){
+                layer.open({
+                    title:'编辑订单',
+                    type:2,
+                    maxmin: true,
+                    content:'{:url("edit")}?ids='+data.id,
+                    area:['95%','95%'],
+                    end:function(){
+                        tableIn.reload();
+                    }
+                });
+            }
+        });
+        //头工具栏事件批量操作---删除
+        table.on('toolbar(list)', function(obj){
+            var checkStatus = table.checkStatus('list');
+            var ids = [];
+            $(checkStatus.data).each(function (i, o){
+                ids.push(o.id);
+            });
+            if(ids.length===0){
+               return false;
+            }
+            switch(obj.event){
+                case 'openAll':
+                    var loading = layer.load(1,{shade: [0.1, '#fff']});
+                    $.post("{:url('setUp')}",{ids:ids,params:'{"status":1}'},function (res){
+                        layer.close(loading);
+                        if(res.status === 200){
+                            layer.msg('操作成功', {time: 1000, icon: 1});
+                            tableIn.reload();
+                        }else{
+                            layer.msg(res.msg, {time: 1000, icon: 2});
+                        }
+                    });
+                    break;
+                case 'closeAll':
+                    var loading = layer.load(1,{shade: [0.1, '#fff']});
+                    $.post("{:url('setUp')}",{ids:ids,params:'{"status":0}'},function (res){
+                        layer.close(loading);
+                        if (res.status === 200){
+                            layer.msg('操作成功', {time: 1000, icon: 1});
+                            tableIn.reload();
+                        } else {
+                            layer.msg(res.msg, {time: 1000, icon: 2});
+                        }
+                    });
+                    break;
+                case 'delAll':
+                    var loading = layer.load(1,{shade: [0.1, '#fff']});
+                    $.post("{:url('del')}",{ids:ids}, function (res) {
+                        layer.close(loading);
+                        if (res.status === 200){
+                            layer.msg('删除成功', {time: 1000, icon: 1});
+                            tableIn.reload();
+                        } else {
+                            layer.msg(res.msg, {time: 1000, icon: 2});
+                        }
+                    });
+                    break;
+                //自定义头工具栏右侧图标 - 提示
+                case 'LAYTABLE_TIPS':
+
+                    break;
+            }
+        });
+    })
+</script>

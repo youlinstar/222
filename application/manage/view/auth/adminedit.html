@@ -1,0 +1,149 @@
+{include file="common/head"/}
+<div class="layui-fluid">
+    <div class="table-body">
+       <div class="layui-card-header">{$title}</div>
+       <div class="layui-card">
+            <form class="layui-form layui-form-pane" lay-filter="formbar">
+                <input type="hidden" name="row[id]" value="{$row['id']}"/>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">用户名</label>
+                    <div class="layui-input-inline from-inline-3">
+                        <input type="text" name="row[username]" value="{$row['username']}" disabled class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">登录密码</label>
+                    <div class="layui-input-inline from-inline-3">
+                        <input type="password" name="row[password]"  placeholder="登录密码为空表示不修改" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">所属用户组</label>
+                    <div class="layui-input-inline from-inline-3">
+                        <select name="row[group_id]" lay-verify="required" lay-filter="groups">
+                            {volist name="groups" id="v"}
+                                <option value="{$v['id']}" {eq name="$row['group_id']" value="$v.id"}selected{/eq}>{$v['title']}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">用户头像</label>
+                    <div class="layui-input-inline from-inline-3">
+                        <input type="hidden" name="row[avatar]" id="avatar" value="{$row['avatar']}">
+                        <div class="layui-upload">
+                            <button type="button" class="layui-btn" id="onUpload">上传头像</button>
+                            <div class="layui-upload-list">
+                                <img class="layui-upload-img" width="76" height="76" src="{$row['avatar']|default='__ADMIN__/images/default.png'}" id="Image">
+                                <p id="preview"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">最低提现</label>
+                    <div class="layui-input-inline from-inline-5">
+                        <div class="layui-inline">
+                            <input type="number" name="row[min_cash]" lay-verify="required" value="{$row['min_cash']}" lay-reqText="请输入最低提现" placeholder="{:lang('pleaseEnter')}最低提现" class="layui-input">
+                        </div>
+                        <div class="layui-inline">元</div>
+                        <div class="layui-word-aux" style="color:#f90!important;">【代理最低提现金额（元）】</div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">最低发布金额:</label>
+                    <div class="layui-input-inline from-inline-5">
+                        <div class="layui-inline">
+                            <input type="number" name="row[min_pub]" lay-verify="required" value="{$row['min_pub']}" lay-reqText="请输入最低发布金额" placeholder="{:lang('pleaseEnter')}最低发布金额" class="layui-input">
+                        </div>
+                        <div class="layui-inline">元</div>
+                        <div class="layui-word-aux" style="color:#f90!important;">【最低发布金额（元）】</div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">代理抽成</label>
+                    <div class="layui-input-inline from-inline-5">
+                        <div class="layui-inline">
+                            <input type="number" name="row[min_take]" lay-verify="required" value="{$row['min_take']}" lay-reqText="请输入代理抽成" placeholder="{:lang('pleaseEnter')}代理抽成" class="layui-input">
+                        </div>
+                        <div class="layui-inline">%</div>
+                        <div class="layui-word-aux" style="color:#f90!important;">【下级代理订单收入100你将抽成:百分之几】</div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">提现手续费</label>
+                    <div class="layui-input-inline from-inline-5">
+                        <div class="layui-inline">
+                            <input type="number" name="row[cash_fee]" lay-verify="required" value="{$row['cash_fee']}" lay-reqText="请输入提现手续费" placeholder="{:lang('pleaseEnter')}提现手续费" class="layui-input">
+                        </div>
+                        <div class="layui-inline">%</div>
+                        <div class="layui-word-aux" style="color:#f90!important;">【提现金额的:百分之几】</div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">订单扣量</label>
+                    <div class="layui-input-inline from-inline-5">
+                        <div class="layui-inline">
+                            <input type="number" name="row[take_num]" lay-verify="required" value="{$row['take_num']}" lay-reqText="请输入提现手续费" placeholder="{:lang('pleaseEnter')}提现手续费" class="layui-input">
+                        </div>
+                        <div class="layui-inline">笔</div>
+                        <div class="layui-word-aux" style="color:#f90!important;">【表示几笔扣一，例如20笔扣1笔】</div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">防封入口</label>
+                    <div class="layui-input-inline from-inline-5">
+                        <input type="text" name="row[entry_url]" value="{$row['entry_url']}" lay-reqText="请输入防封入口" placeholder="{:lang('pleaseEnter')}防封入口" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">支付通道</label>
+                    <div class="layui-input-inline from-inline-5">
+                        <select name="row[pay_id]" lay-filter="pays" lay-search>
+                            {volist name="payList" id="v"}
+                            <option value="{$v.id}" {eq name="$row['pay_id']" value="$v.id"}selected{/eq}>{$v.title}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">短链接</label>
+                    <div class="layui-input-inline from-inline-5">
+                        <select name="row[short_id]" lay-filter="short" lay-search>
+                            {volist name="shortList" id="v"}
+                            <option value="{$v.id}" {eq name="$row['short_id']" value="$v.id"}selected{/eq}>{$v.name}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button type="button" class="layui-btn" lay-submit="" lay-filter="submit">{:lang('submit')}</button>
+                        <a href="{:url('adminlist')}" class="layui-btn layui-btn-primary">{:lang('back')}</a>
+                    </div>
+                </div>
+            </form>
+       </div>
+    </div>
+</div>
+{include file="common/foot"/}
+<script>
+    layui.use(['form', 'layer'], function () {
+        var form = layui.form, layer = layui.layer,$= layui.jquery;
+        form.on('submit(submit)', function (data) {
+            loading =layer.load(1, {shade: [0.1,'#fff']});
+            $.post("",data.field, function (res) {
+                layer.close(loading);
+                if(res.status==200){
+                    layer.msg(res.msg, {time: 1800, icon: 1}, function () {
+                        location.href = res.url;
+                    });
+                } else {
+                    layer.msg(res.msg, {time: 1800, icon: 2});
+                }
+            });
+        });
+
+    });
+</script>

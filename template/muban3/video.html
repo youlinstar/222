@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="pixel-ratio-1">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>牛运经典</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="screen-orientation" content="portrait">
+    <meta name="x5-orientation" content="portrait">
+    <meta name="full-screen" content="yes">
+    <meta name="x5-fullscreen" content="true">
+    <link rel="stylesheet" href="__STATIC__/common/css/wx.css">
+    <link rel="stylesheet" href="__STATIC__/common/lib/vant/css/index.css"/>
+    <link rel="stylesheet" href="__STATIC__/muban1/css/main.css">
+    <script src="__STATIC__/common/lib/vue/vue.js"></script>
+    <script src="__STATIC__/common/lib/vant/js/vant.min.js"></script>
+    <script src="__STATIC__/common/js/jquery.min.js"></script>
+    <script src="__STATIC__/common/lib/layer/layer.js"></script>
+    <script src="__STATIC__/common/js/base64.min.js"></script>
+    <script src="__STATIC__/common/js/xgplayer/index.js" charset="utf-8"></script>
+    <script src="__STATIC__/common/js/xgplayer/index.flv.js" charset="utf-8"></script>
+    <script src="__STATIC__/common/js/xgplayer/index.hls.js" charset="utf-8"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.documentElement.style.fontSize = document.documentElement.clientWidth / 30 + 'px'
+        })
+    </script>
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+        .wrap {
+            height: 100%;
+        }
+        .index{
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .view {
+            flex: 1;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .v-body {
+            min-height: 101%;
+            padding-bottom: 0.20rem;
+        }
+        .pay-item {
+            width: 100%;
+            height: 40px;
+            line-height: 40px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid rgb(250, 67, 106);
+            text-align: center;
+            color: #fff;
+            background-color: rgb(250, 67, 106);
+        }
+        .pay-item:active {
+            opacity:0.7;
+        }
+        .pay-item:last-child {
+            margin-bottom: 10px;
+        }
+        input::-ms-input-placeholder {
+            text-align: center;
+        }
+
+        input::-webkit-input-placeholder {
+            text-align: center;
+        }
+        #mse {
+            background-color: #0d0d0d;
+        }
+        .player_bot {
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            -ms-flex-pack: distribute;
+            justify-content: space-around;
+            margin-top: 1%;
+            border-bottom: 1px solid #f2f2f2;
+            padding-bottom: 10px;
+        }
+        .player_bot div {
+            font-size: 12px;
+            text-align: center;
+        }
+        .player_bot div img {
+            width: 25px;
+            height: 25px;
+            margin-bottom: 5px;
+            margin-top: 5px;
+        }
+        .details{
+            width: 100%;
+            padding-top:5px;
+            overflow:hidden;
+            padding-bottom:15px;
+            border-bottom: 1px solid #f2f2f2;
+        }
+        .details div {
+            display: inline-block;
+            padding-top: 4px;
+        }
+        .details img {
+            width: 15px;
+            height: 15px;
+        }
+        .weui-panel__hd {
+            padding-top: 10px;
+        }
+        .player_line{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding:0 5px;
+            margin:5px 0;
+        }
+        .player_line .line_item{
+            width:49%;
+            height:40px;
+            line-height:40px;
+            text-align: center;
+            color:#A30014;
+            border:#A30014 1px solid;
+            background-color:#EAD409;
+            font-size:14px;
+        }
+        .player_line .on{
+            color:#797979!important;
+            border:#797979 1px solid!important;
+        }
+        .times{
+            position: absolute;
+            left:2px;
+            top:3px;
+            background-color: rgba(0,0,0,0.8);
+            color:#fff;
+            padding:1px 6px;
+            border-radius:20px;
+            font-size:10px;
+            z-index:9;
+        }
+        .footer{
+            width:100%;
+            position:fixed;
+            bottom:0;
+            z-index:9999;
+            left:0;
+            height:50px;
+            background-color:#FFFFFF;
+            border-top:1px solid #CCCCCC;
+        }
+        .footer ul{
+            display: flex;
+            align-items: center;
+        }
+        .footer ul li{
+            text-align:center;
+            width:50%;
+        }
+        .footer ul li.active span{
+            color:rgb(250, 67, 106);
+        }
+        .footer ul li img{
+            margin-top:5px;
+            width:20px;
+            height:20px;
+        }
+        .footer ul li span{
+            display:block;
+            width:100%;
+            color:#555555;
+            font-size:0.9rem;
+            text-align:center;
+        }
+    </style>
+</head>
+<body>
+<div id="app" class="wrap root">
+    <div class="index">
+        <div class="view">
+            <div class="v-body">
+                <div id="mse" style="height: 200px;width: 100%"></div>
+                <div class="details">
+                    <div style="padding: 5px 10px 5px 10px;">
+                        <img src="data:image/png;base64,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" alt="">
+                        <span style="font-size:14px;"> {$link.title}</span>
+                    </div>
+                    <div style="padding: 5px 10px 5px 10px;font-size: 12px;color: #9c9c9c;">
+                        <span style="padding-right:10px;"><?php echo rand(0,100000)?>(播放)</span>
+                        <span style="padding-right:10px;"><?php echo rand(100,5633)?>(金币)</span>
+                        <span style="padding-right:10px;"><?php echo rand(400,54321)?>(次打赏)</span>
+                        <span><?php echo rand(1000,33322)?>(喜欢)</span>
+                    </div>
+                </div>
+                <div class="weui-panel__hd" style="text-align: center">精彩视频推荐</div>
+                <div v-if="list.length>0">
+                    <div class="list">
+                        <van-list v-model="loading" :finished="finished" finished-text="没有更多了" @load="doGetList" offset="150" direction="down">
+                            <div class="van-clearfix">
+                                <lazy-component>
+                                    <li class="list-item" v-for="item in list" @click="doPay(item)">
+                                        <div v-if="item.img" class="thumb">
+                                            <span class="times" v-if="item.times">时长:{{item.times}}</span>
+                                            <img v-lazy="item.img" :src="item.img" width="100%">
+                                            <div class="plays">
+                                                <span>{{item.money}}元观看</span>
+                                                <span>{{item.rand}}人看过</span>
+                                            </div>
+                                        </div>
+                                        <div class="name">{{item.title}}</div>
+                                    </li>
+                                </lazy-component>
+                            </div>
+                        </van-list>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <ul>
+                <li>
+                    <a href="/vlist?ldk={:input('ldk')}">
+                        <img src="__STATIC__/default/img/tab-home.png">
+                        <span>首页</span>
+                    </a>
+                </li>
+                <li @click="doGetList('pay')">
+                    <img src="__STATIC__/default/img/tab-cart.png">
+                    <span>已购</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <!--打赏代码-->
+    <div id="WX-window-TKEy5SPt5wisSxt-Shade" v-if="dialog.pay.status" class="WX-window-shade">
+        <div id="WX-window-TKEy5SPt5wisSxt-box" class="WX-window-box animated fadeInUp">
+            <div class="WX-Window-main" style="width:85%"><h2>打赏后观影</h2>
+                <div class="WX-Window-body">
+                    <li v-for="(item,index) in dialog.pay.pay" class="pay-item" @click="linkTo(item.url)">
+                        <a style="color: black">
+                            {{item.name}}
+                        </a>
+                    </li>
+                    <p style="color:#f74550;line-height:25px;margin:10px auto;">
+                        温馨提示：推荐用浏览器直接扫码支付方可以保存至《已购》中查，若在微信中跳转支付的，可返回浏览器打开网站中查看。<br>注意：由于观影人数较多，有所异常请多试几次！
+                    </p>
+                </div>
+                <div class="WX-Window-footer">
+                    <a @click="dialog.pay.status=false,dialog.pay.pay=[]" href="javascript:void(0);" style="width:calc(95% - 10px);" class="WX-Window-btn cannel">关闭</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--收藏代码-->
+    <div id="WX-window-TKEy5SPt5wisSxt-Shadee" v-if="dialog.fav.status" class="WX-window-shade">
+        <div id="WX-window-TKEy5SPt5wisSxt-box1" class="WX-window-box animated fadeInUp">
+            <div class="WX-Window-main" style="width:80%"><h2>保存本站</h2>
+                <div class="WX-Window-body">
+                    <p style="color:#f74550;line-height:25px;margin-top:10px;text-align:center;">
+                        长按保存二维码或复制链接收藏本站
+                    </p>
+                    <img width="100%" :src="'/qrcode?text='+dialog.fav.url" style="display:block;margin:auto;">
+                </div>
+                <div class="WX-Window-footer">
+                    <a @click="dialog.fav.status=false" href="javascript:void(0);" style="width:calc(95% - 10px);" class="WX-Window-btn cannel">关闭</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<form action="" method="post" name="form" style="display:none"></form>
+<script>
+    var play_url='{$link.video_url}';
+    Vue.config.productionTip = false;
+    Vue.config.lang = 'zh-CN';
+    var dy = "{:config('setting.douyin')}";
+    var payed = "{$pay}";
+    Vue.use(vant.Lazyload, {
+        lazyComponent: true,
+    });
+    vues = new Vue({
+        el: '#app',
+        data: {
+            list: [],
+            cat: [],
+            banner: [],
+            loading: false,
+            finished: false,
+            my_player:null,
+            line_index:0,
+            msg: '没有更多了',
+            params: {
+                ldk: "{:input('ldk')}",
+                page: 1,
+                limit: 50,
+                encode: 1,
+                cid: "{:input('cid')}",
+                key: "{:input('keyword')}",
+                payed: ''
+            },
+            catParam: {
+                limit: 20,
+                ldk: "{:input('ldk')}",
+                encode: 1,
+            },
+            dialog: {
+                fav: {
+                    status: false,
+                    url: "",
+                },
+                pay: {
+                    status: false,
+                    data: [],
+                    pay: []
+                }
+            }
+        },
+        mounted: function () {
+            this.createPlayer(play_url);
+            this.doGetList();
+        },
+        methods: {
+            createPlayer(url){
+                let self=this;
+                self.my_player=new Player({
+                    "id": "mse",
+                    "url": url,
+                    "playsinline": true,
+                    "poster": "{$link.img}",
+                    "x5-video-player-fullscreen": "false",
+                    "x5-video-orientation": "portraint",
+                    "x5-video-player-type": "h5",
+                    "fluid": true,
+                    "videoInit": true,
+                    "playbackRate": [0.5, 0.75, 1, 1.5, 2],
+                    "closeVideoClick":true,
+                    "closeVideoTouch":true
+                });
+                self.my_player.on('timeupdate', function (e) {
+                    var currentTime = parseInt(e.currentTime);
+                    var try_see = "{$link.try_see}";
+                    if (currentTime >= try_see) {
+                        if (payed == 0) {
+                            e.pause();
+                            vues.try_see({
+                                id: "{$link.id}",
+                                pay: 0,
+                                money: "{$link.money}"
+                            });
+                        }
+                    }
+                });
+            },
+
+            try_see(item) {
+                vant.Dialog.confirm({
+                    title: '试看',
+                    message: '试看以结束，请点击打赏观看完整视频',
+                    cancelButtonText: "我在选选",
+                    confirmButtonText: "打赏观看"
+
+                }).then(() => {
+                    this.doPay(item)
+                }).catch(() => {
+                    // on cancel
+                });
+            },
+            doRate() {
+                return parseInt(Math.random() * (10000 - 90) + 90);
+            },
+            linkTo(e) {
+                layer.msg("正在吊起支付...", {
+                    icon: 16,
+                    time: -1
+                });
+                if (dy == "1") {
+                    document.form.action = e;
+                    document.form.submit();
+                    return
+                }
+                location.href = e;
+            },
+            doPay(item) {
+                let vm = this;
+                vm.vid = item.id;
+                if (item.pay == 1) {
+                    window.location.href = item.url;
+                    return;
+                }
+                $.ajax({
+                    url: "/api/resource/play?ldk={:input('ldk')}&vid=" + item.id + "&money=" + item.money,
+                    type: 'GET',
+                    dataType: 'JSON',
+                    data: {},
+                    complete: function (XMLHttpRequest, textStatus) {
+                    },
+                    success: function (res) {
+                        if (res.code === 200) {
+                            vm.dialog.pay.pay = res.data;
+                            vm.dialog.pay.status = true;
+                        } else {
+                            layer.msg(res.msg);
+                        }
+                    }
+                });
+            },
+            doGetList(pay) {
+                let vm = this;
+                vm.loading = true;
+                if (pay == "pay") {
+                    vm.params.page = 1;
+                    vm.params.payed = 1;
+                    vm.list = [];
+                }
+                $.ajax({
+                    url: '/api/resource/getList',
+                    type: 'GET',
+                    dataType: 'JSON',
+                    data: vm.params,
+                    complete: function (XMLHttpRequest, textStatus) {
+                    },
+                    success: function (res) {
+                        if (res.code == 200) {
+                            let temp = res.data.list;
+                            if(vm.params.encode==1){
+                                temp = JSON.parse(Base64.decode(res.data.list));
+                            }
+                            vm.params.page++;
+                            vm.list = vm.list.concat(temp);
+                            vm.loading = false;
+                            if (vm.list.length == res.data.total) {
+                                vm.finished = true;
+                            }
+                        } else {
+                            layer.alert(data.msg);
+                        }
+                    }
+                });
+            },
+            doFav() {
+                let vm = this;
+                vm.dialog.fav.url = "{$fav}";
+                vm.dialog.fav.status = true;
+            },
+        }
+    });
+
+</script>
+</body>
+</html>

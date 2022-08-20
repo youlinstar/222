@@ -1,0 +1,608 @@
+{include file="common/head"/}
+<style>
+    .layui-table td, .layui-table th {
+        padding: 8px 15px !important;
+    }
+    .stat-box{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 60px;
+        padding: 10px 0 15px 0;
+    }
+    .stat-box .stat-icon {
+        text-align: center;
+        width: 48px;
+        height: 48px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin: 0 10px 0 0;
+    }
+    .stat-box .one {
+        background-color: #74E3CF;
+        border: #D8FFF8 4px solid;
+    }
+    .stat-box .two {
+        background-color: #83D587;
+        border: #E8FFDB 4px solid;
+    }
+    .stat-box .three {
+        background-color: #FF7B8C;
+        border: #FFE7E9 4px solid;
+    }
+    .stat-box .four {
+        background-color: #FFCD31;
+        border: #FFF3E1 4px solid;
+    }
+    .stat-box .stat-icon i {
+        font-size: 24px;
+        color: #fff;
+    }
+    .stat-box .stat-info {
+        text-align: left;
+        width: 60%;
+        height: 60px;
+        position: relative;
+        margin-left:10px;
+    }
+    .stat-box .stat-info::before {
+        position: absolute;
+        content: '';
+        width: 1px;
+        top: 10%;
+        bottom: 10%;
+        right: 0;
+        background-color: #eee;
+    }
+    .layui-col-md2:last-child .stat-info::before{
+        width:0;
+    }
+    .stat-box .stat-info .stat-num {
+        color: #000;
+        font-size: 28px;
+        padding-top:5px;
+    }
+    .stat-box .stat-info .stat-name {
+        padding-top:5px;
+        font-size: 14px;
+    }
+    .layui-name{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: normal;
+    }
+    .layui-name .name{
+
+    }
+    .layui-name .info{
+
+    }
+
+    @media screen and (max-width: 768px){
+        .layui-card .layui-row{
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .layui-card .layui-row .layui-col-md2{
+            width:50%;
+        }
+    }
+    .no-items{
+        padding:7px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom:#eee 1px solid;
+        cursor: pointer;
+    }
+</style>
+<div class="layui-fluid">
+    {if $auth->group_id==1}
+        <div class="layui-card">
+            <div class="layui-row">
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon one">
+                                <i class="icon icon-liulan"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="visitor">0</div>
+                                <div class="stat-name">累计访问(次)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon two">
+                                <i class="icon icon-icon-test"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="total_order">0</div>
+                                <div class="stat-name">累计订单(笔)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon three">
+                                <i class="icon icon-jine"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="total_money">0</div>
+                                <div class="stat-name">累计金额(元)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon three">
+                                <i class="icon icon-jine"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="month_money">0</div>
+                                <div class="stat-name">本月金额(元)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon three">
+                                <i class="icon icon-jine"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="total_balance">0</div>
+                                <div class="stat-name">代理余额(元)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon four">
+                                <i class="icon icon-zhekouyouhui"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="total_kl">0</div>
+                                <div class="stat-name">扣量金额(元)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-row">
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon one">
+                                <i class="icon icon-liulan"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="today_view">0</div>
+                                <div class="stat-name">今日访问(次)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon one">
+                                <i class="icon icon-liulan"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="yesterday_view">0</div>
+                                <div class="stat-name">昨日访问(次)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon two">
+                                <i class="icon icon-icon-test"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="today_order">0</div>
+                                <div class="stat-name">今日订单(笔)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon two">
+                                <i class="icon icon-icon-test"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="yesterday_order">0</div>
+                                <div class="stat-name">昨日订单(笔)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon three">
+                                <i class="icon icon-jine"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="today_money">0</div>
+                                <div class="stat-name">今日金额(元)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md2">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon three">
+                                <i class="icon icon-jine"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="yesterday_money">0</div>
+                                <div class="stat-name">昨日金额(元)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <i class="icon icon-kuaijie"></i>
+                快捷操作
+            </div>
+            <div class="layui-card-body">
+                <div class="layui-carousel layadmin-shortcut">
+                    <ul class="layui-row layui-col-space10 layui-this">
+
+                        <li class="layui-col-xs3">
+                            <a href="javascript:;" lay-href="{:url('spread/index')}">
+                                <i class="icon icon-yingxiao"></i>
+                                <cite>推广赚钱</cite>
+                            </a>
+                        </li>
+                        <li class="layui-col-xs3">
+                            <a href="javascript:;" lay-href="{:url('paysetting/index')}">
+                                <i class="icon icon-sort"></i>
+                                <cite>支付配置</cite>
+                            </a>
+                        </li>
+                        <li class="layui-col-xs3">
+                            <a href="javascript:;" lay-href="{:url('domain/index')}">
+                                <i class="icon icon-device"></i>
+                                <cite>域名管理</cite>
+                            </a>
+                        </li>
+                        <li class="layui-col-xs3">
+                            <a href="javascript:;" lay-href="{:url('order/index')}">
+                                <i class="icon icon-kucun"></i>
+                                <cite>订单管理</cite>
+                            </a>
+                        </li>
+                        <li class="layui-col-xs3">
+                            <a href="javascript:;" lay-href="{:url('cash/index')}">
+                                <i class="icon icon-caiwu"></i>
+                                <cite>提现管理</cite>
+                            </a>
+                        </li>
+                        <li class="layui-col-xs3">
+                            <a href="javascript:;" lay-href="{:url('agent/index')}">
+                                <i class="icon icon-agent"></i>
+                                <cite>代理管理</cite>
+                            </a>
+                        </li>
+                        <li class="layui-col-xs3">
+                            <a href="javascript:;" lay-href="{:url('video/index')}">
+                                <i class="icon icon-book"></i>
+                                <cite>资源管理</cite>
+                            </a>
+                        </li>
+                        <li class="layui-col-xs3">
+                            {if ($auth->group_id==1)}
+                            <a href="javascript:;" lay-href="{:url('auth/adminedit')}?ids={$auth->id}">
+                                <i class="icon icon-setting"></i>
+                                <cite>个人设置</cite>
+                            </a>
+                            {else/}
+                            <a href="javascript:;" lay-href="{:url('agent/edit')}?ids={$auth->id}">
+                                <i class="icon icon-setting"></i>
+                                <cite>个人设置</cite>
+                            </a>
+                            {/if}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-row layui-col-space10">
+            <div class="layui-col-md7">
+                <div class="layui-card">
+                    <div class="layui-card-header">
+                        <i class="icon icon-WhiteBoard"></i>
+                        今日订单统计
+                    </div>
+                    <div class="layui-card-body" data-anim="fade" lay-filter="LAY-order-dataview">
+                        <div id="LAY-order-dataview" style="width:100%;height:300px;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md5">
+                <div class="layui-card">
+                    <div class="layui-card-header">
+                        <i class="icon icon-WhiteBoard"></i>
+                        最近访问统计
+                    </div>
+                    <div class="layui-card-body" data-anim="fade" lay-filter="LAY-view-dataview">
+                        <div id="LAY-view-dataview" style="width:100%;height:300px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {else/}
+        <div class="layui-card">
+            <div class="layui-row">
+                <div class="layui-col-md3">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon one">
+                                <i class="icon icon-liulan"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="visitor">0</div>
+                                <div class="stat-name">累计访问(次)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md3">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon two">
+                                <i class="icon icon-icon-test"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="total_order">0</div>
+                                <div class="stat-name">累计订单(笔)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md3">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon three">
+                                <i class="icon icon-jine"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="total_money">0</div>
+                                <div class="stat-name">累计金额(元)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md3">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon three">
+                                <i class="icon icon-jine"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="month_money">0</div>
+                                <div class="stat-name">本月金额(元)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md3">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon three">
+                                <i class="icon icon-jine"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="today_money">0</div>
+                                <div class="stat-name">今日金额(元)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md3">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon three">
+                                <i class="icon icon-jine"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="yesterday_money">0</div>
+                                <div class="stat-name">昨日金额(元)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--<div class="layui-col-md3">-->
+                <!--    <div class="layui-card-body">-->
+                <!--        <div class="stat-box">-->
+                <!--            <div class="stat-icon three">-->
+                <!--                <i class="icon icon-jine"></i>-->
+                <!--            </div>-->
+                <!--            <div class="stat-info">-->
+                <!--                <div class="stat-num" id="total_tc">0</div>-->
+                <!--                <div class="stat-name">抽成收入(元)</div>-->
+                <!--            </div>-->
+                <!--        </div>-->
+                <!--    </div>-->
+                <!--</div>-->
+                <div class="layui-col-md3">
+                    <div class="layui-card-body">
+                        <div class="stat-box">
+                            <div class="stat-icon four">
+                                <i class="icon icon-zhekouyouhui"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-num" id="balance">0</div>
+                                <div class="stat-name">账户余额(元)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <i class="icon icon-kuaijie"></i>
+                公告中心
+            </div>
+            <div class="layui-card-body">
+                {volist name="notice" id="v"}
+                <div class="no-items" onclick="showNotice('{$v.id}')">
+                    <span class="title">{$v.title}</span>
+                    <span class="ctime">{$v.ctime_text|date='Y-m-d'}</span>
+                </div>
+                {/volist}
+            </div>
+        </div>
+        <div class="layui-row layui-col-space10">
+            <div class="layui-col-md7">
+                <div class="layui-card">
+                    <div class="layui-card-header">
+                        <i class="icon icon-WhiteBoard"></i>
+                        今日订单统计
+                    </div>
+                    <div class="layui-card-body" data-anim="fade" lay-filter="LAY-order-dataview">
+                        <div id="LAY-order-dataview" style="width:100%;height:300px;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md5">
+                <div class="layui-card">
+                    <div class="layui-card-header">
+                        <i class="icon icon-WhiteBoard"></i>
+                        最近访问统计
+                    </div>
+                    <div class="layui-card-body" data-anim="fade" lay-filter="LAY-view-dataview">
+                        <div id="LAY-view-dataview" style="width:100%;height:300px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {/if}
+</div>
+{include file="common/foot"/}
+<script>
+    var group_id='{$auth->group_id}';
+    layui.config({
+        base: '__STATIC__/layuiadmin/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'jquery', 'echarts'], function () {
+        var $ = layui.jquery, echarts = layui.echarts;
+
+        $.post("{:url('statinfo')}",{}, function (res) {
+            if (res.status===200){
+                $('#visitor').text(res.data.visitor);
+                $('#total_order').text(res.data.total_order);
+                $('#total_money').text(res.data.total_money);
+                $('#month_money').text(res.data.month_money);
+                $('#total_balance').text(res.data.total_balance);
+                $('#total_kl').text(res.data.total_kl);
+                $('#total_tc').text(res.data.total_tc);
+                $('#today_view').text(res.data.today_view);
+                $('#yesterday_view').text(res.data.yesterday_view);
+                $('#today_order').text(res.data.today_order);
+                $('#yesterday_order').text(res.data.yesterday_order);
+                $('#today_money').text(res.data.today_money);
+                $('#yesterday_money').text(res.data.yesterday_money);
+
+                $('#balance').text(res.data.balance);
+            }
+        });
+        $.post("{:url('dataView')}",{}, function (res) {
+            if (res.status===200){
+                var option = [
+                    {
+                        title: {
+                            text: "今日订单趋势",x: "center",textStyle: {fontSize: 14}
+                        },
+                        tooltip: {trigger: "axis"},
+                        legend: {data: ["", ""]},
+                        xAxis: [{
+                            type: "category",
+                            boundaryGap: !1,
+                            data: ["06:00", "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"]
+                        }],
+                        yAxis: [{type: "value"}],
+                        series: [{
+                            name: "订单数",
+                            type: "line",
+                            smooth: !0,
+                            itemStyle: {normal: {areaStyle: {type: "default"}}},
+                            data: res.data.order_list
+                        }, {
+                            name: "订单金额",
+                            type: "line",
+                            smooth: !0,
+                            itemStyle: {normal: {areaStyle: {type: "default"}}},
+                            data: res.data.order_money
+                        }]
+                    }, {
+                        title: {text: "最近访问趋势",x: "center",textStyle: {fontSize: 14}},
+                        tooltip: {
+                            trigger: "axis",
+                            formatter: "{b}<br>访问人数：{c}"
+                        },
+                        xAxis: [{
+                            type: "category",
+                            data: res.data.date_list
+                        }],
+                        yAxis: [{
+                            type: "value"
+                        }],
+                        series: [{
+                            type: "line",
+                            data: res.data.view_list
+                        }]
+                    }
+                ];
+                var order_chart=echarts.init(document.getElementById('LAY-order-dataview'),layui.echartsTheme);
+                order_chart.setOption(option[0],true);
+                var view_chart=echarts.init(document.getElementById('LAY-view-dataview'),layui.echartsTheme);
+                view_chart.setOption(option[1],true);
+            }
+        });
+    });
+    function showNotice(id) {
+        layer.open({
+            title:'公告',
+            type:2,
+            maxmin: true,
+            content:'{:url("notice")}?id='+id,
+            area:['60%','500px'],
+            end:function(){
+                //tableIn.reload();
+            }
+        });
+    }
+</script>
+</body>
+</html>

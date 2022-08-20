@@ -1,0 +1,60 @@
+{include file="common/head"/}
+<div class="layui-fluid">
+    <div class="table-body">
+        <div class="layui-card-header">编辑城市地区</div>
+        <div class="layui-card">
+            <form class="layui-form layui-form-pane" lay-filter="agent">
+                <input type="hidden" name="row[id]" value="{$row['id']}"/>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">城市名称</label>
+                    <div class="layui-input-inline from-inline-3">
+                        <input type="text" name="row[name]" value="{$row['name']}" lay-verify="required" lay-reqText="请输入城市名称" placeholder="{:lang('pleaseEnter')}设备名称" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">城市编码</label>
+                    <div class="layui-input-inline from-inline-3">
+                        <input type="text" name="row[code]" value="{$row['code']}" lay-verify="required" lay-reqText="请输入城市编码" placeholder="{:lang('pleaseEnter')}设备ID" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">城市价格</label>
+                    <div class="layui-input-inline from-inline-3">
+                        <input type="text" name="row[price]" value="{$row['price']}" lay-verify="required" lay-reqText="请输入城市价格" placeholder="{:lang('pleaseEnter')}设备ID" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">状态</label>
+                    <div class="layui-input-inline from-inline-3">
+                        <input type="checkbox" name="row[status]" lay-skin="switch" value="1" {eq name="$row['status']" value="1"}checked{/eq} lay-text="启用|禁用">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button type="button" class="layui-btn" lay-submit="" lay-filter="submit">{:lang('submit')}</button>
+                        <a href="{:url('index')}" class="layui-btn layui-btn-primary">{:lang('back')}</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{include file="common/foot"/}
+<script>
+layui.use(['form'], function(){
+    var form = layui.form,$= layui.jquery;
+    form.on('submit(submit)', function (data) {
+        loading =layer.load(1, {shade: [0.1,'#fff']});
+        $.post("", data.field, function (res) {
+            layer.close(loading);
+            if (res.status===200){
+                layer.msg('更新成功',{time: 1000, icon: 1},function(){
+                    location.href = '{:url("index")}';
+                });
+            } else {
+                layer.msg(res.msg, {time: 1000, icon: 2});
+            }
+        });
+    })
+});
+</script>

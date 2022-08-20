@@ -1,0 +1,280 @@
+<!doctype html>
+<html>
+<head>
+    <title>-🈲-</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <meta name="keywords" content="-1">
+    <meta name="description" content="-1">
+    <script src="__STATIC__/common/js/jquery.min.js"></script>
+    <script src="__STATIC__/common/lib/layer/layer.js"></script>
+    <script src="__STATIC__/common/js/base64.min.js"></script>
+
+<style>
+    body {
+        color: #666;
+        /*min-height:600px;*/
+        height: 100vh;
+        font-size: 15px;
+        position: relative;
+        background-color: #fff;
+        font-family: 'Microsoft Yahei';
+        background: url(/static/video/images/logo1.jpg);
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        margin: 0px;
+    }
+
+    main {
+        max-width: 620px;
+        width: 100%;
+        margin:0 auto;
+        position: relative;
+        height: 100%;
+    }
+    .app{
+        width: 100%;
+
+        height: calc(100% - 60px);
+    }
+
+
+    #player{
+        object-fit: cover;
+        object-position: center center;
+    }
+
+    #buttons {
+        height: 60px;
+        text-align:center;
+        padding-top:10px;
+        background:#000;
+        width:100%;
+        position: absolute;
+        left:0;
+        bottom: 0;
+    }
+    .switch,
+    #weixin,
+    .next {
+        background: #FFF;
+        background: linear-gradient(to bottom, #FF2,#FB0);
+        color: #AF2E08;
+        font-size: 16px;
+        font-weight: bold;
+        height: 40px;
+        padding: 0px 20px;
+        margin: 10px 5px;
+        border-radius: 20px;
+    }
+
+
+    .notice-board {
+        position: fixed;
+        z-index: 9998;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,.6);
+
+        display: flex;
+
+        justify-content: center;
+
+        align-items: center;
+    }
+    .board-title {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 0;
+        padding-top: 20%;
+    }
+    .board-title>h3 {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%,-50%);
+        color: #fff;
+        font-size: 1.5rem;
+    }
+    .board-content{
+        font-size: 1.0rem;
+        color:red ;
+        margin: 10px;
+        overflow: auto;
+        height: 30%;
+        margin-top: 25%;
+        padding-top: 15px;
+    }
+    .notice-board .board {
+        position: relative;
+        z-index: 9999;
+        width: calc(100% - 60px);
+        margin: 0 auto;
+        background-color: #fff;
+        border-radius: 15px;
+        background-position: top;
+        background-repeat: no-repeat;
+        background-size: contain;
+        background-image: url(/static/zhibo/img/notice1.png);
+    }
+    .notice-board .board-btn-group {
+
+        display: flex;
+
+
+        justify-content: center;
+        padding: 20px 10px;
+    }
+    .board-btn {
+        text-align: center;
+        display: block;
+        padding: 10px 0;
+        border-radius: 6px;
+
+        font-size: 1.2rem;
+        width: calc(50% - 5px);
+    }
+    i{
+        color: #fff;
+    }
+</style>
+</head>
+<body>
+
+<main id="app">
+    <!--<div style="height:4%;width:100%;color:#fff;font-size:16px;margin:0 auto;background:#000;padding-top:6px;">-->
+    <!--    &nbsp;&nbsp;<strong style="font-size:18px;">每天下午3点晚上8点|每天下午3点晚上8点</strong>-->
+    </div>
+    <div class="app">
+         <video  ref="video" id='player' controls="controls"  onclick="playPause()" src=""  autoplay="autoplay" webkit-playsinline='true' playsinline='true' x-webkit-airplay='true' x5-video-player-type='h5' x5-video-player-fullscreen='' x5-video-ignore-metadata='true' width='100%' height='100%' @ended="onPlayerEnded()"></video>
+    </div>
+
+    <!--<span style="position:absolute;top:5%;left:10px;color:#fff;">点击播放/暂停</span>-->
+
+    <div  style="position:absolute;bottom:430px;right:5px;">
+        <div @click="toZhibo" style=" text-decoration: none;"><img src="/static/zhibo/img/zhibo.png" style="height:45px;width:45px;display: block;z-index: 21;">
+            <i style="position:relative;font-weight: bold;font-style: normal;left:8px;">直播</i>
+        </div>
+    </div>
+    
+    <div  style="position:absolute;bottom:350px;right:5px;">
+        <div @click="toMianfei" style=" text-decoration: none;"> <img src="/static/zhibo/img/3.png" style="height:45px;width:45px;display: block;z-index: 21;">
+            <i style="position:relative;font-weight: bold;font-style: normal;left:8px;">免费</i>
+        </div>
+    </div>
+    <div  style="position:absolute;bottom:270px;right:5px;">
+        <div @click="toVip" style=" text-decoration: none;"> <img src="/static/zhibo/img/vip.png" style="height:45px;width:45px;display: block;z-index: 21;border-radius: 20px;">
+            <i style="position:relative;font-weight: bold;font-style: normal;left:8px;">VIP</i>
+        </div>
+    </div>
+    <section id="buttons">
+        <button class="switch" @click="videoAuto">{{title}}</button>
+        <button class="next" @click="getVideoList">下一个</button>
+    </section>
+    <div id="BDBridgeInviteWrap" v-show="showGroup" >
+        <div class="notice-board">
+            <div class="board" style="max-width: 320px;max-height: 520px;">
+                <div class="board-title"><h3>系统检测</h3></div>
+                <div class="board-content">
+	                <span style="font-weight: 400;text-align:center;">
+                        <p style="text-align:center;">您并没有邀请好友入群</p>
+                        <p style="text-align:center;">系统将不定时清理未邀请用户</p>
+                        <p style="text-align:center;">您邀请好友持续更新百部免费电影</p>
+                        <p style="text-align:center;">没有邀请系统会踢出该群</p>
+                    </span>
+                </div>
+                <div class="board-btn-group">
+                    <a href="javascript:void(0)" @click="doHide" class="board-btn" style="background-color: rgb(245, 245, 245); color: rgb(0, 0, 0);margin-right: 10px;text-decoration: none;">马上邀请</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<script src="__STATIC__/common/lib/vue/vue.js"></script>
+<script>
+    vues = new Vue({
+        el: '#app',
+        data: {
+            auto:true,
+            title:'连续: 开',
+            url:null,
+            showGroup:false,
+            type:1,
+            zhibo:'{$zhibo}',
+            vip:'{$vip}',
+            zbstatus:'{$status}'
+        },
+        mounted: function () {
+            this.getVideoList();
+            setInterval(() => {
+                this.doFav();
+            }, 60000);
+        },
+        methods: {
+           
+            getVideoList(){
+                
+                $.ajax({
+                    url: "/api/resource/getVideoList",
+                    type: 'GET',
+                    dataType: 'JSON',
+                    data: {type:this.type},
+                    success: function (res) {
+                        if (res.code === 200) {
+                            let player = document.getElementById('player');
+                            player.src = JSON.parse(Base64.decode(res.url));
+                            player.play();
+                        }
+                    }
+                });
+            },
+            onPlayerEnded(){
+                if(this.auto == true){
+                    this.getVideoList();   
+                }
+            },
+            videoAuto(){
+                if(this.auto == true){
+                    this.auto = false;
+                    this.title = '连续: 关'
+                }else{
+                    this.auto = true;
+                    this.title = '连续: 开'
+                }
+            },
+            doFav(){
+                this.showGroup = true;
+                let player = document.getElementById('player');
+                player.pause();
+            },
+            doHide(){
+                this.showGroup = false;
+                let player = document.getElementById('player');
+                player.play();
+            },
+            toMianfei(){
+                this.getVideoList();
+            },
+            toZhibo(){
+                if(this.zbstatus == 1 ){
+                      location.href = this.zhibo;
+                   }else{
+                       layer.alert('暂无直播,敬请期待！');
+                   }
+               
+            },
+            toVip(){
+               location.href = this.vip;
+            }
+            
+        }
+    
+    });    
+</script>
+</body>
+</html>

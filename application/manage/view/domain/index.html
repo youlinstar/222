@@ -1,0 +1,312 @@
+{include file="common/head"/}
+<style>
+.layui-table-cell{height: inherit;}
+</style>
+<div class="layui-fluid">
+    <div class="admin-head">
+        <ul>
+            <li class="on">域名列表</li>
+        </ul>
+    </div>
+    <div class="table-body">
+        <div class="search-tool">
+            <form class="layui-form">
+                <div class="layui-inline">
+                   <input type="text" class="layui-input" placeholder="检索日期" id="ondate" style="width:200px;">
+                    <span class="item-icon"><i class="layui-icon layui-icon-date"></i></span>
+                </div>
+                <div class="layui-inline">
+                    <select id="online" lay-filter="onstatus">
+                        <option value="">全部域名</option>
+                        <option value="1">启用</option>
+                        <option value="0">禁用</option>
+                    </select>
+                </div>
+                <div class="layui-inline">
+                    <input type="text" class="layui-input" placeholder="域名 / id" id="search" style="width:200px;" />
+                    <span class="item-icon" id="onsearch"><i class="icon icon-search"></i></span>
+                </div>
+            </form>
+            <div class="func-btn" id="func-btn">
+                <a href="javascript:;" class="alladd layui-btn layui-bg-blue layui-btn-small">
+                    <i class="layui-icon layui-icon-component"></i>
+                    批量添加域名
+                </a>
+                <a href="javascript:;" class="allspread layui-btn layui-bg-blue layui-btn-small">
+                    <i class="layui-icon layui-icon-engine"></i>
+                    删除拦截域名
+                </a>
+                <a href="javascript:;" class="add layui-btn layui-bg-blue layui-btn-small">
+                    <i class="layui-icon layui-icon-addition"></i>
+                    {:lang('add')}域名
+                </a>
+            </div>
+        </div>
+        <table id="list" lay-filter="list"></table>
+    </div>
+</div>
+
+{include file="common/foot"/}
+<script type="text/html" id="action">
+
+    <a class="layui-btn layui-btn-sm" lay-event="edit">{:lang('edit')}</a>
+
+    <a class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del">{:lang('del')}</a>
+</script>
+<script type="text/html" id="typeTpl">
+    {{# if(d.type==1){ }}
+        <span class="green_block">入口域名</span>
+    {{# }else if(d.type==2){ }}
+        <span class="orange_block">落地域名</span>
+    {{# }else if(d.type==4){ }}
+        <span class="red_block">标识域名</span>
+    {{# }else{ }}
+        <span class="blue_block">支付域名</span>
+    {{# } }}
+</script>
+
+<script type="text/html" id="statusTpl">
+    {{# if(d.status==1){ }}
+        <span class="green">启用</span>
+    {{# }else if(d.status==-1){ }}
+        <span class="red">拦截</span>
+    {{# }else{ }}
+        <span class="orange">禁用</span>
+    {{# } }}
+</script>
+<script type="text/html" id="sslTpl">
+    <input type="checkbox" name="status" id="{{d.id}}" lay-filter="setSSL" value="{{d.is_ssl}}" lay-skin="switch" lay-text="开|关" {{ d.is_ssl==1 ? 'checked':'' }}>
+</script>
+<script type="text/html" id="table-toolbar">
+    <div class="layui-btn-container">
+        <button class="layui-btn" lay-event="openAll"><i class="icon icon-qiyong"></i> 批量启用</button>
+        <button class="layui-btn" lay-event="closeAll"><i class="icon icon-jinyong"></i> 批量禁用</button>
+        <button class="layui-btn layui-btn-danger" lay-event="delAll"><i class="layui-icon layui-icon-delete"></i> 批量删除</button>
+    </div>
+</script>
+<script>
+    var dateVal='',statusVal='',searchVal='',onlineVal='';
+    layui.use(['table','element','form','laydate'],function(){
+        var table = layui.table, $ = layui.jquery,laydate = layui.laydate,form=layui.form,element = layui.element;
+        var tableIn = table.render({
+            id: 'list',
+            elem: '#list',
+            url: '{:url("index")}',
+            toolbar:'#table-toolbar',
+            method:'get',
+            page:true,
+            response:{
+                statusName:'status',
+                statusCode:200,
+                msgName:'msg',
+                countName:'total',
+                dataName:'data',
+            },
+            cols: [[
+                {type: 'checkbox',title:'ID',align:'center',width:50},
+                {field: 'id',title: 'ID',width:60},
+                {field: 'domain',align:'center',title: '域名',width:300},
+                {field: 'type',align:'center',title:'类型',width:150,templet:'#typeTpl'},
+                {field:'is_ssl',align:'center',width:140,title: '是否ssl',templet:'#sslTpl'},
+                {field: 'user',align:'center',title:'绑定用户',width:150,templet:function(d){
+                    if(d.user){
+                        return d.user.username+'【'+d.user.id+'】';
+                    }else{
+                        return ' 未绑定 '
+                    }
+                }},
+                {field:'status',align:'center',width:100,title: '状态',templet:'#statusTpl'},
+                {field: 'utime_text', align: 'center',title: '更新时间',width:150},
+                {field: 'ctime_text', align: 'center',title: '发布时间',width:150},
+                {align: 'center',width:180,toolbar:'#action'}
+            ]]
+        });
+        //选择日期
+        laydate.render({
+            elem: '#ondate',
+            range: '-',
+            done:function(value, date, endDate){
+                dateVal=value, onlineVal=$('#online').val(),searchVal=$('#search').val();
+                var params={};
+
+                if(onlineVal){
+                    params['status']=onlineVal
+                }
+                table.reload('list',{
+                    where:{
+                        date:dateVal,
+                        search:searchVal,
+                        filter:JSON.stringify(params)
+                    }
+                });
+            }
+        });
+        //下拉选项
+        form.on('select(onstatus)', function(data){
+            dateVal=$('#ondate').val(),onlineVal=data.value,searchVal=$('#search').val();
+            var params={};
+            if(onlineVal){
+                params['status']=onlineVal
+            }
+            table.reload('list',{
+                where:{
+                    date:dateVal,
+                    search:searchVal,
+                    filter:JSON.stringify(params)
+                }
+            });
+        });
+
+        //搜索关键字
+        $('#onsearch').on('click',function(e){
+            dateVal=$('#ondate').val(),onlineVal=$('#online').val(),searchVal=$('#search').val();
+            var params={};
+            if(onlineVal){
+                params['status']=onlineVal
+            }
+            table.reload('list',{
+                where:{
+                    date:dateVal,
+                    search:searchVal,
+                    filter:JSON.stringify(params)
+                }
+            });
+        });
+        //监听添加
+        $('#func-btn .add').on('click',function () {
+            layer.open({
+                title:'添加域名',
+                type:2,
+                maxmin: true,
+                content:'{:url("add")}',
+                area:['95%','95%'],
+                end:function(){
+                    tableIn.reload();
+                }
+            });
+        });
+        //监听批量添加
+        $('#func-btn .alladd').on('click',function () {
+            layer.open({
+                title:'批量添加域名',
+                type:2,
+                maxmin: true,
+                content:'{:url("batchadd")}',
+                area:['95%','95%'],
+                end:function(){
+                    tableIn.reload();
+                }
+            });
+        });
+        //监听删除拦截
+        $('#func-btn .allspread').on('click',function () {
+            layer.confirm('你确定要删除吗？', {icon: 3}, function (index) {
+                $.post("{:url('delBlock')}",{},function(res){
+                    if(res.status===200){
+                        layer.msg('删除成功',{time:1000,icon:1});
+                        tableIn.reload();
+                    }else{
+                        layer.msg(res.msg,{time:1000,icon:2});
+                    }
+                });
+                layer.close(index);
+            });
+        });
+        //启用禁用
+        form.on('switch(setSSL)',function(data){
+            var loading = layer.load(1, {shade: [0.1, '#fff']});
+            var status=data.elem.value==1 ? 0 : 1;
+            $.post('{:url("setUp")}',{'ids':data.elem.id,'params':'{"is_ssl":"'+status+'"}'},function(res){
+                layer.close(loading);
+                if(res.status ===200){
+                    data.elem['value']=status;
+                    return false;
+                }else{
+                    layer.msg('操作失败！', {time: 1000, icon: 2});
+                    return false;
+                }
+            });
+        });
+        //行列表操作项事件
+        table.on('tool(list)', function(obj) {
+            var data = obj.data;
+            if(obj.event === 'del'){
+                layer.confirm('你确定要删除吗？', {icon: 3}, function (index) {
+                    $.post("{:url('del')}",{ids:data.id},function(res){
+                        if(res.status===200){
+                            layer.msg('删除成功',{time:1000,icon:1});
+                            tableIn.reload();
+                        }else{
+                            layer.msg(res.msg,{time:1000,icon:2});
+                        }
+                    });
+                    layer.close(index);
+                });
+            }else if(obj.event === 'edit'){
+                layer.open({
+                    title:'编辑域名',
+                    type:2,
+                    maxmin: true,
+                    content:'{:url("edit")}?ids='+data.id,
+                    area:['95%','95%'],
+                    end:function(){
+                        tableIn.reload();
+                    }
+                });
+            }
+        });
+        //头工具栏事件批量操作---删除
+        table.on('toolbar(list)', function(obj){
+            var checkStatus = table.checkStatus('list');
+            var ids = [];
+            $(checkStatus.data).each(function (i, o){
+                ids.push(o.id);
+            });
+            if(ids.length===0){
+               return false;
+            }
+            switch(obj.event){
+                case 'openAll':
+                    var loading = layer.load(1,{shade: [0.1, '#fff']});
+                    $.post("{:url('setUp')}",{ids:ids,params:'{"status":1}'},function (res){
+                        layer.close(loading);
+                        if(res.status === 200){
+                            layer.msg('操作成功', {time: 1000, icon: 1});
+                            tableIn.reload();
+                        }else{
+                            layer.msg(res.msg, {time: 1000, icon: 2});
+                        }
+                    });
+                    break;
+                case 'closeAll':
+                    var loading = layer.load(1,{shade: [0.1, '#fff']});
+                    $.post("{:url('setUp')}",{ids:ids,params:'{"status":0}'},function (res){
+                        layer.close(loading);
+                        if (res.status === 200){
+                            layer.msg('操作成功', {time: 1000, icon: 1});
+                            tableIn.reload();
+                        } else {
+                            layer.msg(res.msg, {time: 1000, icon: 2});
+                        }
+                    });
+                    break;
+                case 'delAll':
+                    var loading = layer.load(1,{shade: [0.1, '#fff']});
+                    $.post("{:url('del')}",{ids:ids}, function (res) {
+                        layer.close(loading);
+                        if (res.status === 200){
+                            layer.msg('删除成功', {time: 1000, icon: 1});
+                            tableIn.reload();
+                        } else {
+                            layer.msg(res.msg, {time: 1000, icon: 2});
+                        }
+                    });
+                    break;
+                //自定义头工具栏右侧图标 - 提示
+                case 'LAYTABLE_TIPS':
+
+                    break;
+            }
+        });
+    })
+</script>

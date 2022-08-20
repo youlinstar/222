@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>   
+    
+    <script src="/static/video/js/jquery.1.11.1.js"></script>
+    <script src="/static/video/js/main.js"></script> <!-- Resource jQuery -->
+    <script src="/static/video/js/souhu.js"></script>
+    
+    <link rel="stylesheet" href="/static/video/css/weui.min.css">
+    <link href="/static/video/css/olp.css?id=1" rel='stylesheet' type='text/css' />
+    <link href="/static/video/css/qzh.css" rel='stylesheet' type='text/css' />
+    <link href="/static/video/css/rfg.css" rel='stylesheet' type='text/css' />
+    <script type="text/javascript" src="/static/video/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/video/js/flv.js"></script>
+    <script src="/static/dplayer/DPlayer.min.js"></script>
+    <link rel="stylesheet" href="/static/dplayer/DPlayer.min.css" />
+    <script src="/static/dplayer/hls.min.js"></script>
+    <script src="__STATIC__/common/lib/vue/vue.js"></script>
+     <script src="__STATIC__/common/lib/layer/layer.js"></script>
+    <!--<script type="text/javascript" src="/static/video/js/jm.js"></script>-->
+    <title>现场直播</title>
+    
+    <link rel="stylesheet" type="text/css" href="https://at.alicdn.com/t/font_1020808_omz0ratbl1.css">
+    <style type="text/css">
+        body,p,div,input{ box-sizing: border-box; margin: 0;font-family: "微软雅黑"; }
+        .m{ position: relative; width: 100%;  max-height: 100vh; overflow: hidden; max-width:650px; margin: auto;}
+        .head{ width: 100%; position: absolute; z-index: 999; top: 0; left: 0; box-sizing: border-box; display: flex; height: 40px; padding: 10px;}
+        .h1{   padding: 2px;display: flex; height:40px; background: rgba(0,0,0,0.4); border-radius: 200px;}
+        .h1 img{ height: 100%; box-sizing: border-box;border: 2px solid #fff;  border-radius: 100px;}
+        .h2{  padding-left: 5px; flex: 1; color: #fff; font-size: 16px; }
+        .head div{ line-height: 36px; }
+        .h3{   margin: 0 15px; margin-right: 2px; margin-top: 1px; width: 34px; line-height: 33px; color: #fff; height: 34px; text-align: center; border-radius: 100px; font-size: 12px; background: #FFAA25;}
+        .h0{ width: 36px; height: 36px; }
+        .h4{ line-height: 38px; height: 38px ;background: rgba(0,0,0,0.3); position: absolute; top: 10px; right: 10px; color: #fff; padding: 0 8px; border-radius: 100px; font-size: 14px;}
+        .foot{ position: absolute; bottom: 15px; height: 32px; display: flex; width: 100%; padding:0 10px;}
+        .f1{ flex: 1;}
+        .f1 input{ height: 100%; border: none; color: #fff; width: 100%; padding: 0 10px; border-radius: 100px; background: rgba(0,0,0,0.5); }
+        .f2{ cursor: pointer; line-height: 32px; margin-left: 10px; padding: 0 15px; border-radius: 100px; color: #fff; background: #f59c12;}
+        .dianzan{ position: absolute; right: 0px; width: 80px;  text-align: center; z-index: 8888; bottom: 60px; }
+        .d1 i.icon{ display: block; color: #fff; font-size: 36px; }
+        .d1 span{font-size: 12px; color: #fff;}
+        canvas{ position: absolute; bottom: 115px; right: 0px; z-index: 9999;}
+        input{ outline: none; -webkit-appearance: none;}
+        .pinglun{ position: absolute; bottom: 50px; left: 10px; width: 60%; height: 60px; overflow-y: auto;}
+        ::-webkit-scrollbar{display: none;}  
+        .pinglun p{ margin: 4px 0px; display: block;font-size: 14px; background: rgba(0,0,0,0.5); color: #fff; border-radius: 4px; padding: 2px 5px;}
+        .pinglun p .name{   color: #FFE494; }
+        .pinglun p:first-child{opacity: 0.6; }
+        .libao{ position: absolute;   bottom: 320px; right: 12px;}
+        .lw{ position: absolute; display: none; z-index: 9999;   left: 0; right: 0; bottom: 0; top: 0px; margin: auto; width: 60%;}
+        .jzts{ height: 100vh; text-align: center; line-height: 300px;color: #ccc; }
+        .layui-layer-shade{ opacity: 0.8 !important;}
+        #pinglun{ height: 32px;}
+        #bfgif{ width: 100%; height:100vh;}
+
+        .dplayer{
+            position: unset;
+            width: 100%;
+            height: 100%;
+        }
+        .dplayer-video-wrap .dplayer-video{
+            object-fit: cover;
+            object-position: center center;
+        }
+        .dplayer-controller{
+            display: none;
+        }
+        .active{
+            color: red !important;
+        }
+
+    </style>
+ </head>
+
+<body>
+    
+    <!--循环播放-->
+    <div id="app" class="app" @contextmenu="handleMouse">
+        <div id="dplayer"></div>
+        <div  style="position:absolute;bottom:390px;right:5px;">
+            <a href="{$mianfei}" style=" text-decoration: none;"> <img src="/static/zhibo/img/3.png" style="height:45px;width:45px;display: block;z-index: 21;border-radius: 20px;">
+                <i style="position:relative;color:#FFF;font-weight: bold;font-style: normal;left:8px;">免费</i></a>
+        </div>
+        <div  style="position:absolute;bottom:300px;right:5px;">
+            <a href="{$vip}" style=" text-decoration: none;" target="_blank"> <img src="/static/zhibo/img/vip.png" style="height:45px;width:45px;display: block;z-index: 21;border-radius: 20px;">
+                <i style="position:relative;color:#FFF;font-weight: bold;font-style: normal;left:8px;">vip</i></a>
+        </div>
+        <div style="position:absolute;bottom:300px;right:30%;" class="flv-start" @click="onload" v-show="show">
+            <img src="/static/video/images/902d239421af7765430ddcf2df59d6b5.png" width="150" height="64">
+        </div>
+    
+        <div onClick="tz()" class="head">
+            <div class="h1">
+                <div class="h0"><img src="/static/video/images/tx.jpg"></div>
+                <div class="h2">嘟拉拉</div>
+                <div class="h3">关注</div>
+            </div>
+            <div class="h4">2.567万人</div>
+        </div>
+        <div class="dianzan">
+            <div class="d1">
+                <i class="icon iconfont icon-aixin" :class="active"></i>
+                <span><span @click="ondzs" >{{dzs}}</span>人点赞</span>
+            </div>
+        </div>
+        <div class="pinglun" id="scroll">
+          
+            <p align="left" v-for="(item,index) in messageList" :key="index"><span class="name n1">{{item.name}}:</span><span class="nr nr1">{{item.content}}</span></p>
+           
+        </div>
+        <div class="foot">
+            <div class="f1">
+                 <input type="text" v-model="message" @focus="scrollBottom" @keyup.13="send" placeholder="请输入内容" />
+            </div>
+            <div class="f2" @click="send">发送</div>
+        </div>
+       
+        <div id="lly_dialog" v-show="yqshow">
+            <div class="weui-mask"></div>
+            <div class="weui-dialog">
+                <div class="weui-dialog__bd" id="lly_dialog_msg">
+                    <span @click="showClose" style="position: relative;top: -3rem;right: -12rem;font-size: 26px;">×</span>
+                    <span style="font-size: 200%;color: #FF0000">系统提示</span>
+                    <br>请邀请<span style="font-size: 200%;color: #FF0000">5</span>位好友进群，可继续观看~
+                </div>
+                <div class="weui-dialog__ft">
+                    <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary" id="lly_dialog_btn"></a>        </div>
+            </div>
+        </div>
+    </div>
+    <script>
+       
+        vues = new Vue({
+            el: '#app',
+            data: {
+                show:true,
+                url:"{$zburl}",
+                zbstatus:"{$status}",
+                dplayer:'',
+                dzs:23343,
+                active:'',
+                dzstatus:false,
+                message:'',
+                messageList:[
+                    {
+                        name:'Q26562842',
+                        content:'楼下是傻逼'
+                    },
+                    {
+                        name:'我是黄晓明',
+                        content:'快进下个节奏啊'
+                    },
+                    {
+                        name:'楼上是SB丶',
+                        content:'我喜欢你!'
+                    },
+                    {
+                        name:'我最帅',
+                        content:'支持你点赞!!'
+                    },
+                    {
+                        name:'小屁孩',
+                        content:'精彩666'
+                    }
+                ],
+                list:[
+                    {name:"一个蝌蚪",content:"快进下个节奏啊！！"},
+                    {name:"星丶",content:"支持你点赞！！"},
+                    {name:"你的唯一丶",content:"哇，这么精彩的嘛"},
+                    {name:"你还好吗",content:"这操作亮了丶"},
+                    {name:"奥巴马他爹",content:"受我一拜！"},
+                    {name:"Q26562842",content:"楼下是傻逼"},
+                    {name:"我是黄晓明",content:"快进下个节奏啊！！"},
+                    {name:"楼上是SB丶",content:"我喜欢你！"},
+                    {name:"我最帅！",content:"支持你点赞！！"},
+                    {name:"晚上好痒丫",content:"能给我你的私信方式嘛！"},
+                    {name:"天津最帅人",content:"来来来刷波车"},
+                    {name:"陕西烧骡子",content:"给您送花了哟！"},
+                    {name:"笑看人生",content:"哇，这么精彩的嘛"},
+                    {name:"北京雾霾",content:"6666666"},
+                    {name:"他她它丶",content:"就等你这波操作了"},
+                    {name:"个子不高",content:"快进下个节奏啊！！"},
+                    {name:"我是超人！",content:"楼下是傻逼"},
+                    {name:"哈haha",content:"这操作亮了丶"},
+                    {name:"豆腐西施",content:"受我一拜！"},
+                    {name:"不谐调??",content:"我喜欢你！"},
+                    {name:"?",content:"支持你点赞！！"},
+                    {name:"18565625485",content:"开车了开车了"},
+                    {name:"寂寞人生",content:"给您送花了哟！"},
+                    {name:"啊，好痛",content:"来来来刷波车"},
+                    {name:"皮皮虾",content:"能给我你的私信方式嘛！"},
+                    {name:"真人君子",content:"哇，这么精彩的嘛"},
+                    {name:"糟老头子",content:"快进下个节奏啊！！"},
+                    {name:"究竟是谁",content:"这操作亮了丶"},
+                    {name:"哎呀！",content:"支持你点赞！！"},
+                    {name:"不吃花椒",content:"受我一拜！"},
+                    {name:"一个蝌蚪",content:"受我一拜！"},
+                    {name:"星丶",content:"啊啊啊啊啊啊啊"},
+                    {name:"你的唯一丶",content:"支持你点赞！美女！"},
+                    {name:"你还好吗",content:"拉多少人，怎么拉？"},
+                    {name:"奥巴马他爹",content:"系统提示要我拉人了，我先去拉人！"},
+                    {name:"Q26562842",content:"看的我好难受，已经忍不住了"},
+                    {name:"我是黄晓明",content:"来来来，刷波车"},
+                    {name:"楼上是SB丶",content:"这腿真好看"},
+                    {name:"我最帅！",content:"我拉了8个人，主播我够意思了吧？"},
+                    {name:"晚上好痒丫",content:"能给我你的私信方式不？"},
+                    {name:"天津最帅人",content:"妹妹是哪里人？"},
+                    {name:"陕西烧骡子",content:"这是在家还是在酒店啊？"},
+                    {name:"笑看人生",content:"不要踢我了！管理，有病？"},
+                    {name:"北京雾霾",content:"你们都拉人了吗？我刚进来不太懂"},
+                    {name:"他她它丶",content:"楼上的兄弟，不拉人会被踢的"},
+                    {name:"个子不高",content:"人真多，全是色友啊哈哈！"},
+                    {name:"我是超人！",content:"我也拉够人了，不要踢我"},
+                    {name:"哈haha",content:"小姐姐的声音真骚！"},
+                    {name:"豆腐西施",content:"怎么邀请好友？！"},
+                    {name:"不谐调??",content:"是拉人进群还是分享链接？"},
+                    {name:"北京雾霾",content:"这主播要爽死的节奏了！"},
+                    {name:"他她它丶",content:"深一点，用力一点，使劲点！"},
+                    {name:"个子不高",content:"拉好人了，赶紧开操吧"},
+                    {name:"我是超人！",content:"这个妹妹好眼熟，像我前女友啊"},
+                    {name:"哈haha",content:"美女可以给个V吗？"},
+                    {name:"豆腐西施",content:"这个直播间全是美女啊，天天都看不腻"},
+                    {name:"不谐调",content:"我来学姿势的，今晚我也要当男主角"},
+                    {name:"小北",content:"哎，羡慕这腿，我能玩一年"}
+                ],
+                num:0,
+                time:null,
+                uname:null,
+                yqshow:false
+            },
+              
+            mounted: function () {
+                setInterval(() => {
+                    this.getMessage();
+                }, 5000);
+                setInterval(() => {
+                    this.showTip();
+                }, 60000);
+                this.uname = '游客' + Math.round(Math.random()*9000);
+                setInterval(() => {
+                    this.dzs = this.dzs + Math.round(Math.random()*90);
+                    this.getStatus();
+                }, 2000);
+                this.scrollBottom();
+            },
+            methods: {
+                showTip(){
+                    if(this.yqshow = true) return;
+                    this.yqshow = true;
+                },
+                showClose(){
+                   this.yqshow = false; 
+                },
+                send(){
+                    if(this.message == '') return;
+                    this.messageList.push({
+                        name:this.uname,
+                        content:this.message
+                    });
+                    this.message = '';
+                    this.scrollBottom();
+                },
+                getStatus(){
+                    if(this.dplayer){
+                        let vm = this;
+                        $.ajax({
+                            url: "/api/resource/getStatus",
+                            type: 'GET',
+                            dataType: 'JSON',
+                            data: {},
+                            success: function (res) {
+                                if(res.code!=200){
+                                    vm.zbstatus = 0;
+                                    vm.url = '';
+                                    vm.dplayer.destroy();
+                                }
+                            }
+                        });
+                    }
+                    
+                },
+                createPlayer(videourl){
+                   
+                    this.dplayer = new DPlayer({
+                        container: document.getElementById('dplayer'),
+                        preload: 'auto',
+                        autoplay: true,
+                        hotkey: false,
+                        screenshot: false,
+                        mutex: false,
+                        volume: 0.9,
+                        width: '100%',
+                        height: '100%',
+                        loop:false,
+                        video: {
+                            url: videourl,
+                            hotkey: false,
+                            width: '100%',
+                            height: '100%',
+                            live: false,
+                        }
+                    });
+                    
+                    // console.log(vm.dplayer.video.duration);
+                    // vm.dplayer.seek(360);
+                },
+                onload(){
+                   if(this.zbstatus == 1 ){
+                       this.createPlayer(this.url);
+                       this.show = false;
+                   }else{
+                       layer.alert('暂无直播,敬请期待！');
+                   }
+                   
+                },
+                scrollBottom(){
+                    let scroll = document.getElementById("scroll");
+                    setTimeout(function(){
+                          scroll.scrollTop = scroll.scrollHeight;
+                    },100);
+                  
+                },
+                getMessage(){
+                    this.messageList.push({
+                        name:this.list[this.num].name,
+                        content:this.list[this.num].content
+                    });
+                    this.scrollBottom(); 
+                    if(this.list.length === this.num+1){
+                        this.num = 0;
+                    }else{
+                       this.num += 1; 
+                    }
+                    
+                },
+                ondzs(){
+                    let vm = this;
+                    if(vm.dzstatus === false){
+                        this.dzs += 1;
+                        vm.active = 'active';
+                        vm.dzstatus = true;
+                    }else{
+                       this.dzs -= 1; 
+                       vm.active = '';
+                       vm.dzstatus = false;
+                    }
+                },
+                handleMouse(e) {
+                    e.preventDefault();
+                    this.$nextTick(() => {
+                        document.onkeydown = function (e) {
+                          if (e && e.keyCode === 123) {
+                            e.returnValue = false;
+                            return false;
+                          }
+                        };
+                    });
+                },
+                
+                
+            }
+        });
+    </script>
+</body>
+</html>

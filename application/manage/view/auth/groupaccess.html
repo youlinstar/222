@@ -1,0 +1,68 @@
+{include file="common/head"/}
+<div class="layui-fluid">
+    <div class="table-body">
+        <div class="layui-card-header">{$title}配置权限</div>
+        <div class="layui-card">
+            <div class="layui-field-box">
+                <form class="layui-form layui-form-pane" lay-filter="rules">
+                    <input type="hidden" name="id" value="0"/>
+                    <ul id="trees"></ul>
+                    <div class="layui-form-item text-center" style="padding-top:35px;">
+                        <button type="button" class="layui-btn" lay-submit="" lay-filter="submit">{:lang('submit')}</button>
+                        <button class="layui-btn layui-btn-danger" type="button" onclick="window.history.back()">{:lang('back')}</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+{include file="common/foot"/}
+<script type="text/javascript">
+    var datas ={$data|raw};
+    var checked=[{$rules|raw}];
+    var id={$id};
+    layui.config({
+        base:'__STATIC__/layuiadmin/layui_exts/'
+    }).extend({
+        authtree:'authtree'
+    });
+
+    layui.use(['form','layer','authtree'], function () {
+        var form = layui.form, layer = layui.layer,authtree = layui.authtree,$=layui.jquery;
+        var trees=authtree.listConvert(datas,{
+            primaryKey: 'id',
+            startPid: 0,
+            parentKey: 'pid',
+            nameKey: 'title',
+            valueKey: 'id',
+            checkedKey:checked,
+        });
+        authtree.render('#trees',trees,{
+            inputname: 'ids[]',
+            layfilter:'lay-check-auth',
+            openchecked:true,
+            openall: false,
+            'theme': 'auth-skin-default',
+            themePath:'__STATIC__/layuiadmin/layui_exts/tree_themes/',
+            autowidth: true
+        });
+        form.val('rules',{id:id});
+        form.on('submit(submit)',function(data){
+            var authids = authtree.getChecked('#trees');
+            loading =layer.load(1,{shade: [0.1,'#fff']});
+            $.post("{:url('groupSetAccess')}",{'rules':authids,'id':id}, function(res){
+                layer.close(loading);
+                if (res.status==200){
+                    layer.msg(res.msg, {time: 1800, icon: 1}, function () {
+                        location.href = res.url;
+                    });
+                } else {
+                    layer.msg(res.msg, {time: 1800, icon: 2});
+                }
+            });
+        });
+    });
+
+
+</script>

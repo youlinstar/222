@@ -1,0 +1,114 @@
+{include file="common/head"/}
+<div class="layui-fluid">
+    <div class="admin-head">
+        <ul>
+            <li class="on">管理员列表</li>
+        </ul>
+        <div class="admin-btn">
+            <a href="{:url('adminAdd')}" class="layui-btn layui-bg-blue layui-btn-small">
+                {:lang('add')}{:lang('admin')}
+            </a>
+        </div>
+    </div>
+    <div class="table-body">
+        <table id="list" lay-filter="list"></table>
+    </div>
+</div>
+
+{include file="common/foot"/}
+<script type="text/html" id="barDemo">
+
+    <a href="{:url('adminEdit')}?ids={{d.id}}" class="layui-btn layui-btn-sm">{:lang('edit')}</a>
+    {{# if(d.id==1){ }}
+        <a href="#" class="layui-btn layui-btn-sm layui-btn-disabled">{:lang('del')}</a>
+    {{# }else{  }}
+        <a class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del">{:lang('del')}</a>
+    {{# } }}
+</script>
+<script type="text/html" id="open">
+    {{# if(d.id==1){ }}
+        <a class="layui-btn layui-btn-xs layui-btn-disabled">{:lang('enabled')}</a>
+    {{# }else{  }}
+        {{# if(d.status==1){ }}
+            <a class="layui-btn layui-btn-warm layui-btn-xs" lay-event="open">{:lang('enabled')}</a>
+        {{# }else{  }}
+            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="open">{:lang('disabled')}</a>
+        {{# } }}
+    {{# } }}
+</script>
+<script>
+    layui.use('table', function() {
+        var table = layui.table,$ = layui.jquery;
+        var tableIn=table.render({
+            elem: '#list',
+            url: '{:url("adminlist")}',
+            method:'post',
+            response: {
+                statusName:'status',
+                statusCode:200,
+                msgName:'msg',
+                countName:'total',
+                dataName:'data',
+            },
+            cols: [[
+                {field:'id', align:'center',title: '编号',width:60,fixed: true}
+                ,{field:'username', title: '用户名',align:'center',width:150}
+                ,{field:'balance', title: '余额',align:'center',width:120}
+                ,{field:'realname', title: '昵称',align:'center',width:120}
+                ,{field:'title', title: '权限组',align:'center',width:120}
+                ,{field:'mobile', title: '{:lang("tel")}',align:'center',width:150}
+                ,{field:'ip', title: '{:lang("ip")}',width:100}
+                ,{field:'status', title: '{:lang("status")}',width:150,toolbar: '#open',align:'center'}
+                ,{align:'center', toolbar: '#barDemo'}
+            ]]
+        });
+        table.on('tool(list)', function(obj){
+            var data = obj.data;
+            if(obj.event === 'open'){
+                loading =layer.load(1, {shade: [0.1,'#fff']});
+                $.post('{:url("adminState")}',{'id': data.id},function (res) {
+                    layer.close(loading);
+                    if(res.status===200){
+                        if(res.data.status === 1){
+                            obj.update({
+                                status: '<a class="layui-btn layui-btn-warm layui-btn-xs" lay-event="open">{:lang("enabled")}</a>'
+                            });
+                        }else{
+                            obj.update({
+                                status: '<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="open">{:lang("disabled")}</a>'
+                            });
+                        }
+                    }else{
+                        layer.msg(res.msg,{time:1000,icon:2});
+                        return false;
+                    }
+                })
+            } else if(obj.event === 'del'){
+                layer.confirm('你确定要删除此帐号', function(index){
+                    $.post("{:url('adminDel')}",{id:data.id},function(res){
+                        if(res.status===200){
+                            layer.msg(res.msg,{time:1000,icon:1});
+                            obj.del();
+                        }else{
+                            layer.msg(res.msg,{time:1000,icon:2});
+                        }
+                    });
+                    layer.close(index);
+                });
+            }else if(obj.event === 'pays'){
+                layer.open({
+                    title:'手动充值',
+                    type:2,
+                    content:'{:url("pay")}?ids='+data.id,
+                    area:['500px','380px'],
+                    end:function(){
+                        tableIn.reload();
+                    }
+                });
+            }
+        });
+
+    });
+</script>
+</body>
+</html>

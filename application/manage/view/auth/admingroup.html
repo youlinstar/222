@@ -1,0 +1,84 @@
+{include file="common/head"/}
+<div class="layui-fluid">
+    <div class="admin-head">
+        <ul>
+            <li class="on">管理权限组列表</li>
+        </ul>
+        <div class="admin-btn">
+            <a href="{:url('groupAdd')}" class="layui-btn layui-bg-blue layui-btn-small">
+                {:lang('add')}权限组
+            </a>
+        </div>
+    </div>
+    <div class="table-body">
+        <table id="list" lay-filter="list"></table>
+    </div>
+</div>
+{include file="common/foot"/}
+<script type="text/html" id="auth">
+    <input type="checkbox" name="auth" id="{{d.id}}" lay-filter="onAuth" value="{{d.is_auth}}" lay-skin="switch" lay-text="区分|不区分" {{ d.is_auth==1 ? 'checked':'' }}>
+</script>
+<script type="text/html" id="action">
+    <a href="{:url('groupAccess')}?id={{d.id}}" class="layui-btn layui-btn-xs layui-btn-normal">配置规则</a>
+    <a href="{:url('groupEdit')}?id={{d.id}}" class="layui-btn layui-btn-warm layui-btn-xs">{:lang('edit')}</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">{:lang('del')}</a>
+</script>
+<script>
+    layui.use(['table','form'], function() {
+        var table = layui.table,$ = layui.jquery,form = layui.form;
+        table.render({
+            elem: '#list'
+            ,url: '{:url("admingroup")}',
+            method:'post',
+            response: {
+                statusName:'status',
+                statusCode:200,
+                msgName:'msg',
+                countName:'total',
+                dataName:'data',
+            },
+            cols: [[
+                {field:'id', title: '{:lang("id")}',width:60,align:'center'},
+                {field:'title', title: '名称'},
+                {field:'is_auth',align: 'center',title: '是否区分数据',width: 150,toolbar: '#auth'},
+                {field:'ctime', title: '添加时间'},
+                {align:'center',toolbar:'#action'}
+            ]]
+        });
+        //启用禁用
+        form.on('switch(onAuth)',function(data){
+            var loading = layer.load(1, {shade: [0.1, '#fff']});
+            var auth=data.elem.value==1 ? 0 : 1;
+            $.post('{:url("setAuth")}',{'id':data.elem.id,'is_auth':auth},function(res){
+                layer.close(loading);
+                if(res.status ===200){
+                    data.elem['value']=auth;
+                    return false;
+                }else{
+                    layer.msg('操作失败！', {time: 1000, icon: 2});
+                    return false;
+                }
+            });
+        });
+        table.on('tool(list)', function(obj){
+            var data = obj.data;
+            if(obj.event === 'del'){
+                layer.confirm('你确定要删除该分组吗？', function(index){
+                    loading =layer.load(1, {shade: [0.1,'#fff']});
+                    $.post("{:url('groupdel')}",{id:data.id},function(res){
+                        layer.close(loading);
+                        layer.close(index);
+                        if(res.status==200){
+                            layer.msg(res.msg,{time:1000,icon:1});
+                            obj.del();
+                        }else{
+                            layer.msg(res.msg,{time:1000,icon:2});
+                        }
+                    });
+                });
+            }
+        });
+    });
+</script>
+</body>
+</html>

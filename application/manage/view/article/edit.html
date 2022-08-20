@@ -1,0 +1,107 @@
+{include file="common/head"/}
+<script>
+    var manage_Image="{:url('Ueditor/index')}";
+</script>
+<div class="layui-fluid">
+    <div class="table-body">
+        <div class="layui-card-header">编辑文章</div>
+        <div class="layui-card">
+            <form class="layui-form layui-form-pane" lay-filter="agent">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">文章标题</label>
+                    <div class="layui-input-inline from-inline-4">
+                        <input type="text" name="row[title]" lay-verify="required" value="{$row['title']}" lay-reqText="请输入标题中文" placeholder="{:lang('pleaseEnter')}标题中文" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">文章类型</label>
+                    <div class="layui-input-inline from-inline-2">
+                        <select name="row[sort_id]" lay-search>
+                            {volist name="sort" id="v"}
+                            <option value="{$v.id}" {eq name="$row['sort_id']" value="$v.id"}selected{/eq}>{$v.name}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">缩略图</label>
+                    <div class="layui-input-inline from-inline-3">
+                        <input type="hidden" name="row[thumb]" id="logo" value="{$row['thumb']}">
+                        <div class="layui-upload">
+                            <button type="button" class="layui-btn" id="onUpload">上传图片</button>
+                            <div class="layui-upload-list">
+                                <img class="layui-upload-img" width="76" height="76" src="{$row['thumb'] ? $row['thumb']:'__ADMIN__/images/default.png'}" id="Image">
+                                <p id="preview"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">文章内容</label>
+                    <div class="layui-input-inline from-inline-6">
+                        <textarea type="text/plain" lay-verify="required" name="row[content]" id="content">{$row['content']}</textarea>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">状态</label>
+                    <div class="layui-input-inline from-inline-3">
+                        <input type="checkbox" name="row[status]" lay-skin="switch" value="1" {eq name="$row['status']" value="1"}checked{/eq} lay-text="启用|禁用">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button type="button" class="layui-btn" lay-submit="" lay-filter="submit">{:lang('submit')}</button>
+                        <a href="{:url('index')}" class="layui-btn layui-btn-primary">{:lang('back')}</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{include file="common/foot"/}
+<script src="__STATIC__/ueditor/ueditor.config.js?v=1.0.3" type="text/javascript"></script>
+<script src="__STATIC__/ueditor/ueditor.all.js?v=1.0.4" type="text/javascript"></script>
+<script>
+    layui.use(['form','upload','layedit'], function(){
+        var form = layui.form,$= layui.jquery,upload=layui.upload;
+        var ue = UE.getEditor('content');
+        //图片上传
+        var uploadInst = upload.render({
+            elem: '#onUpload',
+            url: '{:url("UpFiles/upload")}',
+            done: function(res){
+                if(res.status===200){
+                    $('#logo').val(res.url);
+                    $('#Image').attr('src',res.url);
+                }else{
+                    //如果上传失败
+                    return layer.msg('上传失败');
+                }
+            },
+            error: function(){
+                //演示失败状态，并实现重传
+                var preview = $('#preview');
+                preview.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-mini onReload">重试</a>');
+                preview.find('.onReload').on('click', function(){
+                    uploadInst.upload();
+                });
+            }
+        });
+
+        form.on('submit(submit)', function (data) {
+            loading =layer.load(1, {shade: [0.1,'#fff']});
+            $.post("", data.field, function (res) {
+                layer.close(loading);
+                if (res.status===200){
+                    layer.msg('更新成功',{time: 1000, icon: 1},function(){
+                        location.href = '{:url("index")}';
+                    });
+                } else {
+                    layer.msg(res.msg, {time: 1000, icon: 2});
+                }
+            });
+        })
+    });
+</script>

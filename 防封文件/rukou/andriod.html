@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>幸福人生</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="wap-font-scale" content="no"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+
+    <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bootcss.com/zclip/1.1.2/jquery.zclip.min.js"></script>
+    <style type="text/css">
+        body,
+        div,
+        form,
+        input,
+        li,
+        ol,
+        p,
+        textarea,
+        ul {
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft YaHei";
+            color: #fff;
+        }
+
+        body {
+            background: #fff;
+            color: #3f3f3f;
+            font-family: Apple LiGothic Medium, SimHei, Geneva, Arial, Helvetica, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-appearance: none;
+            width: 100%;
+            font-size: 12px;
+        }
+
+        body p {
+            color: white;
+            text-align: center;
+            line-height: 25px;
+        }
+
+        img {
+            border: 0 none
+        }
+
+        hr {
+            margin: 10px
+        }
+
+        .fh_jt {
+            width: 15rem;
+            height: 4.28rem
+        }
+
+        .fh_jt img {
+            width: 15rem;
+            height: 4.28rem
+        }
+
+        .fh_wz {
+            height: 6.9rem;
+            line-height: 1rem;
+            font-size: .7rem;
+            text-align: center;
+            color: #333
+        }
+
+        .fh_tp {
+            width: 12.44rem;
+            height: 10rem;
+            margin: 0 auto
+        }
+
+        .fh_tp img {
+            width: 12.44rem;
+            height: 10rem;
+            text-align: center
+        }
+
+        #sff {
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<style type="text/css">
+.loading{position:absolute;margin:auto;top:0;bottom:0;left:0;right:0;width:6.250em;height:6.250em;-webkit-animation:rotate 2.4s linear infinite;-moz-animation:rotate 2.4s linear infinite;-o-animation:rotate 2.4s linear infinite;animation:rotate 2.4s linear infinite;}.loading .white{top:0;bottom:0;left:0;right:0;background:white;opacity:0;-webkit-animation:flash 2.4s linear infinite;-moz-animation:flash 2.4s linear infinite;-o-animation:flash 2.4s linear infinite;animation:flash 2.4s linear infinite;}.loading .dot{position:absolute;margin:auto;width:2.4em;height:2.4em;border-radius:100%;-webkit-transition:all 1s ease;-moz-transition:all 1s ease;-o-transition:all 1s ease;transition:all 1s ease;}.loading .dot:nth-child(2){top:0;bottom:0;left:0;background:#FF4444;-webkit-animation:dotsY 2.4s linear infinite;-moz-animation:dotsY 2.4s linear infinite;-o-animation:dotsY 2.4s linear infinite;animation:dotsY 2.4s linear infinite;}.loading .dot:nth-child(3){left:0;right:0;top:0;background:#FFBB33;-webkit-animation:dotsX 2.4s linear infinite;-moz-animation:dotsX 2.4s linear infinite;-o-animation:dotsX 2.4s linear infinite;animation:dotsX 2.4s linear infinite;}.loading .dot:nth-child(4){top:0;bottom:0;right:0;background:#99CC00;-webkit-animation:dotsY 2.4s linear infinite;-moz-animation:dotsY 2.4s linear infinite;-o-animation:dotsY 2.4s linear infinite;animation:dotsY 2.4s linear infinite;}.loading .dot:nth-child(5){left:0;right:0;bottom:0;background:#33B5E5;-webkit-animation:dotsX 2.4s linear infinite;-moz-animation:dotsX 2.4s linear infinite;-o-animation:dotsX 2.4s linear infinite;animation:dotsX 2.4s linear infinite;}@keyframes rotate{0%{-webkit-transform:rotate( 0 );-moz-transform:rotate( 0 );-o-transform:rotate( 0 );transform:rotate( 0 );}10%{width:6.250em;height:6.250em;}66%{width:2.4em;height:2.4em;}100%{-webkit-transform:rotate(360deg);-moz-transform:rotate(360deg);-o-transform:rotate(360deg);transform:rotate(360deg);width:6.250em;height:6.250em;}}@keyframes dotsY{66%{opacity:.1;width:2.4em;}77%{opacity:1;width:0;}}@keyframes dotsX{66%{opacity:.1;height:2.4em;}77%{opacity:1;height:0;}}@keyframes flash{33%{opacity:0;border-radius:0%;}55%{opacity:.6;border-radius:100%;}66%{opacity:0;}}
+</style>
+
+<div class="loading" id="loadingTip">
+	<div class="dot white"></div>
+	<div class="dot"></div>
+	<div class="dot"></div>
+	<div class="dot"></div>
+	<div class="dot"></div>
+</div>
+<body style="text-align: center;">
+<div id="Zl">
+</div>
+<script>
+    $(document).ready(function () {
+        setTimeout(function () {  document.getElementById("loadingTip").style.display = 'none'; }, 4000);
+        var url = document.location.toString();
+        var domain = url.slice(url.indexOf('ulink=') + 6);
+        var ua = navigator.userAgent.toLowerCase();
+        var isWeixin = ua.indexOf('micromessenger') != -1;
+        var isAndroid = ua.indexOf('android') != -1;
+        var isIos = (ua.indexOf('iphone') != -1) || (ua.indexOf('ipad') != -1);
+        var url = domain
+            // 判断是不是在微信客户端打开
+            if (isWeixin) {
+                // 判断是在Android的微信客户端还是Ios的微信客户端
+                if (isAndroid) {
+                    //微信安卓
+                    jumpDS(url);
+                } else if (isIos) {
+                    //微信安卓微信苹果
+                    jumpDS(url);
+                } else {
+                    jumpQQ()
+                }
+            } else {
+                // 不是微信客户端
+                jumpQQ()
+
+            }
+
+
+    })
+    if (! /*@aijquery@*/ 0) {
+        $("#rid").onload = function () {
+            fix_height();
+            $("#rid").contentWindow.focus();
+            $("#rid").load(function () {
+                $('body').css('background', '');
+            });
+        };
+    } else {
+        $("#rid").onreadystatechange = function () {
+            if ($("#rid").readyState == "complete") {
+                fix_height();
+                $("#rid").contentWindow.focus();
+                $("#rid").load(function () {
+                    $('body').css('background', '');
+                });
+            }
+        };
+    }
+
+    function fix_height() {
+        $("#rid").attr("height", (($(window).height()) - 5) + "px");
+       
+    }
+
+
+    function jumpQQ() {
+
+        $('#Zl').html('<iframe width="100%" id="rid" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen="true" src="https://www.weixin.com" frameborder="0"></iframe>');
+    }
+
+    function jumpDS(url) {
+ 
+        $('#Zl').html('<iframe width="100%" id="rid" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen="true" src="' + url + '" frameborder="0"></iframe>');
+        $(window).resize(function () {
+            fix_height();
+        }).resize();
+       
+    }
+
+</script>
+</body>
+
+</html>

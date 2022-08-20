@@ -1,0 +1,150 @@
+{include file="common/head"/}
+<div class="layui-fluid">
+    <div class="table-body">
+        <div class="layui-card-header">申请提现</div>
+        <div class="layui-card">
+            <form class="layui-form layui-form-pane" lay-filter="agent">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">提现金额</label>
+                    <div class="layui-input-inline from-inline-7">
+                        <input type="number" name="row[money]" id="money" lay-verify="required|number|money" lay-reqText="请输入提现金额" placeholder="{:lang('pleaseEnter')}提现金额" class="layui-input">
+                        <div class="layui-word-aux" style="padding:10px 0!important;">
+                            最低提现金额为<span class="orange">{$user->min_cash}</span>元 可提现金额为<span class="orange">{$user->balance}</span>元 提现费率 [{$user->cash_fee}%] 手续费为:<span id="fee" class="orange">0</span>元
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">实际到账</label>
+                    <div class="layui-input-inline from-inline-7">
+                        <input type="text" name="row[amount]" id="amount" readonly lay-verify="required|number" value="0" lay-reqText="请输入实际到账" placeholder="{:lang('pleaseEnter')}实际到账" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">收款方式</label>
+                    <div class="layui-input-inline from-inline-7">
+                        <select name="row[type]" lay-filter="onTypes" lay-search>
+                            <option value="1">支付宝</option>
+                            <option value="2">微信</option>
+                            <option value="3">其他</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item" id="qrcode">
+                    <label class="layui-form-label">收款码</label>
+                    <div class="layui-input-inline from-inline-7">
+                        <input type="hidden" name="row[image]" lay-verify="required" lay-reqText="请上传收款码" class="layui-input" placeholder="{:lang('pleaseEnter')}收款码" id="thumb" value="">
+                        <div class="layui-upload">
+                            <button type="button" class="layui-btn" id="onUpload" style="margin-top:10px;">上传收款码</button>
+                            <div class="layui-upload-list">
+                                <img class="layui-upload-img" width="86" height="86" src="__ADMIN__/images/default.png" id="Image">
+                                <p id="preview"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item" id="bank_name" style="display: none">
+                    <label class="layui-form-label">开户银行</label>
+                    <div class="layui-input-inline from-inline-7">
+                        <input type="text" name="row[bank]" lay-verify="required" value="0" lay-reqText="请输入开户银行" placeholder="{:lang('pleaseEnter')}开户银行" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item" id="bank_truename" style="display: none">
+                    <label class="layui-form-label">开户名</label>
+                    <div class="layui-input-inline from-inline-7">
+                        <input type="text" name="row[truename]" lay-verify="required" value="0" lay-reqText="请输入开户名" placeholder="{:lang('pleaseEnter')}开户名" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item" id="bank_bankno"  style="display: none">
+                    <label class="layui-form-label">银行账号</label>
+                    <div class="layui-input-inline from-inline-7">
+                        <input type="text" name="row[bankno]" lay-verify="required|number" value="0" lay-reqText="请输入银行账号" placeholder="{:lang('pleaseEnter')}银行账号" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">备注</label>
+                    <div class="layui-input-inline from-inline-7">
+                        <input type="text" name="row[remark]" lay-verify="required" lay-reqText="请输入提现备注" placeholder="{:lang('pleaseEnter')}提现备注" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button type="button" class="layui-btn layui-btn-lg" lay-submit="" lay-filter="submit">{:lang('submit')}</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{include file="common/foot"/}
+<script>
+var balance={$user['balance']};
+var cash_fee={$user['cash_fee']};
+layui.use(['form','upload','layedit','jquery'], function(){
+    var form = layui.form,$= layui.jquery,upload = layui.upload;
+
+    $('#money').on('input',function(e){
+        var money=e.delegateTarget.value;
+        var fee=parseFloat((parseFloat(money)*parseFloat(cash_fee))/100).toFixed(2);
+        var amount=parseFloat(money-fee).toFixed(2);
+        $('#amount').val(amount);
+        $('#fee').text(fee);
+    });
+    form.on('select(onTypes)', function(data){
+        if(data.value==3){
+            $('#qrcode').hide();
+            $('#bank_truename').show();
+            $('#bank_bankno').show();
+            $('#bank_name').show();
+        }else{
+            $('#qrcode').show();
+            $('#bank_truename').hide();
+            $('#bank_bankno').hide();
+            $('#bank_name').hide();
+        }
+    });
+    form.verify({
+        money: function(value, item){
+            if(parseFloat(value)>parseFloat(balance)){
+                return '可提现余额不足';
+            }
+        }
+    });
+    //图片上传
+    var uploadInst = upload.render({
+        elem: '#onUpload',
+        url: '{:url("UpFiles/upload")}',
+        done: function(res){
+            if(res.status===200){
+                $('#thumb').val(res.url);
+                $('#Image').attr('src',res.url);
+            }else{
+                //如果上传失败
+                return layer.msg('上传失败');
+            }
+        },
+        error: function(){
+            //演示失败状态，并实现重传
+            var preview = $('#preview');
+            preview.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-mini onReload">重试</a>');
+            preview.find('.onReload').on('click', function(){
+                uploadInst.upload();
+            });
+        }
+    });
+    form.on('submit(submit)', function (data) {
+        loading =layer.load(1, {shade: [0.1,'#fff']});
+        $.post("", data.field, function (res) {
+            layer.close(loading);
+            if (res.status===200){
+                layer.msg('申请提交成功',{time: 1000, icon: 1},function(){
+                    var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                    parent.layer.close(index);//再执行关闭
+                });
+            } else {
+                layer.msg(res.msg, {time: 1000, icon: 2});
+            }
+        });
+    })
+});
+</script>

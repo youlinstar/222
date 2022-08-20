@@ -1,0 +1,98 @@
+{include file="common/head"/}
+<div class="layui-fluid">
+    <div class="table-body">
+        <div class="layui-card-header">添加设备</div>
+        <div class="layui-card">
+            <form class="layui-form layui-form-pane" lay-filter="agent">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">设备名称</label>
+                    <div class="layui-input-inline from-inline-3">
+                        <input type="text" name="row[name]" lay-verify="required" lay-reqText="请输入设备名称" placeholder="{:lang('pleaseEnter')}设备名称" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">设备ID</label>
+                    <div class="layui-input-inline from-inline-3">
+                        <input type="text" name="row[device_id]" lay-verify="required" lay-reqText="请输入设备ID" placeholder="{:lang('pleaseEnter')}设备ID" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">设备标签</label>
+                    <div class="layui-input-inline from-inline-2">
+                        <select name="row[tags_id]" lay-filter="tags">
+                            {volist name="tags" id="v"}
+                                <option value="{$v.id}">{$v.name}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item" id="area-picker">
+                    <label class="layui-form-label">所在地区</label>
+                    <div class="layui-input-inline from-inline-5">
+                        <div class="layui-input-inline" style="width:150px;">
+                            <select name="row[province_id]" class="province-selector" lay-filter="province">
+                                <option value="0">请选择省</option>
+                            </select>
+                        </div>
+                        <div class="layui-input-inline" style="width:150px;">
+                            <select name="row[city_id]" class="city-selector" lay-filter="city">
+                                <option value="0">请选择市</option>
+                            </select>
+                        </div>
+                        <div class="layui-input-inline" style="width:150px;">
+                            <select name="row[county_id]" class="county-selector" lay-filter="county">
+                                <option value="0">请选择区</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">所在地址</label>
+                    <div class="layui-input-inline from-inline-3">
+                        <input type="text" name="row[address]" lay-verify="required" placeholder="{:lang('pleaseEnter')}设备所在地址" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">状态</label>
+                    <div class="layui-input-inline from-inline-3">
+                        <input type="checkbox" name="row[status]" lay-skin="switch" value="1" checked lay-text="启用|禁用">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button type="button" class="layui-btn" lay-submit="" lay-filter="submit">{:lang('submit')}</button>
+                        <a href="{:url('index')}" class="layui-btn layui-btn-primary">{:lang('back')}</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{include file="common/foot"/}
+<script>
+layui.config({
+    base: '__STATIC__/layuiadmin/mods/',
+    version: '1.0'
+});
+layui.use(['form','layarea','upload'], function(){
+    var form = layui.form,$= layui.jquery,layarea = layui.layarea;
+
+    layarea.render({
+        elem:'#area-picker'
+    });
+
+    form.on('submit(submit)', function (data) {
+        loading =layer.load(1, {shade: [0.1,'#fff']});
+        $.post("", data.field, function (res) {
+            layer.close(loading);
+            if (res.status===200){
+                layer.msg('设备添加成功',{time: 1000, icon: 1},function(){
+                    location.href = '{:url("index")}';
+                });
+            } else {
+                layer.msg(res.msg, {time: 1000, icon: 2});
+            }
+        });
+    })
+});
+</script>

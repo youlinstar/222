@@ -1,0 +1,59 @@
+{include file="common/head"/}
+<style>
+    .layui-row{
+        padding:0;
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .layui-col-md3{
+        width:24%;
+        margin:10px 0;
+    }
+    .layui-thumb{
+        margin-bottom:15px;
+    }
+</style>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space10">
+        {foreach $list as $k=>$v}
+            <div class="layui-col-md3">
+                <div class="layui-card">
+                    <div class="layui-card-header">{$v.title}</div>
+                    <div class="layui-card-body">
+                        <form class="layui-form">
+                            <div class="layui-thumb">
+                                <img src="{$v.thumb}" width="100%" height="240px"/>
+                            </div>
+                            <input type="hidden" name="row[id]" value="{$v.id}">
+                            {if ($user->view_id==$v['id'])}
+                                <button class="layui-btn layui-btn-lg layui-btn-disabled layui-btn-fluid">当前模板</button>
+                            {else/}
+                                <button class="layui-btn layui-btn-lg layui-btn-normal layui-btn-fluid" lay-submit="" lay-filter="submit">切换到模板</button>
+                            {/if}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {/foreach}
+    </div>
+</div>
+{include file="common/foot"/}
+<script>
+layui.use(['form','jquery'], function(){
+    var form = layui.form,$= layui.jquery;
+    form.on('submit(submit)', function (data) {
+        loading =layer.load(1, {shade: [0.1,'#fff']});
+        $.post("", data.field, function (res) {
+            layer.close(loading);
+            if (res.status===200){
+                layer.msg('切换成功',{time: 1000, icon: 1},function(){
+                    var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                    parent.layer.close(index);//再执行关闭
+                });
+            } else {
+                layer.msg(res.msg, {time: 1000, icon: 2});
+            }
+        });
+    })
+});
+</script>

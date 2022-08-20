@@ -1,0 +1,45 @@
+{include file="common/head"/}
+<div class="layui-fluid">
+    <div class="table-body">
+        <div class="layui-card-header">{$title}</div>
+        <div class="layui-card">
+            <form class="layui-form layui-form-pane" lay-filter="groups">
+                <input type="hidden" name="id" value="0"/>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">用户组名</label>
+                    <div class="layui-input-inline from-inline-3">
+                        <input type="text" name="title" lay-verify="required" placeholder="{:lang('pleaseEnter')}用户组名" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button type="button" class="layui-btn" lay-submit="" lay-filter="submit">{:lang('submit')}</button>
+                        <a href="{:url('admingroup')}" class="layui-btn layui-btn-primary">{:lang('back')}</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{include file="common/foot"/}
+<script>
+layui.use(['form', 'layer'], function () {
+    var form = layui.form, layer = layui.layer,$= layui.jquery;
+    var info={$info|raw};
+    form.val('groups',info);
+    form.render();
+    form.on('submit(submit)', function (data) {
+        loading = layer.load(1,{shade:[0.1,'#fff']});
+        $.post("", data.field, function (res) {
+            layer.close(loading);
+            if (res.status==200) {
+                layer.msg(res.msg, {time: 1800, icon: 1}, function () {
+                    location.href = res.url;
+                });
+            } else {
+                layer.msg(res.msg, {time: 1800, icon: 2});
+            }
+        });
+    })
+});
+</script>

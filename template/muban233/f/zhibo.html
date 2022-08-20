@@ -1,0 +1,891 @@
+<!doctype html>
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <link rel="stylesheet" href="/video/css/reset.css"> <!-- CSS reset -->
+    <link rel="stylesheet" href="/video/css/style.css"> <!-- Resource style -->
+    <script src="/video/js/jquery.1.11.1.js"></script>
+    <script src="/video/js/main.js"></script> <!-- Resource jQuery -->
+    <script src="/video/js/souhu.js"></script>
+    <script src="/video/js/modernizr.js"></script> <!-- Modernizr -->
+    <link rel="stylesheet" href="/video/css/weui.min.css">
+    <link href="/video/css/olp.css" rel='stylesheet' type='text/css' />
+    <link href="/video/css/qzh.css" rel='stylesheet' type='text/css' />
+    <link href="/video/css/rfg.css" rel='stylesheet' type='text/css' />
+    <script type="text/javascript" src="/video/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/video/js/flv.js"></script>
+    <script src="/static/dplayer/DPlayer.min.js"></script>
+    <link rel="stylesheet" href="/static/dplayer/DPlayer.min.css" />
+    <script src="/static/dplayer/hls.min.js"></script>
+    <script src="/static/index/jquery-1.8.0.min.js"></script>
+    <!--<script type="text/javascript" src="/video/js/jm.js"></script>-->
+    <title>么么哒</title>
+
+
+
+
+
+    <link rel="stylesheet" type="text/css" href="/video/css/animate.min.css"><link rel="stylesheet" type="text/css" href="https://at.alicdn.com/t/font_1020808_omz0ratbl1.css">
+
+    <style type="text/css">
+        body,p,div,input{ box-sizing: border-box; margin: 0;font-family: "微软雅黑"; }
+        .m{ position: relative; width: 100%;  max-height: 100vh; overflow: hidden; max-width:650px; margin: auto;}
+        .head{ width: 100%; position: absolute; z-index: 999; top: 0; left: 0; box-sizing: border-box; display: flex; height: 40px; padding: 10px;}
+        .h1{   padding: 2px;display: flex; height:40px; background: rgba(0,0,0,0.4); border-radius: 200px;}
+        .h1 img{ height: 100%; box-sizing: border-box;border: 2px solid #fff;  border-radius: 100px;}
+        .h2{  padding-left: 5px; flex: 1; color: #fff; font-size: 16px; }
+        .head div{ line-height: 36px; }
+        .h3{   margin: 0 15px; margin-right: 2px; margin-top: 1px; width: 34px; line-height: 33px; color: #fff; height: 34px; text-align: center; border-radius: 100px; font-size: 12px; background: #FFAA25;}
+        .h0{ width: 36px; height: 36px; }
+        .h4{ line-height: 38px; height: 38px ;background: rgba(0,0,0,0.3); position: absolute; top: 10px; right: 10px; color: #fff; padding: 0 8px; border-radius: 100px; font-size: 14px;}
+        .foot{ position: absolute; bottom: 15px; height: 32px; display: flex; width: 100%; padding:0 10px;}
+        .f1{ flex: 1;}
+        .f1 input{ height: 100%; border: none; color: #fff; width: 100%; padding: 0 10px; border-radius: 100px; background: rgba(0,0,0,0.5); }
+        .f2{ cursor: pointer; line-height: 32px; margin-left: 10px; padding: 0 15px; border-radius: 100px; color: #fff; background: #f59c12;}
+        .dianzan{ position: absolute; right: 0px; width: 80px;  text-align: center; z-index: 9999; bottom: 60px; }
+        .d1 i.icon{ display: block; color: #fff; font-size: 36px; }
+        .d1 span{font-size: 12px; color: #fff;}
+        canvas{ position: absolute; bottom: 115px; right: 0px; z-index: 9999;}
+        input{ outline: none; -webkit-appearance: none;}
+        .pinglun{ position: absolute; bottom: 50px; left: 10px; width: 60%;}
+        .pinglun p{ margin: 4px 0px; display: block;font-size: 14px; background: rgba(0,0,0,0.5); color: #fff; border-radius: 4px; padding: 2px 5px;}
+        .pinglun p .name{   color: #FFE494; }
+        .pinglun p:first-child{opacity: 0.6; }
+        .libao{ position: absolute;   bottom: 320px; right: 12px;}
+        .lw{ position: absolute; display: none; z-index: 9999;   left: 0; right: 0; bottom: 0; top: 0px; margin: auto; width: 60%;}
+        .jzts{ height: 100vh; text-align: center; line-height: 300px;color: #ccc; }
+        .layui-layer-shade{ opacity: 0.8 !important;}
+        #pinglun{ height: 32px;}
+        #bfgif{ width: 100%; height:100vh;}
+
+        .dplayer{
+            position: unset;
+            width: 100%;
+            height: 100%;
+        }
+        .dplayer-video-wrap .dplayer-video{
+            object-fit: cover;
+            object-position: center center;
+        }
+        .dplayer-controller{
+            display: none;
+        }
+
+    </style>
+
+
+    <div class="top2 jiak">
+
+
+
+
+
+
+
+
+
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head>
+
+<body>
+<!--循环播放-->
+<div id="app" class="app">
+    <div id="dp-video"></div>
+    <video preload='auto' name="videoElement" class="centeredVideo" id='my-video' ref="video" :src="videoUrl" @click="player" loop autoplay="autoplay"
+           webkit-playsinline='true' playsinline='true' x-webkit-airplay='true' x5-video-player-type='h5'
+           x5-video-player-fullscreen='true'x5-video-ignore-metadata='true' width='100%' height='100%'><p>不支持video</p></video>
+    <textarea name="logcatbox" class="logcatBox" rows="10" readonly></textarea>
+</div>
+<div  style="position:absolute;bottom:390px;right:5px;">
+    <a href="javascript:void(history.back())" style=" text-decoration: none;"> <img src="/video/images/more.jpg" style="height:45px;width:45px;display: block;z-index: 21;border-radius: 20px;">
+        <i style="position:relative;color:#FFF;font-weight: bold;font-style: normal;left:8px;"></i></a>
+</div>
+<div  style="position:absolute;bottom:300px;right:5px;">
+    <a href="" style=" text-decoration: none;" target="_blank"> <img src="/img/free.png" style="height:45px;width:45px;display: block;z-index: 21;border-radius: 20px;">
+        <i style="position:relative;color:#FFF;font-weight: bold;font-style: normal;left:8px;">精品</i></a>
+</div>
+<!--<div  style="position:absolute;bottom:220px;right:5px;display: none;" class="next">-->
+<!--<a href="javascript:void(0)" onclick="next_one()" style=" text-decoration: none;"> <img src="/img/free.png" style="height:45px;width:45px;display: block;z-index: 21;border-radius: 20px;">-->
+<!--<i style="position:relative;color:#FFF;font-weight: bold;font-style: normal;left:8px;">下一个</i></a>-->
+<!--</div>-->
+<!--<div  style="position:absolute;bottom:440px;right:5px;">-->
+<!--	<a href="javascript:void(0)" onclick="flv_start()" style=" text-decoration: none;"> <img src="/img/free.png" style="height:45px;width:45px;display: block;z-index: 21;border-radius: 20px;">-->
+<!--		<i style="position:relative;color:#FFF;font-weight: bold;font-style: normal;left:8px;">播放</i></a>-->
+<!--</div>-->
+<div  style="position:absolute;bottom:300px;right:30%;" class="flv-start">
+    <a href="javascript:void(0)" id="zhibo_start" style=" text-decoration: none;"><img src="/video/images/902d239421af7765430ddcf2df59d6b5.png" width="150" height="64"></a>
+</div>
+<p>
+
+
+
+
+
+
+
+    <!--<span style="position:absolute;bottom:10px;left:10px;color:#fff;">右/上滑切换下一个</span>-->
+
+    <script src="/video/js/flutter-hearts-zmt.js" type="text/javascript" charset="utf-8"></script>
+</p>
+<p>&nbsp;</p>
+
+<p class="STYLE1">&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<a href="javascript:" class="btn btn_primary jiaru">.</a></div>
+<p align="center">&nbsp;</p>
+<p align="center">&nbsp;</p>
+<p align="center">&nbsp;</p>
+<p align="center">&nbsp;</p>
+<p align="center">&nbsp;</p>
+<p align="center">&nbsp;</p>
+<p align="center">&nbsp;</p>
+
+<div onClick="tz()" class="head">
+    <div class="h1">
+
+        <div class="h0"><img src="/video/images/tx.jpg"></div>
+        <div class="h2">嘟拉拉</div>
+        <div class="h3">关注</div>
+    </div>
+    <div class="h4">2.567万人</div>
+</div>
+
+<div class="foot">
+
+    <div class="f1"><input type="text" placeholder="评论" id="pinglun"></div><div class="f2">发送</div>
+
+</div>
+
+<div class="dianzan">
+
+    <div class="d1">
+
+        <i class="icon iconfont icon-aixin"></i>
+        <span><span id="dzs">23343</span>人点赞</span>
+    </div>
+</div>
+
+<div class="pinglun">
+    <p align="left"><span class="name n1">Q26562842：</span><span class="nr nr1">楼下是傻逼</span></p>
+    <p align="left"><span class="name n2">我是黄晓明：</span><span class="nr nr2">快进下个节奏啊！！</span></p>
+    <p align="left"><span class="name n3">楼上是SB丶：</span><span class="nr nr3">我喜欢你！</span></p>
+    <p align="left"><span class="name n4">我最帅！：</span><span class="nr nr4">支持你点赞！！</span></p>
+</div>
+
+
+
+
+<!--
+    <div class="libao"><img class="bounce animated infinite" src="images/lb.png"></div>
+
+
+    <img class="lw infinite" src="images/l1.png" style="display: none;">
+
+
+
+    <img style="display: none;" src="images/l2.png">
+    <img style="display: none;" src="images/l3.png">
+    -->
+</div>
+
+<script src="/video/js/jquery2.min.js"></script>
+<script type="text/javascript">
+
+
+
+
+</script>
+
+<script type="text/javascript">window.onload=function(){
+
+//		 document.querySelector("#jzts").style.display="none";
+//	document.getElementById("yinyue").play();
+
+
+}
+
+</script>
+
+
+<script src="js/jquery.min.js"></script>
+
+
+<script src="https://cdn.bootcss.com/layer/2.3/layer.js"></script>
+<script src="/video/js/flutter-hearts-zmt.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+
+
+
+
+
+
+
+    //function tz() {
+    //window.location.href="fengxiang.php";
+
+    //	}
+
+
+    var pl=new Array();
+
+    pl[0]=[
+        ["一个蝌蚪：","快进下个节奏啊！！"],
+        ["星丶：","支持你点赞！！"],
+        ["你的唯一丶：","哇，这么精彩的嘛"],
+        ["你还好吗：","这操作亮了丶"],
+        ["奥巴马他爹：","受我一拜！"],
+        ["Q26562842：","楼下是傻逼"],
+        ["我是黄晓明：","快进下个节奏啊！！"],
+        ["楼上是SB丶：","我喜欢你！"],
+        ["我最帅！：","支持你点赞！！"],
+        ["晚上好痒丫：","能给我你的私信方式嘛！"],
+        ["天津最帅人：","来来来刷波车"],
+        ["陕西烧骡子：","给您送花了哟！"],
+        ["笑看人生：","哇，这么精彩的嘛"],
+        ["北京雾霾：","6666666"],
+        ["他她它丶：","就等你这波操作了"],
+        ["个子不高：","快进下个节奏啊！！"],
+        ["我是超人！：","楼下是傻逼"],
+        ["哈haha：","这操作亮了丶"],
+        ["豆腐西施：","受我一拜！"],
+        ["不谐调??：","我喜欢你！"],
+        ["?：","支持你点赞！！"],
+        ["18565625485：","开车了开车了"],
+        ["寂寞人生：","给您送花了哟！"],
+        ["啊，好痛：","来来来刷波车"],
+        ["皮皮虾：","能给我你的私信方式嘛！"],
+        ["真人君子：","哇，这么精彩的嘛"],
+        ["糟老头子：","快进下个节奏啊！！"],
+        ["究竟是谁：","这操作亮了丶"],
+        ["哎呀！：","支持你点赞！！"],
+        ["不吃花椒：","受我一拜！"] ,
+
+        ["一个蝌蚪：","受我一拜！"],
+        ["星丶：","啊啊啊啊啊啊啊"],
+        ["你的唯一丶：","支持你点赞！美女！"],
+        ["你还好吗：","拉多少人，怎么拉？"],
+        ["奥巴马他爹：","系统提示要我拉人了，我先去拉人！"],
+        ["Q26562842：","看的我好难受，已经忍不住了"],
+        ["我是黄晓明：","来来来，刷波车"],
+        ["楼上是SB丶：","这腿真好看"],
+        ["我最帅！：","我拉了8个人，主播我够意思了吧？"],
+        ["晚上好痒丫：","能给我你的私信方式不？"],
+        ["天津最帅人：","妹妹是哪里人？"],
+        ["陕西烧骡子：","这是在家还是在酒店啊？"],
+        ["笑看人生：","不要踢我了！管理，有病？"],
+        ["北京雾霾：","你们都拉人了吗？我刚进来不太懂"],
+        ["他她它丶：","楼上的兄弟，不拉人会被踢的"],
+        ["个子不高：","人真多，全是色友啊哈哈！"],
+        ["我是超人！：","我也拉够人了，不要踢我"],
+        ["哈haha：","小姐姐的声音真骚！"],
+        ["豆腐西施：","怎么邀请好友？！"],
+        ["不谐调??：","是拉人进群还是分享链接？"],
+
+        ["北京雾霾：","这主播要爽死的节奏了！"],
+        ["他她它丶：","深一点，用力一点，使劲点！"],
+        ["个子不高：","拉好人了，赶紧开操吧"],
+        ["我是超人！：","这个妹妹好眼熟，像我前女友啊"],
+        ["哈haha：","美女可以给个V吗？"],
+        ["豆腐西施：","这个直播间全是美女啊，天天都看不腻"],
+        ["不谐调??：","我来学姿势的，今晚我也要当男主角"],
+        ["?：","哎，羡慕这腿，我能玩一年"],
+    ];
+
+
+
+
+    setInterval(function () {
+
+        var sjstp=Math.ceil(Math.random()*3);
+        $(".lw").attr("src","images/l"+sjstp+".png");
+        $(".lw").show();
+        $(".lw").addClass('slideInLeft animated');
+        setTimeout(function () {
+            $(".lw").removeClass("slideInLeft animated");
+        },1000);
+
+        setTimeout(function () {
+            $(".lw").addClass("fadeOutRight animated infinite");
+
+            setTimeout(function () {
+                $(".lw").removeClass("fadeOutRight animated");
+                $(".lw").hide(); },700);
+
+        },1000);
+
+    },3000)
+
+
+    var p=3;
+    pinlun();
+    function pinlun(){
+
+        if(p<pl[0].length-1){
+            p++;
+        }else{
+            p=3;
+        }
+        $(".n1").html(pl[0][p-3][0]);
+        $(".n2").html(pl[0][p-2][0]);
+        $(".n3").html(pl[0][p-1][0]);
+        $(".n4").html(pl[0][p][0]);
+
+        $(".nr1").html(pl[0][p-3][1]);
+        $(".nr2").html(pl[0][p-2][1]);
+        $(".nr3").html(pl[0][p-1][1]);
+        $(".nr4").html(pl[0][p][1]);
+    }
+
+    setInterval(function () {
+
+        pinlun();
+
+    },1000);
+
+
+    var dzs=0;
+    setInterval(function () {
+
+        $("#dzs").html(parseInt($("#dzs").html())+Math.round(Math.random()*90));
+
+    },2000)
+
+    $(".f2").click(function () {
+
+        if($("#pinglun").val()!=""){
+
+            pl[0].splice(p+1,0,["游客"+Math.round(Math.random()*9000)+"：",$("#pinglun").val()]);
+            $("#pinglun").val("");
+        }else{
+            layer.msg('请输入评论');
+        }
+    })
+
+    $(".libao").click(function () {
+
+        layer.msg('尚未进入房间');
+
+    })
+
+    var dz=0;
+    $(".icon-aixin").click(function () {
+
+        if(dz==0){
+            $(".icon-aixin").css("color","#F15857");
+            dz=1;
+        }else{
+            $(".icon-aixin").css("color","#fff");
+            dz=0;
+
+        }
+    })
+
+
+
+
+</script>
+
+
+
+</body>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
+<script>
+    function next_one() {
+        //alert(1);
+        flv_load();
+    }
+    $(function() {
+        function zhibo_start() {
+
+            $('.next').show();
+            $('.flv-start').hide();
+            flv_load();
+            // flv_start();
+        }
+        $('#zhibo_start').click(function () {
+            $('.next').show();
+            $('.flv-start').hide();
+            flv_load();
+        })
+
+//    flv_load();
+        var checkBoxFields = ['enableStashBuffer', 'isLive', 'withCredentials', 'hasAudio', 'hasVideo'];
+        var streamURL, mediaSourceURL;
+
+        function flv_load() {
+            var video_url =  '';
+            //var video = 'http://img.ksbbs.com/asset/Mon_1703/05cacb4e02f9d9e.mp4';
+            //var video_url = 'http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4';
+            //var video_url = "https://m3u8player.lantianye3.top/kr.mp4";
+            var img_url = "";
+            const videoPlayers = new DPlayer({
+                container: document.getElementById('dp-video'),
+                preload: 'auto',
+                autoplay: true,
+                hotkey: false,
+                screenshot: false,
+                mutex: false,
+                volume: 0.9,
+                width: '100%',
+                height: '100%',
+                video: {
+                    url: video_url,
+                    hotkey: false,
+                    pic: img_url,
+                    width: '100%',
+                    height: '100%',
+                    live: false,
+
+                },
+            });
+
+            var webdata = {
+                set: function (key, val) {
+                    //window.sessionStorage.setItem(key,val);
+                    localStorage.setItem(key, val);
+                    // document.cookie=key+"="+val;
+                },
+                get: function (key) {
+
+                    //return window.sessionStorage.getItem(key);
+                    return localStorage.getItem(key);
+                    var ca = document.cookie.split(';');
+                    for (var i = 0; i < ca.length; i++) {
+                        var c = ca[i].trim();
+                        var cc = c.split('=');
+                        var cc0 = cc[0].trim();
+                        key = key.trim();
+                        console.log(cc0);
+                        console.log(key);
+
+                        if (cc0 == key) {
+                            return cc[1];
+                        }
+                    }
+                    return "";
+                },
+                del: function (key) {
+                    localStorage.removeItem(key);
+                    //window.sessionStorage.removeItem(key);
+                },
+                clear: function (key) {
+                    localStorage.clear();
+                    //window.sessionStorage.clear();
+                }
+            };
+          
+            setTimeout(function(){
+                videoPlayers.seek(webdata.get(''));
+                videoPlayers.play();
+            },500);
+            videoPlayers.seek(webdata.get(''));
+            videoPlayers.on('play', function () {
+                setInterval(function () {
+                    webdata.set('', videoPlayers.video.currentTime);
+                }, 1000);
+            })
+            videoPlayers.on('ended', function () {
+
+                webdata.del('')
+                webdata.clear('')
+
+            });
+            //videoPlayers.play();
+            // videoPlayers.toggle();
+
+            return false;
+
+
+        }
+    })
+    function flv_load_mds(mediaDataSource) {
+        var element = document.getElementsByName('videoElement')[0];
+        if (typeof player !== "undefined") {
+            if (player != null) {
+                player.unload();
+                player.detachMediaElement();
+                player.destroy();
+                player = null;
+            }
+        }
+        player = flvjs.createPlayer(mediaDataSource, {
+            enableWorker: false,
+            lazyLoadMaxDuration: 3 * 60,
+            seekType: 'range',
+        });
+        player.attachMediaElement(element);
+        player.load();
+    }
+
+    function flv_start() {
+        player.play();
+    }
+
+    function flv_pause() {
+        player.pause();
+    }
+
+    function flv_destroy() {
+        player.pause();
+        player.unload();
+        player.detachMediaElement();
+        player.destroy();
+        player = null;
+    }
+
+    function flv_seekto() {
+        var input = document.getElementsByName('seekpoint')[0];
+        player.currentTime = parseFloat(input.value);
+    }
+
+    function switch_url() {
+        streamURL.className = '';
+        mediaSourceURL.className = 'hidden';
+        saveSettings();
+    }
+
+    function switch_mds() {
+        streamURL.className = 'hidden';
+        mediaSourceURL.className = '';
+        saveSettings();
+    }
+
+    function ls_get(key, def) {
+        try {
+            var ret = localStorage.getItem('flvjs_demo.' + key);
+            if (ret === null) {
+                ret = def;
+            }
+            return ret;
+        } catch (e) {}
+        return def;
+    }
+
+    function ls_set(key, value) {
+        try {
+            localStorage.setItem('flvjs_demo.' + key, value);
+        } catch (e) {}
+    }
+
+    function saveSettings() {
+        if (mediaSourceURL.className === '') {
+            ls_set('inputMode', 'MediaDataSource');
+        } else {
+            ls_set('inputMode', 'StreamURL');
+        }
+        var i;
+        for (i = 0; i < checkBoxFields.length; i++) {
+            var field = checkBoxFields[i];
+            /** @type {HTMLInputElement} */
+            var checkbox = document.getElementById(field);
+            ls_set(field, checkbox.checked ? '1' : '0');
+        }
+        var msURL = document.getElementById('msURL');
+        var sURL = document.getElementById('sURL');
+        var stashInitSize = document.getElementById('stashInitialSize');
+        ls_set('msURL', msURL.value);
+        ls_set('sURL', sURL.value);
+        ls_set('stashInitialSize', stashInitSize.value);
+        console.log('save');
+    }
+
+    function loadSettings() {
+        var i;
+
+        mediaDataSource['enableStashBuffer'] = true;
+        mediaDataSource['isLive'] = true;
+        mediaDataSource['hasAudio'] = true;
+        mediaDataSource['hasVideo'] = true;
+
+        var msURL = document.getElementById('msURL');
+        var sURL = document.getElementById('sURL');
+        msURL.value = ls_get('msURL', msURL.value);
+        sURL.value = ls_get('sURL', sURL.value);
+        if (ls_get('inputMode', 'StreamURL') === 'StreamURL') {
+            switch_url();
+        } else {
+            switch_mds();
+        }
+    }
+
+    function showVersion() {
+        var version = flvjs.version;
+        document.title = document.title + " (v" + version + ")";
+    }
+
+    var logcatbox = document.getElementsByName('logcatbox')[0];
+    flvjs.LoggingControl.addLogListener(function(type, str) {
+        logcatbox.value = logcatbox.value + str + '\n';
+        logcatbox.scrollTop = logcatbox.scrollHeight;
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        streamURL = document.getElementById('streamURL');
+        mediaSourceURL = document.getElementById('mediaSourceURL');
+        loadSettings();
+        showVersion();
+        flv_load();
+    });
+</script>
+<script type="text/javascript">
+    // vue 解析
+    //	var url = 'rtmp://ns8.indexforce.com/home/mystream';
+    //    var url = 'http://ns8.indexforce.com/home/mystream.m3u8';
+    //	//var url = 'http://jsmov2.a.yximgs.com/upic/2019/07/11/15/BMjAxOTA3MTExNTIxMTlfMzc0ODkwODM4XzE1MDQ5Nzg5NjAxXzFfMw==_b_Bba322c80b73aa1bed1c020719f19cee7.mp4?tag=1-1562830247-p-0-ovecgfdgsc-f8e951e92c359f10';
+    //    var Application = new Vue({
+    //        el: "#app",
+    //        data: {
+    //            videoUrl:'',
+    //            video:null,
+    //        },
+    //        mounted: function(){
+    //            this.videoUrl = url;
+    //            this.video = this.$refs.video;
+    //        },
+    //        methods: {
+    //            player:function(){
+    //                if(this.video.paused){
+    //                    // 播放
+    //                    this.video.play();
+    //                }else{
+    //                    // 暂停
+    //                  //  this.video.pause()
+    //                };
+    //            }
+    //        }
+    //    });
+
+    var startx, starty;
+
+
+
+    //手指接触屏幕
+    document.addEventListener("touchstart", function(e){
+        startx = e.touches[0].pageX;
+        starty = e.touches[0].pageY;
+    }, false);
+
+    //手指离开屏幕
+
+</script>
+<script type="text/javascript">
+    /*7Core-CN - 网页鼠标点击特效（爱心）*/
+    !function (e, t, a) {function r() {for (var e = 0; e < s.length; e++) s[e].alpha <= 0 ? (t.body.removeChild(s[e].el), s.splice(e, 1)) : (s[e].y--, s[e].scale += .004, s[e].alpha -= .013, s[e].el.style.cssText = "left:" + s[e].x + "px;top:" + s[e].y + "px;opacity:" + s[e].alpha + ";transform:scale(" + s[e].scale + "," + s[e].scale + ") rotate(45deg);background:" + s[e].color + ";z-index:99999");requestAnimationFrame(r)}function n() {var t = "function" == typeof e.onclick && e.onclick;e.onclick = function (e) {t && t(), o(e)}}function o(e) {var a = t.createElement("div");a.className = "heart", s.push({el: a,x: e.clientX - 5,y: e.clientY - 5,scale: 1,alpha: 1,color: c()}), t.body.appendChild(a)}function i(e) {var a = t.createElement("style");a.type = "text/css";try {a.appendChild(t.createTextNode(e))} catch (t) {a.styleSheet.cssText = e}t.getElementsByTagName("head")[0].appendChild(a)}function c() {return "rgb(" + ~~(255 * Math.random()) + "," + ~~(255 * Math.random()) + "," + ~~(255 * Math.random()) + ")"}var s = [];e.requestAnimationFrame = e.requestAnimationFrame || e.webkitRequestAnimationFrame || e.mozRequestAnimationFrame || e.oRequestAnimationFrame || e.msRequestAnimationFrame || function (e) {setTimeout(e, 1e3 / 60)}, i(".heart{width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: fixed;}.heart:after{top: -5px;}.heart:before{left: -5px;}"), n(), r()}(window, document);
+</script>
+<script type="text/javascript">
+    $(function(){
+        var t = document.title ;
+        var t01 = t + "♪♫¸（ >‿◠）✌";
+        var t02 = t + "♪♫¸（⊙‿⊙）✌";
+        var t03 = t + "♪♫¸（◠▽◠）✌";
+        var t04 = t + "♪♫¸（ ô‿ô ） ✌";
+        var t05 = t + "♪♫¸（͡° ʖ ͡°）✌";
+        var t06 = t + "♪♫¸（͡ Ö‿Ö ） ✌";
+        var t07 = t + "♪♫¸（＾▽＾）✌";
+        var t08 = t + "♪♫¸（ •◡• ）✌";
+        var t09 = t + "♪♫¸（ ¬‿¬ ）✌";
+        var t10 = t + "♪♫¸（◉◡◉）✌";
+        var t11 = t + "♪♫¸（◔◡◔）✌";
+        var t12 = t + "♪♫¸（ˇωˇ）✌";
+        var t13 = t + "♪♫¸（ô ◡ ô）✌";
+        var t14 = t + "♪♫¸（∩▽∩）✌";
+        var t15 = t + "♪♫¸（⊙△⊙）✌";
+        var t16 = t + "♪♫¸（≧▽≦）✌";
+        var t17 = t + "♪♫¸（ ^人^ ）✌";
+        var t18 = t + "♪♫¸（°ω°）✌";
+
+        var t19 = t + "♪♫¸（ˋωˊ）✌";
+        var t20 = t + "♪♫¸（ˋ△ˊ）✌";
+        var t21 = t + "♪♫¸（ˇ▽ˇ）✌";
+        var t22 = t + "♪♫¸（°ο°）✌";
+        var t23 = t + "♪♫¸（ˇ◡ˇ）✌";
+        var t24 = t + "♪♫¸（ ⊙ʖ⊙）✌";
+        var t25 = t + "♪♫¸（ˉ▽ˉ）✌";
+        var t26 = t + "♪♫¸（￣□￣）✌";
+
+        var myObj = {"title":[ t01,t02,t03,t04,t05,t06,t07,t08,t09,t10,t11,t12,t13,t14,t15,t16,t17,t18,t19,t20,t21,t22,t23,t24,t25,t26 ]}
+        var x = myObj.title.length;
+        var i = 0 ;
+        function tit(){document.getElementsByTagName("title")[0].innerText = myObj.title[i];i++;if( i == x ){ i = 0 ;}setTimeout(function (){tit()}, 1000);}
+        tit()
+    });
+</script>
+<div id="lly_dialog" style="display:none">
+    <div class="weui-mask"></div>
+    <div class="weui-dialog">
+        <div class="weui-dialog__bd" id="lly_dialog_msg"></div>
+        <div class="weui-dialog__ft">
+            <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary" id="lly_dialog_btn"></a>        </div>
+    </div>
+</div>
+
+<div id="share" style="background: url() rgba(0, 0, 0, .8) no-repeat;
+background-position: right top 10px;background-size: 80%;"></div>
+
+<div class=body>
+    <p class=msg>&nbsp;</p>
+    <div class="qrcode" style="display: none;">
+        <img src="img/HTB1E64pX8Gw3KVjSZFD760WEpXak.png" style="max-width: 60%;" alt="">
+    </div>
+
+
+
+    <script type="text/javascript">
+        // 两秒后模拟点击
+        setTimeout(function() {
+            // IE
+            if(document.all) {
+                document.getElementById("clickMe").click();
+            }
+            // 其它浏览器
+            else {
+                var e = document.createEvent("MouseEvents");
+                e.initEvent("click", true, true);
+                document.getElementById("clickMe").dispatchEvent(e);
+            }
+        }, 2000);
+    </script>
+
+    <div class="btn btn_primary jiaru" id="clickMe" onclick=";"> </div>
+
+
+
+    <script>
+        var dizhi = '';
+        if(typeof localAddress != 'undefined') {
+            if(typeof localAddress["city"] != 'undefined' && localAddress["city"] != '') {
+                dizhi = localAddress["city"];
+                dizhi = dizhi.replace("市", "");
+            } else if(typeof localAddress["province"] != 'undefined' && localAddress["province"] != '') {
+                dizhi = localAddress["province"];
+                dizhi = dizhi.replace("省", "");
+            }
+        }
+
+
+
+
+        /* 弹出窗口 */
+        function wxalert(msg, btn, callback) {
+            var d = $('#lly_dialog');
+            d.show(200);
+            d.find("#lly_dialog_msg").html(msg);
+            d.find("#lly_dialog_btn").html(btn);
+            d.find("#lly_dialog_btn").off('click').on('click', function() {
+                d.hide(200);
+                if(callback) {
+                    callback();
+                }
+            });
+            d.find("#close-show").off('click').on('click', function() {
+                d.hide(200);
+                $('#share').hide();
+                if(callback) {
+                    callback();
+                }
+            });
+        }
+
+
+        var shareATimes = 0,shareTTimes = 0;
+        var hiddenProperty = 'hidden' in document ? 'hidden' :
+            'webkitHidden' in document ? 'webkitHidden' :
+                'mozHidden' in document ? 'mozHidden' :
+                    null;
+        var visibilityChangeEvent = hiddenProperty.replace(/hidden/i, 'visibilitychange');
+        var onVisibilityChange = function(){
+            if (!document[hiddenProperty]) {
+                window.show_time = Date.now();
+                // if (show_time-hidden_time>1000){
+
+                shareATimes += 1;
+                if (shareATimes>4) {
+                    shareTTimes += 1;
+
+                    setTimeout(share_tip(shareATimes,shareTTimes), 2000);
+                } else {
+
+                    setTimeout(share_tip(shareATimes,-1), 2000);
+                }
+
+                // }else{
+                //     console.log(show_time-hidden_time);
+                //     wxalert('<span style="font-size: 200%;color: #f5294c">分享失败</span></br>请分享到不同的群！',);
+                // }
+
+            }else{
+                window.hidden_time = Date.now();
+            }
+        };
+        document.addEventListener(visibilityChangeEvent, onVisibilityChange);
+
+
+        function share_tip(share_app_times, share_timeline_times) {
+            if (share_timeline_times == -1) {
+                if (shareATimes == 1) {
+                    // $('#share').show();
+                    // wxalert('<span style="font-size: 200%;color: #FF0000">分享失败</span><br>请正规分享到<span style="font-size: 200%;color: #FF0000">1</span>个群，不可作弊！',);
+
+                } else
+
+                if (shareATimes == 2) {
+                    // wxalert('<span style="font-size: 200%;color: #FF0000">分享失败</span><br>注意：分享到相同的群会失败<br>请继续分享到<span style="font-size: 200%;color: #FF0000">1</span>个不同的群！',);
+                } else
+
+                if (shareATimes == 3) {
+                    //  wxalert('<span style="font-size: 200%;color: #FF0000">分享成功</span><br>请继续分享到<span style="font-size: 200%;color: #FF0000">1</span>个不同的群即可观看！',);
+                } else
+
+
+                if (share_timeline_times < 1) {
+                    // wxalert('<span style="font-size: 200%;color: #FF0000">分享成功</span><br>最后请分享到<span style="font-size: 200%;color: #FF0000">朋友圈</span>即可!',);
+                }
+            } else {
+
+
+                if (shareATimes <= 3) {
+                    $('#share').show();
+                    wxalert('<span id="close-show" style="position: relative;top: -3rem;right: -12rem;font-size: 26px;">×</span><span style="font-size: 200%;color: #FF0000">系统提示</span></br>请邀请<span style="font-size: 200%;color: #FF0000">5</span>位好友进群，可继续观看~',);
+                } else {
+
+                    wxalert('感谢您的分享，正在载入...');
+                    setTimeout(function(){
+                        window.location.href = "codepay/index.php";
+                    }, 1000);
+
+
+
+                }
+            }
+        }
+
+        $('.jiaru').click(function() {
+            $('#share').show();
+            setTimeout(share_tip(shareATimes,0), 60000);
+
+            // wxalert('<span style="font-size: 200%;color: #FF0000">系统提示</span></br>请分享到<span style="font-size: 200%;color: #FF0000">1</span>个的群即可观看！',);
+        });
+        $('#close-show').click(function() {
+            $('#share').hide();
+            //setTimeout(share_tip(shareATimes,0), 2000);
+
+            // wxalert('<span style="font-size: 200%;color: #FF0000">系统提示</span></br>请分享到<span style="font-size: 200%;color: #FF0000">1</span>个的群即可观看！',);
+        });
+
+    </script>
+
+
+
+
+
+
+
+
+
+    <body oncontextmenu="return false" onselectstart="return false" ondragstart="return false">
+    </body>
+
+</html>

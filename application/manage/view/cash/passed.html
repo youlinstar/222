@@ -1,0 +1,50 @@
+{include file="common/head"/}
+<div class="layui-fluid">
+    <div class="table-body">
+        <div class="layui-card">
+            <form class="layui-form">
+                <input type="hidden" name="row[ids]" value="{:input('ids/d')}"/>
+                <div class="layui-form-item" style="padding-top:15px;">
+                    <label class="layui-label">入账操作</label>
+                    <div class="layui-inline">
+                        <input type="radio" name="row[status]" value="1" title="审核通过" checked>
+                        <input type="radio" name="row[status]" value="-1" title="审核拒绝">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-label">操作说明</label>
+                    <div class="layui-inline from-inline-6">
+                        <textarea name="row[reason]" lay-verify="required" placeholder="请输入操作说明" class="layui-textarea"></textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-label"></label>
+                    <div class="layui-inline from-inline-3" style="margin-left:120px;">
+                        <button type="button" style="padding:0 35px;" class="layui-btn layui-bg-blue layui-btn-lg" lay-submit="" lay-filter="submit">提交</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{include file="common/foot"/}
+<script src="__STATIC__/common/js/jquery.2.1.1.min.js"></script>
+<script>
+    layui.use(['form','jquery'], function(){
+        var form = layui.form,$= layui.jquery;
+        form.on('submit(submit)', function (data){
+            loading =layer.load(1, {shade: [0.1,'#fff']});
+            $.post("", data.field, function (res){
+                layer.close(loading);
+                if (res.status===200){
+                    layer.msg('审核操作成功',{time: 1000, icon: 1},function(){
+                        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                        parent.layer.close(index);//再执行关闭
+                    });
+                } else {
+                    layer.msg(res.msg, {time: 1000, icon: 2});
+                }
+            });
+        });
+    });
+</script>

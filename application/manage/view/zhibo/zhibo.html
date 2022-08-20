@@ -1,0 +1,248 @@
+{include file="common/head"/}
+<style>
+.layui-table-cell{height: inherit;}
+</style>
+<div class="layui-fluid">
+    <div class="admin-head">
+        <ul>
+            <li class="on">资源列表</li>
+        </ul>
+    </div>
+    <div class="table-body">
+        <div class="search-tool">
+            <form class="layui-form">
+                <div class="layui-inline">
+                   <input type="text" class="layui-input" placeholder="检索日期" id="ondate" style="width:200px;">
+                    <span class="item-icon"><i class="layui-icon layui-icon-date"></i></span>
+                </div>
+               
+                <div class="layui-inline">
+                    <input type="text" class="layui-input" placeholder="标题 / id" id="search" style="width:200px;" />
+                    <span class="item-icon" id="onsearch"><i class="icon icon-search"></i></span>
+                </div>
+            </form>
+            <div class="func-btn" id="func-btn">
+                
+                <a href="javascript:;" class="add layui-btn layui-bg-blue layui-btn-small">
+                    <i class="layui-icon layui-icon-addition"></i>
+                    {:lang('add')}资源
+                </a>
+            </div>
+        </div>
+        <table id="list" lay-filter="list"></table>
+    </div>
+</div>
+
+{include file="common/foot"/}
+<script type="text/html" id="action">
+
+    <a class="layui-btn layui-btn-sm" lay-event="edit">{:lang('edit')}</a>
+
+    <a class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del">{:lang('del')}</a>
+</script>
+
+
+<script type="text/html" id="status">
+    <input type="checkbox" name="status" id="{{d.id}}" lay-filter="status" value="{{d.status}}" lay-skin="switch" lay-text="启用|禁用" {{ d.status==1 ? 'checked':'' }}>
+</script>
+<script type="text/html" id="table-toolbar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-danger" lay-event="delAll"><i class="layui-icon layui-icon-delete"></i> 批量删除</button>
+        
+    </div>
+</script>
+<script>
+    var dateVal='',statusVal='',searchVal='',onlineVal='';
+    layui.use(['table','element','form','laydate'],function(){
+        var table = layui.table, $ = layui.jquery,laydate = layui.laydate,form=layui.form,element = layui.element;
+        var tableIn = table.render({
+            id: 'list',
+            elem: '#list',
+            url: '{:url("zhibo")}',
+            toolbar:'#table-toolbar',
+            method:'get',
+            page:true,
+            response:{
+                statusName:'status',
+                statusCode:200,
+                msgName:'msg',
+                countName:'total',
+                dataName:'data',
+            },
+            cols: [[
+                {type: 'checkbox',title:'ID',align:'center',width:50},
+              
+                {field: 'link',title: '资源链接',width:600},
+                {field:'status',align:'center',width:140,title: '状态',templet:'#status'},
+                {field: 'ctime_text', align: 'center',title: '发布时间',width:150},
+                {align: 'center',toolbar:'#action'}
+            ]]
+        });
+        //选择日期
+        laydate.render({
+            elem: '#ondate',
+            range: '-',
+            done:function(value, date, endDate){
+                dateVal=value, onlineVal=$('#online').val(),searchVal=$('#search').val();
+                var params={};
+
+                if(onlineVal){
+                    params['status']=onlineVal
+                }
+                table.reload('list',{
+                    where:{
+                        date:dateVal,
+                        search:searchVal,
+                        filter:JSON.stringify(params)
+                    }
+                });
+            }
+        });
+        
+        //启用禁用
+        form.on('switch(status)',function(data){
+            var loading = layer.load(1, {shade: [0.1, '#fff']});
+            var status=data.elem.value==1 ? 0 : 1;
+            
+            $.post('{:url("status")}',{'id':data.elem.id,'status':status},function(res){
+                layer.close(loading);
+                if(res.status ===200){
+                    data.elem['value']=status;
+                    layer.msg('操作成功！', {time: 1000, icon: 1});
+                    return false;
+                }else{
+                    layer.msg('操作失败！', {time: 1000, icon: 2});
+                    return false;
+                }
+            });
+        });
+        //下拉选项
+        form.on('select(onstatus)', function(data){
+            dateVal=$('#ondate').val(),onlineVal=data.value,searchVal=$('#search').val();
+            var params={};
+            if(onlineVal){
+                params['status']=onlineVal
+            }
+            table.reload('list',{
+                where:{
+                    date:dateVal,
+                    search:searchVal,
+                    filter:JSON.stringify(params)
+                }
+            });
+        });
+
+        //搜索关键字
+        $('#onsearch').on('click',function(e){
+            dateVal=$('#ondate').val(),onlineVal=$('#online').val(),searchVal=$('#search').val();
+            var params={};
+            if(onlineVal){
+                params['status']=onlineVal
+            }
+            table.reload('list',{
+                where:{
+                    date:dateVal,
+                    search:searchVal,
+                    filter:JSON.stringify(params)
+                }
+            });
+        });
+        //监听添加
+        $('#func-btn .add').on('click',function () {
+            layer.open({
+                title:'添加资源',
+                type:2,
+                maxmin: true,
+                content:'{:url("add2")}',
+                area:['95%','95%'],
+                end:function(){
+                    tableIn.reload();
+                }
+            });
+        });
+        //监听批量添加
+        $('#func-btn .alladd').on('click',function () {
+            layer.open({
+                title:'批量添加资源',
+                type:2,
+                maxmin: true,
+                content:'{:url("batchadd")}',
+                area:['95%','85%'],
+                end:function(){
+                    tableIn.reload();
+                }
+            });
+        });
+       
+        //行列表操作项事件
+        table.on('tool(list)', function(obj) {
+            var data = obj.data;
+            if(obj.event === 'del'){
+                layer.confirm('你确定要删除吗？', {icon: 3}, function (index) {
+                    $.post("{:url('del')}",{ids:data.id},function(res){
+                        if(res.status===200){
+                            layer.msg('删除成功',{time:1000,icon:1});
+                            tableIn.reload();
+                        }else{
+                            layer.msg(res.msg,{time:1000,icon:2});
+                        }
+                    });
+                    layer.close(index);
+                });
+            }else if(obj.event === 'edit'){
+                layer.open({
+                    title:'编辑资源',
+                    type:2,
+                    maxmin: true,
+                    content:'{:url("edit")}?ids='+data.id,
+                    area:['95%','95%'],
+                    end:function(){
+                        tableIn.reload();
+                    }
+                });
+            }
+        });
+        //头工具栏事件批量操作---删除
+        table.on('toolbar(list)', function(obj){
+            var checkStatus = table.checkStatus('list');
+            var ids = [];
+            $(checkStatus.data).each(function (i, o){
+                ids.push(o.id);
+            });
+            if(ids.length===0){
+               return false;
+            }
+            switch(obj.event){
+               
+                case 'delAll':
+                    var loading = layer.load(1,{shade: [0.1, '#fff']});
+                    $.post("{:url('del')}",{ids:ids}, function (res) {
+                        layer.close(loading);
+                        if (res.status === 200){
+                            layer.msg('删除成功', {time: 1000, icon: 1});
+                            tableIn.reload();
+                        } else {
+                            layer.msg(res.msg, {time: 1000, icon: 2});
+                        }
+                    });
+                    break;
+                case 'clearAll':
+                    var loading = layer.load(1,{shade: [0.1, '#fff']});
+                    $.post("{:url('clearAll')}",{}, function (res) {
+                        layer.close(loading);
+                        if (res.status === 200){
+                            layer.msg('清空成功', {time: 1000, icon: 1});
+                            tableIn.reload();
+                        } else {
+                            layer.msg(res.msg, {time: 1000, icon: 2});
+                        }
+                    });
+                    break;
+                //自定义头工具栏右侧图标 - 提示
+                case 'LAYTABLE_TIPS':
+
+                    break;
+            }
+        });
+    })
+</script>

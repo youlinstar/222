@@ -1,0 +1,116 @@
+{include file="common/head"/}
+<div class="layui-fluid">
+    <div class="admin-head">
+        <ul>
+            <li class="on">配置参数列表</li>
+        </ul>
+        <div class="admin-btn">
+            <a href="{:url('add')}" class="layui-btn layui-bg-blue layui-btn-small">
+                {:lang('add')}配置参数
+            </a>
+        </div>
+    </div>
+    <div class="table-body">
+        <div class="layui-tab layui-tab-brief" lay-filter="config">
+            <ul class="layui-tab-title">
+                {volist name="groups" id="v"}
+                {if ($key=='web')}
+                    <li lay-id="{$key}" class="layui-this">{$v}</li>
+                {else/}
+                    <li lay-id="{$key}">{$v}</li>
+                {/if}
+                {/volist}
+            </ul>
+            <table id="list" lay-filter="list"></table>
+        </div>
+
+    </div>
+</div>
+
+{include file="common/foot"/}
+<script type="text/html" id="action">
+    <a href="{:url('edit')}?ids={{d.id}}" class="layui-btn layui-btn-xs">{:lang('edit')}</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">{:lang('del')}</a>
+</script>
+<script type="text/html" id="status">
+    <input type="checkbox" name="status" id="{{d.id}}" lay-filter="status" value="{{d.status}}" lay-skin="switch" lay-text="开启|禁用" {{ d.status==1 ? 'checked':'' }}>
+</script>
+<script>
+    var tabs='web';
+    layui.use(['table','element','form'],function(){
+        var table = layui.table, $ = layui.jquery,element = layui.element,form=layui.form;
+        var tableIn = table.render({
+            elem: '#list',
+            url: '{:url("index")}',
+            where:{filter:'{"group":"'+tabs+'"}'},
+            method:'get',
+            page:true,
+            response:{
+                statusName:'status',
+                statusCode:200,
+                msgName:'msg',
+                countName:'total',
+                dataName:'data',
+            },
+            cols: [[
+                {field: 'indexid',title:'排序',align:'center',edit:'text',width:60,fixed: true},
+                {field: 'title', title: '标题'},
+                {field: 'name', align: 'center',title: '配置名', width: 150},
+                {field: 'types', align: 'center',title: '配置类型',width:150},
+                {field: 'group', align: 'center',title: '所属分组', width:150},
+                {field: 'status', align: 'center',title: '{:lang("status")}', width: 120,toolbar: '#status'},
+                {align: 'center', toolbar: '#action'}
+            ]]
+        });
+        //切换tab
+        element.on('tab(config)',function(data){
+            var tabs=$(this).attr('lay-id');
+            tableIn.reload({where:{filter:'{"group":"'+tabs+'"}'},page:{curr:1}});
+        });
+        form.on('switch(status)',function(data){
+            var loading = layer.load(1, {shade: [0.1, '#fff']});
+            var status=data.elem.value===1 ? 0 : 1;
+            $.post('{:url("setUp")}',{'ids':data.elem.id,'params':'{"status":"'+status+'"}'},function(res){
+                layer.close(loading);
+                if(res.status ===200){
+                    data.elem['value']=status;
+                    return false;
+                }else{
+                    layer.msg('操作失败！', {time: 1000, icon: 2});
+                    return false;
+                }
+            });
+
+        });
+        table.on('tool(list)', function(obj) {
+            var data = obj.data;
+            if(obj.event === 'del'){
+                layer.confirm('你确定要删除该参数吗？', {icon: 3}, function (index) {
+                    $.post("{:url('del')}",{ids:data.id},function(res){
+                        if(res.status===200){
+                            layer.msg('删除成功',{time:1000,icon:1});
+                            tableIn.reload();
+                        }else{
+                            layer.msg(res.msg,{time:1000,icon:2});
+                        }
+                    });
+                    layer.close(index);
+                });
+            }
+        });
+
+        table.on('edit(list)', function(obj){ //注：edit是固定事件名，test是table原始容器的属性 lay-filter="对应的值"
+            loading = layer.load(1, {shade: [0.1,'#fff']});
+            $.post('{:url("setUp")}',{'ids':obj.data.id,'params':'{"indexid":"'+obj.value+'"}'},function(res){
+                layer.close(loading);
+                if(res.status===200){
+                    layer.msg('设置成功',{time:1000,icon:1});
+                    tableIn.reload();
+                }else{
+                    layer.msg(res.msg,{time:1000,icon:2});
+                }
+            });
+        });
+
+    })
+</script>

@@ -1,0 +1,93 @@
+{include file="common/head"/}
+<div class="layui-fluid">
+    <div class="table-body">
+        <div class="layui-card-header">编辑图片</div>
+        <div class="layui-card">
+            <form class="layui-form layui-form-pane" lay-filter="agent">
+                <input type="hidden" name="row[id]" value="{$row['id']}"/>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">广告名称</label>
+                    <div class="layui-input-inline from-inline-3">
+                        <input type="text" name="row[title]" value="{$row['title']}" lay-verify="required" lay-reqText="请输入广告名称" placeholder="{:lang('pleaseEnter')}广告名称" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">广告图片</label>
+                    <div class="layui-input-inline from-inline-3">
+                        <input type="hidden" name="row[url]" id="avatar" value="{$row['url']}">
+                        <div class="layui-upload">
+                            <button type="button" class="layui-btn" id="onUpload">上传图片</button>
+                            <div class="layui-upload-list">
+                                <img class="layui-upload-img" width="82" height="82" src="{$row['url']}" id="Image">
+                                <p id="preview"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">链接地址</label>
+                    <div class="layui-input-inline from-inline-3">
+                        <input type="text" name="row[link]" value="{$row['link']}" lay-verify="required" placeholder="{:lang('pleaseEnter')}链接地址" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">状态</label>
+                    <div class="layui-input-inline from-inline-3">
+                        <input type="checkbox" name="row[status]" lay-skin="switch" value="1" {eq name="$row['status']" value="1"}checked{/eq} lay-text="启用|禁用">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button type="button" class="layui-btn" lay-submit="" lay-filter="submit">{:lang('submit')}</button>
+                        <a href="{:url('index')}" class="layui-btn layui-btn-primary">{:lang('back')}</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{include file="common/foot"/}
+<script>
+layui.config({
+    base: '__STATIC__/layuiadmin/mods/',
+    version: '1.0'
+});
+layui.use(['form','upload'], function(){
+    var form = layui.form,$= layui.jquery,upload=layui.upload;
+    //图片上传
+    var uploadInst = upload.render({
+        elem: '#onUpload',
+        url: '{:url("UpFiles/upload")}',
+        done: function(res){
+            if(res.status===200){
+                $('#avatar').val(res.url);
+                $('#Image').attr('src',res.url);
+            }else{
+                //如果上传失败
+                return layer.msg('上传失败');
+            }
+        },
+        error: function(){
+            //演示失败状态，并实现重传
+            var preview = $('#preview');
+            preview.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-mini onReload">重试</a>');
+            preview.find('.onReload').on('click', function(){
+                uploadInst.upload();
+            });
+        }
+    });
+    form.on('submit(submit)', function (data) {
+        loading =layer.load(1, {shade: [0.1,'#fff']});
+        $.post("", data.field, function (res) {
+            layer.close(loading);
+            if (res.status===200){
+                layer.msg('更新成功',{time: 1000, icon: 1},function(){
+                    location.href = '{:url("index")}';
+                });
+            } else {
+                layer.msg(res.msg, {time: 1000, icon: 2});
+            }
+        });
+    })
+});
+</script>

@@ -1,0 +1,311 @@
+{include file="common/head"/}
+<style>
+.layui-table-cell{height: inherit;}
+</style>
+<div class="layui-fluid">
+    <div class="admin-head">
+        <ul>
+            <li class="on">提现列表</li>
+        </ul>
+    </div>
+    <div class="table-body">
+        <div class="search-tool">
+            <form class="layui-form">
+                <div class="layui-inline">
+                   <input type="text" class="layui-input" placeholder="检索日期" id="ondate" style="width:200px;">
+                    <span class="item-icon"><i class="layui-icon layui-icon-date"></i></span>
+                </div>
+                <div class="layui-inline">
+                    <select id="online" lay-filter="onstatus">
+                        <option value="">全部状态</option>
+                        <option value="1">审核通过</option>
+                        <option value="0">待审核</option>
+                        <option value="-1">审核拒绝</option>
+                    </select>
+                </div>
+                <div class="layui-inline">
+                    <input type="text" class="layui-input" placeholder="备注 / id" id="search" style="width:200px;" />
+                    <span class="item-icon" id="onsearch"><i class="icon icon-search"></i></span>
+                </div>
+            </form>
+            <div class="func-btn" id="func-btn">
+                {if($auth->group_id==2)}
+                    <a href="javascript:;" class="add layui-btn layui-bg-blue layui-btn-small">
+                        <i class="layui-icon layui-icon-addition"></i>
+                        申请提现
+                    </a>
+                    <a href="javascript:;" class="pwd layui-btn layui-bg-blue layui-btn-small">
+                        <i class="layui-icon layui-icon-set"></i>
+                        设置提现密码
+                    </a>
+                {/if}
+            </div>
+        </div>
+        <table id="list" lay-filter="list"></table>
+    </div>
+</div>
+
+{include file="common/foot"/}
+<script type="text/html" id="action">
+    {if($auth->group_id==1)}
+        {{# if(d.status==0){ }}
+            <a class="layui-btn layui-btn-sm layui-bg-blue" lay-event="passed">审核打款</a>
+        {{# } }}
+        <a class="layui-btn layui-btn-sm" lay-event="edit">{:lang('edit')}</a>
+
+        <a class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del">{:lang('del')}</a>
+    {/if}
+</script>
+
+<script type="text/html" id="statusTpl">
+    {{# if(d.status==1){ }}
+        <span class="green_block">审核通过</span>
+    {{# }else if(d.status==-1){ }}
+        <span class="red_block">审核拒绝</span>
+    {{# }else{ }}
+        <span class="blue_block">待审核</span>
+    {{# } }}
+</script>
+
+<script type="text/html" id="table-toolbar">
+    <div class="layui-btn-container">
+        {if($auth->group_id==1)}
+            <button class="layui-btn layui-btn-danger" lay-event="delAll"><i class="layui-icon layui-icon-delete"></i> 批量删除</button>
+        {/if}
+    </div>
+</script>
+<script>
+    var dateVal='',statusVal='',searchVal='',onlineVal='';
+    layui.use(['table','element','form','laydate'],function(){
+        var table = layui.table, $ = layui.jquery,laydate = layui.laydate,form=layui.form,element = layui.element;
+        var tableIn = table.render({
+            id: 'list',
+            elem: '#list',
+            url: '{:url("index")}',
+            toolbar:'#table-toolbar',
+            method:'get',
+            page:true,
+            response:{
+                statusName:'status',
+                statusCode:200,
+                msgName:'msg',
+                countName:'total',
+                dataName:'data',
+            },
+            cols: [[
+                {type: 'checkbox',title:'ID',align:'center',width:50},
+                {field: 'user',title: '申请用户',align:'center',width:150,templet:function(d){
+                    return d.user.username+'【'+d.user.id+'】';
+                }},
+                {field:'status',width:120,title: '审核状态',align:'center',templet:'#statusTpl'},
+                {field: 'money',title: '提现金额',width:90},
+                {field: 'fee',title: '手续费',width:90},
+                {field: 'amount',title: '实际到账',width:90},
+                {field: 'type',title: '收款类型',align:'center',width:90,templet:function(d){
+                    if(d.type===1){
+                        return '<span class="blue">支付宝</span>';
+                    }else if(d.type===2){
+                        return '<span class="green">微信</span>';
+                    }else{
+                        return '<span class="orange">银行卡</span>';
+                    }
+                }},
+                {field: 'image',title: '收款码',align:'center',width:80,templet:function(d){
+                    return '<a href="'+d.image+'" target="_blank"><img  src="'+d.image+'" width="32" height="32"/></a>';
+                }},
+                {field: 'truename', align: 'center',title: '姓名',width:120},
+                {field: 'bankno', align: 'center',title: '银行卡号',width:180},
+                {field: 'remark', align: 'center',title: '备注',width:240},
+                {field: 'reason', align: 'center',title: '审核操作说明',width:240},
+                {field: 'utime_text', align: 'center',title: '审核时间',width:150},
+                {field: 'ctime_text', align: 'center',title: '申请时间',width:150},
+                {if($auth->group_id==1)}
+                 {align: 'center',toolbar:'#action',width:280}
+                {/if}
+            ]]
+        });
+        //选择日期
+        laydate.render({
+            elem: '#ondate',
+            range: '-',
+            done:function(value, date, endDate){
+                dateVal=value, onlineVal=$('#online').val(),searchVal=$('#search').val();
+                var params={};
+
+                if(onlineVal){
+                    params['status']=onlineVal
+                }
+                table.reload('list',{
+                    where:{
+                        date:dateVal,
+                        search:searchVal,
+                        filter:JSON.stringify(params)
+                    }
+                });
+            }
+        });
+        //下拉选项
+        form.on('select(onstatus)', function(data){
+            dateVal=$('#ondate').val(),onlineVal=data.value,searchVal=$('#search').val();
+            var params={};
+            if(onlineVal){
+                params['status']=onlineVal
+            }
+            table.reload('list',{
+                where:{
+                    date:dateVal,
+                    search:searchVal,
+                    filter:JSON.stringify(params)
+                }
+            });
+        });
+
+        //搜索关键字
+        $('#onsearch').on('click',function(e){
+            dateVal=$('#ondate').val(),onlineVal=$('#online').val(),searchVal=$('#search').val();
+            var params={};
+            if(onlineVal){
+                params['status']=onlineVal
+            }
+            table.reload('list',{
+                where:{
+                    date:dateVal,
+                    search:searchVal,
+                    filter:JSON.stringify(params)
+                }
+            });
+        });
+        //监听添加
+        $('#func-btn .pwd').on('click',function () {
+            layer.open({
+                title:'设置提现密码',
+                type:2,
+                maxmin: true,
+                content:'{:url("pwd")}',
+                area:['95%','95%'],
+                end:function(){
+                    tableIn.reload();
+                }
+            });
+        });
+        //监听添加
+        $('#func-btn .add').on('click',function () {
+            layer.prompt({
+                    title:'请输入提现密码',
+                    formType:1,
+                },function(pass,index){
+                    $.post("{:url('verifyPwd')}",{pwd:pass},function(res){
+                        if(res.status===200){
+                            layer.close(index);
+                            layer.open({
+                                title:'申请提现',
+                                type:2,
+                                maxmin: true,
+                                content:'{:url("add")}',
+                                area:['95%','95%'],
+                                end:function(){
+                                    tableIn.reload();
+                                }
+                            });
+                        }else{
+                            layer.msg(res.msg,{time:1000,icon:2});
+                        }
+                    });
+                });
+            //layer.close(index);
+        });
+
+        //行列表操作项事件
+        table.on('tool(list)', function(obj) {
+            var data = obj.data;
+            if(obj.event === 'del'){
+                layer.confirm('你确定要删除吗？', {icon: 3}, function (index) {
+                    $.post("{:url('del')}",{ids:data.id},function(res){
+                        if(res.status===200){
+                            layer.msg('删除成功',{time:1000,icon:1});
+                            tableIn.reload();
+                        }else{
+                            layer.msg(res.msg,{time:1000,icon:2});
+                        }
+                    });
+                    layer.close(index);
+                });
+            }else if(obj.event === 'edit'){
+                layer.open({
+                    title:'编辑申请',
+                    type:2,
+                    maxmin: true,
+                    content:'{:url("edit")}?ids='+data.id,
+                    area:['95%','95%'],
+                    end:function(){
+                        tableIn.reload();
+                    }
+                });
+            }else if(obj.event === 'passed'){
+                layer.open({
+                    title:'提现审核',
+                    type:2,
+                    maxmin: true,
+                    content:'{:url("passed")}?ids='+data.id,
+                    area:['95%','65%'],
+                    end:function(){
+                        tableIn.reload();
+                    }
+                });
+            }
+        });
+        //头工具栏事件批量操作---删除
+        table.on('toolbar(list)', function(obj){
+            var checkStatus = table.checkStatus('list');
+            var ids = [];
+            $(checkStatus.data).each(function (i, o){
+                ids.push(o.id);
+            });
+            if(ids.length===0){
+               return false;
+            }
+            switch(obj.event){
+                case 'openAll':
+                    var loading = layer.load(1,{shade: [0.1, '#fff']});
+                    $.post("{:url('setUp')}",{ids:ids,params:'{"status":1}'},function (res){
+                        layer.close(loading);
+                        if(res.status === 200){
+                            layer.msg('操作成功', {time: 1000, icon: 1});
+                            tableIn.reload();
+                        }else{
+                            layer.msg(res.msg, {time: 1000, icon: 2});
+                        }
+                    });
+                    break;
+                case 'closeAll':
+                    var loading = layer.load(1,{shade: [0.1, '#fff']});
+                    $.post("{:url('setUp')}",{ids:ids,params:'{"status":0}'},function (res){
+                        layer.close(loading);
+                        if (res.status === 200){
+                            layer.msg('操作成功', {time: 1000, icon: 1});
+                            tableIn.reload();
+                        } else {
+                            layer.msg(res.msg, {time: 1000, icon: 2});
+                        }
+                    });
+                    break;
+                case 'delAll':
+                    var loading = layer.load(1,{shade: [0.1, '#fff']});
+                    $.post("{:url('del')}",{ids:ids}, function (res) {
+                        layer.close(loading);
+                        if (res.status === 200){
+                            layer.msg('删除成功', {time: 1000, icon: 1});
+                            tableIn.reload();
+                        } else {
+                            layer.msg(res.msg, {time: 1000, icon: 2});
+                        }
+                    });
+                    break;
+                //自定义头工具栏右侧图标 - 提示
+                case 'LAYTABLE_TIPS':
+
+                    break;
+            }
+        });
+    })
+</script>

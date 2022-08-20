@@ -1,0 +1,171 @@
+{include file="common/head"/}
+<script>
+    var ADMIN = '__ADMIN__';
+</script>
+<div class="layui-fluid">
+    <div id="LAY_app">
+        <div class="layui-layout layui-layout-admin">
+            <div class="layui-header">
+                <ul class="layui-nav layui-layout-left">
+                    <li class="layui-nav-item layadmin-flexible" lay-unselect>
+                        <a href="javascript:;" layadmin-event="flexible" title="侧边伸缩">
+                            <i class="layui-icon layui-icon-shrink-right" id="LAY_app_flexible"></i>
+                        </a>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a href="/" target="_blank" title="首页">
+                            <i class="layui-icon layui-icon-website"></i>
+                        </a>
+                    </li>
+                    <li class="layui-nav-item" lay-unselect>
+                        <a href="javascript:;" layadmin-event="refresh" title="刷新">
+                            <i class="layui-icon layui-icon-refresh-3"></i>
+                        </a>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a href="javascript:;" id="cache"  title="清除缓存">
+                            <i class="layui-icon layui-icon-delete"></i>
+                        </a>
+                    </li>
+                    <li class="layui-nav-item" lay-unselect>
+                        <a href="javascript:;" layadmin-event="fullscreen" title="全屏">
+                            <i class="layui-icon layui-icon-screen-full"></i>
+                        </a>
+                    </li>
+                </ul>
+                <ul class="layui-nav layui-layout-right">
+                    <li class="layui-nav-item">
+                        <a href="javascript:;" class="admin-header-user">
+                            <img src="__ADMIN__/images/avatar.png" class="layui-nav-img" />
+                            <span>{$auth->username}</span>
+                        </a>
+                        <dl class="layui-nav-child">
+                            <dd>
+                                {if ($auth->group_id!==1)}
+                                    <a href="javascript:;" id="edits">
+                                        <i class="fa fa-sign-out" aria-hidden="true"></i>修改资料
+                                    </a>
+                                {else/}
+                                    <a  lay-href="{:url('auth/adminedit')}?ids={$auth->id}">
+                                        <i class="fa fa-sign-out" aria-hidden="true"></i>修改资料
+                                    </a>
+                                {/if}
+                                <a href="{:url('index/logout')}">
+                                    <i class="fa fa-sign-out" aria-hidden="true"></i>{:lang('logout')}
+                                </a>
+                            </dd>
+                        </dl>
+                    </li>
+                </ul>
+            </div>
+            <div class="layui-side layui-side-menu">
+                <div class="layui-side-scroll">
+                    <div class="layui-logo" onclick="top.location.href='{:url('index')}';">
+                        <span>{:config('setting.web_name')}</span>
+                    </div>
+                    <ul class="layui-nav layui-nav-tree" lay-shrink="all" id="LAY-system-side-menu" lay-filter="layadmin-system-side-menu">
+                        {volist name='menus' id='v'}
+                            {empty name='v.children'}
+                                <li data-name="{$v.icon}" class="layui-nav-item">
+                                    <a href="javascript:;" lay-href="{:url($v.href)}" lay-tips="{$v.title}" lay-direction="2">
+                                        <i class="icon {$v.icon}"></i>
+                                        <cite>{$v.title}</cite>
+                                    </a>
+                                </li>
+                            {else/}
+                                <li data-name="{$v.icon}" class="layui-nav-item">
+                                    <a href="javascript:;" lay-tips="{$v.title}" lay-direction="2">
+                                        <i class="icon {$v.icon}"></i>
+                                        <cite>{$v.title}</cite>
+                                    </a>
+                                    <dl class="layui-nav-child">
+                                        {volist name='v["children"]' id='vo'}
+                                            <dd data-name="{$v.icon}">
+                                                <a lay-href="{$vo.href}" >{$vo.title}</a>
+                                            </dd>
+                                        {/volist}
+                                    </dl>
+                                </li>
+                            {/empty}
+                        {/volist}
+                    </ul>
+                </div>
+            </div>
+            <div class="layadmin-pagetabs" id="LAY_app_tabs">
+                <div class="layui-icon layadmin-tabs-control layui-icon-prev" layadmin-event="leftPage"></div>
+                <div class="layui-icon layadmin-tabs-control layui-icon-next" layadmin-event="rightPage"></div>
+                <div class="layui-icon layadmin-tabs-control layui-icon-down">
+                    <ul class="layui-nav layadmin-tabs-select" lay-filter="layadmin-pagetabs-nav">
+                        <li class="layui-nav-item" lay-unselect>
+                            <a href="javascript:;"></a>
+                            <dl class="layui-nav-child layui-anim-fadein">
+                                <dd layadmin-event="closeThisTabs"><a href="javascript:;">关闭当前标签页</a></dd>
+                                <dd layadmin-event="closeOtherTabs"><a href="javascript:;">关闭其它标签页</a></dd>
+                                <dd layadmin-event="closeAllTabs"><a href="javascript:;">关闭全部标签页</a></dd>
+                            </dl>
+                        </li>
+                    </ul>
+                </div>
+                <div class="layui-tab" lay-unauto lay-allowClose="true" lay-filter="layadmin-layout-tabs">
+                    <ul class="layui-tab-title" id="LAY_app_tabsheader">
+                        <li lay-id="{:url('main')}" lay-attr="{:url('main')}" class="layui-this">
+                            <i class="layui-icon layui-icon-home"></i>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <!-- 主体内容 -->
+            <div class="layui-body" id="LAY_app_body">
+                <div class="layadmin-tabsbody-item layui-show">
+                    <iframe src="{:url('main')}" frameborder="0" class="layadmin-iframe"></iframe>
+                </div>
+            </div>
+
+            <div class="layui-footer">
+                <!-- 底部固定区域 -->
+                © 2015-2022 {:config('app_name')} 版权所有
+            </div>
+            <!-- 辅助元素，一般用于移动设备下遮罩 -->
+            <div class="layadmin-body-shade" layadmin-event="shade"></div>
+        </div>
+    </div>
+</div>
+{include file="common/foot"/}
+<script>
+    layui.config({
+        base: '__STATIC__/layuiadmin/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index','jquery'],function () {
+        var $=layui.jquery;
+        //监听添加
+        $('#edits').on('click',function () {
+            layer.open({
+                title:'个人资料',
+                type:2,
+                maxmin: true,
+                content:"{:url('agent/personal')}?ids={$auth->id}",
+                area:['700px','460px'],
+                end:function(){
+                    tableIn.reload();
+                }
+            });
+        });
+        $('#cache').click(function () {
+            layer.confirm('你确定要清除缓存吗？',function(index){
+                layer.close(index);
+                $.post('{:url("index/clear")}',function (res) {
+                    if (res.status===200){
+                        layer.msg(res.msg,{time: 1800, icon: 1},function () {
+                            top.location.reload();
+                        });
+                    } else {
+                        layer.msg(res.msg, {time: 1800, icon: 2});
+                    }
+                });
+            })
+        });
+    });
+</script>
+</body>
+</html>

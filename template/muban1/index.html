@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN" class="pixel-ratio-1">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>牛运经典</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="screen-orientation" content="portrait">
+    <meta name="x5-orientation" content="portrait">
+    <meta name="full-screen" content="yes">
+    <meta name="x5-fullscreen" content="true">
+    <link rel="stylesheet" href="__STATIC__/common/css/wx.css">
+    <link rel="stylesheet" href="__STATIC__/common/lib/vant/css/index.css"/>
+    <link rel="stylesheet" href="__STATIC__/common/lib/el-ui/css/index.css">
+    <link rel="stylesheet" href="__STATIC__/muban1/css/main.css">
+    <script src="__STATIC__/common/lib/vue/vue.js"></script>
+    <script src="__STATIC__/common/lib/vant/js/vant.min.js"></script>
+    <script src="__STATIC__/common/js/jquery.min.js"></script>
+    <script src="__STATIC__/common/lib/layer/layer.js"></script>
+    <script src="__STATIC__/common/lib/el-ui/index.js"></script>
+    <script src="__STATIC__/common/js/base64.min.js"></script>
+    <script src="__STATIC__/common/js/xgplayer/index.js" charset="utf-8"></script>
+    <script src="//res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.documentElement.style.fontSize = document.documentElement.clientWidth / 30 + 'px'
+        })
+        function onBridgeReady() {
+            WeixinJSBridge.call('hideOptionMenu');
+        }
+        if (typeof WeixinJSBridge == "undefined") {
+            if (document.addEventListener) {
+                document.addEventListener('WeixinJSBridgeReady', onBridgeReady, false);
+            } else if (document.attachEvent) {
+                document.attachEvent('WeixinJSBridgeReady', onBridgeReady);
+                document.attachEvent('onWeixinJSBridgeReady', onBridgeReady);
+            }
+        } else {
+            onBridgeReady();
+        }
+    </script>
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+        .wrap {
+            height: 100%;
+        }
+        .index{
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .view {
+            flex: 1;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .v-body {
+            min-height: 101%;
+            padding-bottom: 0.20rem;
+        }
+        image {
+            height: auto;
+        }
+        .NoticeBox{
+            background:#fffbe8!important;
+            margin:0 auto!important;
+            display: flex;
+            align-items: center;
+            padding:0 10px;
+        }
+        .NoticeBox .notice-icon img{
+            width:15px;
+            height: 15px;
+            margin-top:7px;
+        }
+        .NoticeBox .NoticeContentBox{
+            margin-left:10px;
+        }
+        .pay-title{
+            padding:10px 0;
+            color:#ff2600;
+            text-align: center;
+            font-size:16px;
+        }
+        .pay-item {
+            width: 90%;
+            height: 40px;
+            line-height: 40px;
+            margin:0 auto 3% auto;
+            border-radius: 5px;
+            text-align: center;
+            font-size:16px;
+            color:#fff;
+        }
+        .pay-item:nth-of-type(1){
+            background-color: #FF6665;
+        }
+        .pay-item:nth-of-type(2){
+            background-color: #7ED4D5;
+        }
+        .pay-item:nth-of-type(3){
+            background-color: #2AB16E;
+        }
+        .pay-item:nth-of-type(4){
+            background-color: #FFC67F;
+        }
+        .pay-item:active{
+            background-color:#FF6665;
+        }
+        .pay-item:last-child {
+            margin-bottom: 10px;
+        }
+        .licat {
+            width: 10px;
+        }
+        .ds_tankuang {
+            height: 130px;
+            width: 100%;
+            margin-bottom: 4%;
+        }
+        .el-carousel__indicators--outside{
+            position: absolute;
+            left:0;
+            right:0;
+            bottom:0;
+        }
+        .times{
+            position: absolute;
+            left:2px;
+            top:3px;
+            background-color: rgba(0,0,0,0.8);
+            color:#fff;
+            padding:1px 6px;
+            border-radius:20px;
+            font-size:10px;
+            z-index:9;
+        }
+        .footer{
+            width:100%;
+            position:fixed;
+            bottom:0;
+            z-index:999;
+            left:0;
+            height:50px;
+            background-color:#FFFFFF;
+            border-top:1px solid #CCCCCC;
+        }
+        .footer ul{
+            display: flex;
+            align-items: center;
+        }
+        .footer ul li{
+            float:left;
+            text-align:center;
+            width:50%;
+        }
+        .footer ul li.active span{
+            color:rgb(250, 67, 106);
+        }
+        .footer ul li img{
+            margin-top:5px;
+            width:20px;
+            height:20px;
+        }
+        .footer ul li span{
+            display:block;
+            width:100%;
+            color:#555555;
+            font-size:0.9rem;
+            text-align:center;
+        }
+    </style>
+</head>
+<body>
+<div id="app" class="wrap root">
+    <div class="index">
+        <div class="body home view">
+            <div class="v-body">
+                <div class="header">
+                    <li class="agency" @click="doFav">
+                        <div class="collect-btn">收藏<i></i></div>
+                    </li>
+                    <li class="search" @click="doSearch">搜索关键字.......</li>
+                    <li class="request"><a href="/tousu/tousu.php" class="Request-btn">投诉</a></li>
+                </div>
+                <div class="hezi" v-if="hezi">
+                    <div id="mse" style="width:100%"></div>
+                </div>
+                <div class="banner" v-if="banners">
+                    <div class="swipe" id="mySwipe">
+                        <el-carousel height="180px" indicator-position="outside">
+                            <el-carousel-item v-for="src in banner">
+                                <img width="100%" height="100%" :src="src.url" @click="linkTo(src.link)">
+                            </el-carousel-item>
+                        </el-carousel>
+                    </div>
+                </div>
+                <div class="NoticeBox" v-if="notice">
+                    <div class="notice-icon">
+                        <img src="__STATIC__/common/images/notice.png">
+                    </div>
+                    <div class="NoticeContentBox" style="overflow: hidden; position: relative;" @click="showNotice">
+                        <marquee><span style="color:orange">{{notice.title}}</span></marquee>
+                    </div>
+                </div>
+                <div class="channel">
+                    <ul>
+                        <li class="licat">
+                            <a style="color: black" @click="doGetList(-1,'cat')">
+                                <div class="thumb"><img src="__STATIC__/muban1/img/icon1.png"></div>
+                                <span>全部</span>
+                            </a>
+                        </li>
+                        <li class="licat" v-for="(item,index) in cat">
+                            <a style="color: black" @click="doGetList(index,item)">
+                                <img v-if="item.thumb" :src="item.thumb">
+                                <div v-else class="thumb"><img src="__STATIC__/muban1/img/icon1.png"></div>
+                                <span>{{item.name}}</span>
+                            </a>
+                        </li>
+                        <div style="clear:both;"></div>
+                    </ul>
+                </div>
+                <div class="list">
+
+                    <van-list v-model="loading" :finished="finished" :finished-text="msg" @load="doGetList" offset="300" direction="down">
+                        <div class="van-clearfix">
+                            <lazy-component>
+                                <li class="list-item" v-for="item in list" @click="doPay(item)">
+                                    <div v-if="item.img" class="thumb">
+                                        <span class="times" v-if="item.times">时长:{{item.times}}</span>
+                                        <img v-lazy="item.img" :src="item.img" width="100%">
+                                        <div class="plays">
+                                            <span>{{item.money}}元</span>
+                                            <span>{{item.rand}}人看过</span>
+                                        </div>
+                                    </div>
+                                    <div class="name">{{item.title}}</div>
+                                </li>
+                            </lazy-component>
+                        </div>
+                    </van-list>
+                    <div style="clear:both;"></div>
+
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <ul>
+                <li :class="activeClass!==99?'active':''" @click="doGetList(-1,'cat')">
+                    <img :src="activeClass!==99?'__STATIC__/muban1/img/tab-home-current.png':'__STATIC__/muban1/img/tab-home.png'">
+                    <span>首页</span>
+                </li>
+                <li :class="activeClass==99?'active':''" @click="doGetList(99,'payed')">
+                    <img :src="activeClass==99?'__STATIC__/muban1/img/tab-cart-current.png':'__STATIC__/muban1/img/tab-cart.png'">
+                    <span>已购</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <!--打赏代码-->
+    <div id="WX-window-TKEy5SPt5wisSxt-Shade" v-if="dialog.pay.status" class="WX-window-shade">
+        <div id="WX-window-TKEy5SPt5wisSxt-box" class="WX-window-box animated fadeInUp">
+            <div class="WX-Window-main" style="width:90%"><h2>打赏后观影</h2>
+                <div class="WX-Window-body">
+                    <div class="ds_tankuang" v-if="ds_try_see==0">
+                        <img :src="ds_img" style="width:100%;height:130px">
+                    </div>
+                    <div id="try_mse" style="width:100%;" v-else></div>
+                    <div class="pay-title">付费即可观看完整视频</div>
+                    <li v-for="(item,index) in dialog.pay.pay" class="pay-item" @click="linkTo(item.url)">
+                        {{item.name}}
+                    </li>
+                    <p style="color:#f74550;line-height:25px;margin:10px auto;text-align: center">
+                        温馨提示：推荐使用浏览器打开收藏观看。<br>
+                    </p>
+                </div>
+                <div class="WX-Window-footer">
+                    <a @click="dialog.pay.status=false,dialog.pay.pay=[]" href="javascript:void(0);" style="width:calc(95% - 10px);"
+                       class="WX-Window-btn cannel">关闭</a></div>
+            </div>
+        </div>
+    </div>
+    <!--收藏代码-->
+    <div id="WX-window-TKEy5SPt5wisSxt-Shadee" v-if="dialog.fav.status" class="WX-window-shade">
+        <div id="WX-window-TKEy5SPt5wisSxt-box1" class="WX-window-box animated fadeInUp">
+            <div class="WX-Window-main" style="width:80%"><h2>保存本站</h2>
+                <div class="WX-Window-body">
+                    <p style="color:#f74550;line-height:25px;margin-top:10px;text-align:center;">
+                        长按保存二维码或复制链接收藏本站
+                    </p>
+                    <img width="100%" :src="'/qrcode?text='+dialog.fav.url"
+                         style="display:block;margin:auto;">
+                </div>
+                <div class="WX-Window-footer">
+                    <a @click="dialog.fav.status=false" href="javascript:void(0);" style="width:calc(95% - 10px);" class="WX-Window-btn cannel">关闭</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--公告代码-->
+    <div id="WX-window-TKEy5SPt5wisSxt-Shade3" v-if="dialog.notice.status" class="WX-window-shade">
+        <div id="WX-window-TKEy5SPt5wisSxt-box2" class="WX-window-box animated fadeInUp">
+            <div class="WX-Window-main" style="width:80%"><h2>公告</h2>
+                <div class="WX-Window-body">
+                    <div class="notice-body" v-html="dialog.notice.content"></div>
+                </div>
+                <div class="WX-Window-footer">
+                    <a @click="dialog.notice.status=false" href="javascript:void(0);" style="width:calc(95% - 10px);" class="WX-Window-btn cannel">关闭</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <form action="" method="post" name="form" style="display:none"></form>
+</div>
+<script>
+    $(document).ready(function () {
+        let player = new Player({
+            "id": "mse",
+            "url": "{$hezi.video_url}",
+            "poster": '__STATIC__/common/images/cover.jpg',
+            "playsinline": true,
+            "x5-video-player-fullscreen": "false",
+            "x5-video-orientation": "portraint",
+            "x5-video-player-type": "h5",
+            "fluid": true,
+            "autoplay": true
+        });
+    });
+    var dy = "{:config('setting.douyin')}";
+    Vue.config.productionTip = false;
+    Vue.config.lang = 'zh-CN';
+    Vue.use(vant.Lazyload, {
+        lazyComponent: true,
+    });
+    new Vue({
+        el: '#app',
+        data: {
+            try_player:'',
+            list: [],
+            banners: true,
+            hezi: false,
+            heziInfo: '{$hezi.video_url}',
+            cat: [],
+            ds_img: "",
+            ds_title: "",
+            ds_url:"",
+            ds_try_see:0,
+            notice:JSON.parse('{$notice|raw}'),
+            banner: JSON.parse('{$swiperList|raw}'),
+            loading: false,
+            finished: false,
+            activeClass:-1,
+            vid: 0,
+            msg: '没有更多了',
+            params: {
+                ldk: "{:input('ldk')}",
+                page: 1,
+                limit: 50,
+                encode: 1,
+                cid: '',
+                key: '',
+                payed: "{:input('payed')}"
+            },
+            catParam: {
+                limit: 9,
+                ldk: "{:input('ldk')}",
+                encode: 1,
+            },
+            dialog: {
+                fav: {
+                    status: false,
+                    img: "",
+                    url: "",
+                },
+                notice:{
+                    status: false,
+                    content: "",
+                },
+                pay: {
+                    status: false,
+                    pay: [],
+
+                }
+            }
+        },
+        mounted: function () {
+            let self=this;
+            self.getCat();
+            if (self.heziInfo) {
+                self.hezi = true;
+                self.banners = false;
+            }
+        },
+        methods: {
+            showNotice(){
+                let vm=this;
+                vm.dialog.notice.content=vm.notice.content;
+                vm.dialog.notice.status=true;
+            },
+            createPlayer(url){
+                let self=this;
+                self.try_player=new Player({
+                    "id": 'try_mse',
+                    "url": url,
+                    "controls": false,
+                    "playsinline": true,
+                    "x5-video-player-fullscreen": "false",
+                    "x5-video-orientation": "portraint",
+                    "x5-video-player-type": "h5",
+                    "fluid": true,
+                    "autoplay": true
+                });
+            },
+            getQueryVariable(variable) {
+                var query = window.location.search.substring(1);
+                var vars = query.split("&");
+                for (var i = 0; i < vars.length; i++) {
+                    var pair = vars[i].split("=");
+                    if (pair[0] == variable) {
+                        return pair[1];
+                    }
+                }
+                return (false);
+            },
+            linkTo(e) {
+                layer.msg("正在调起支付...", {
+                    icon: 16,
+                    time: 3000
+                });
+                if (dy == "1") {
+                    document.form.action = e;
+                    document.form.submit();
+                    return
+                }
+                location.href = e;
+            },
+            doPay(item) {
+                let vm = this;
+                if (item.pay == 1) {
+                    if (dy == "1") {
+                        document.form.action = item.url;
+                        document.form.submit();
+                        return
+                    }
+                    window.location.href = item.url;
+                    return;
+                }
+                vm.vid = item.id;
+                vm.ds_img = item.img;
+                vm.ds_title = item.title;
+                vm.ds_try_see=item.try_see;
+                $.ajax({
+                    url: "/api/resource/play?ldk={:input('ldk')}&vid=" + item.id + "&money=" + item.money,
+                    type: 'GET',
+                    dataType: 'JSON',
+                    data: {},
+                    complete: function (XMLHttpRequest, textStatus) {
+                    },
+                    success: function (res){
+                        if(res.code==200){
+                            vm.dialog.pay.pay = res.data;
+                            vm.dialog.pay.status = true;
+                            if(item.try_see>0){
+                                setTimeout(function () {
+                                    vm.createPlayer(item.video_url);
+                                    vm.try_player.start();
+                                    //监听
+                                    vm.try_player.on('timeupdate',function(e){
+                                        var currentTime = parseInt(e.currentTime);
+                                        if(currentTime >= vm.ds_try_see){
+                                            e.pause();
+                                        }
+                                    });
+                                },50);
+                            }
+                        }
+                    }
+                });
+            },
+            doGetList(index,row) {
+                let vm = this;
+                if(index || index==0){
+                    vm.activeClass=index;
+                }
+                vm.loading=true;
+                if (row != undefined && row.id != undefined) {
+                    vm.list = [];
+                    vm.finished = false;
+                    vm.params.page = 1;
+                    vm.params.cid = row.id;
+                    vm.params.payed = 0;
+                }
+                if (row == "cat") {
+                    vm.list = [];
+                    vm.finished = false;
+                    vm.params.page = 1;
+                    vm.params.cid = '';
+                    vm.params.payed = 0;
+
+                }
+                if (row == "payed") {
+                    vm.list = [];
+                    vm.finished = false;
+                    vm.params.page = 1;
+                    vm.params.payed = 1;
+                    vm.params.cid = '';
+                    vm.msg = "空空如也,赶紧去选择心仪的影片吧!";
+                }
+                if(vm.params.page == 1){
+                    $('#index_view').scrollTop(0);
+                }
+                $.ajax({
+                    url: '/api/resource/getList',
+                    type: 'GET',
+                    dataType: 'JSON',
+                    data: vm.params,
+                    complete: function (XMLHttpRequest, textStatus) {
+                    },
+                    success: function (res) {
+                        if (res.code == 200) {
+                            let temp = res.data.list;
+                            if(vm.params.encode==1){
+                                temp = JSON.parse(Base64.decode(res.data.list));
+                            }
+                            vm.params.page++;
+                            vm.list = vm.list.concat(temp);
+                            vm.loading = false;
+                            if (vm.list.length == res.data.total) {
+                                vm.finished = true;
+                            }
+                        } else {
+                            vm.finished = true;
+                        }
+                    }
+                });
+            },
+            getCat() {
+                let vm = this;
+                $.ajax({
+                    url: '/api/resource/getSort',
+                    type: 'GET',
+                    dataType: 'JSON',
+                    data: vm.catParam,
+                    complete: function (XMLHttpRequest, textStatus) {
+                    },
+                    success: function (res) {
+                        if(res.code===200){
+                            if(vm.catParam.encode==1){
+                                vm.cat=JSON.parse(Base64.decode(res.data));
+                            }else{
+                                vm.cat = res.data;
+                            }
+                        }
+                    }
+                });
+            },
+            doSearch() {
+                window.location.href = "/vsort?ldk={:input('ldk')}";
+            },
+            doFav() {
+                let vm = this;
+                vm.dialog.fav.url = "{$fav}";
+                vm.dialog.fav.status = true;
+            },
+        }
+    })
+</script>
+</body>
+</html>

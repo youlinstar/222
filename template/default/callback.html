@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>正在校验订单</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/layer/2.2/layer.js"></script>
+    <style>
+        @charset "utf-8";
+        /*--公用--*/
+        body, button, dd, dl, dt, fieldset, form, h1, h2, h3, h4, h5, h6, input, legend, li, ol, p, select, table, td, textarea, th, ul, img {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: #fff;
+            -webkit-text-size-adjust: none;
+            margin: 0;
+            padding: 0;
+            font-family: '微软雅黑';
+        }
+
+        ol, ul, li {
+            list-style: none;
+            border: 0
+        }
+
+        a {
+            border: 0;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: none;
+        }
+        .payment_code img,.payment_img img{width:100%}
+        .main {max-width: 750px;min-width: 320px;margin: 0 auto;}
+        @media screen and (min-width:320px) {
+            html{
+                font-size: 16px;
+            }
+        }
+        @media screen and (min-width:480px) {
+            html {
+                font-size: 18px;
+            }
+        }
+        @media screen and (min-width:640px) {
+            html {
+                font-size: 20px;
+            }
+        }
+        .t_wrap .top {
+            font-size: 1.1rem;
+            color: #fff;
+            text-align: center;
+            padding: 0 0.6rem;
+            background: #fe443b;
+        }
+        .t_wrap .top a {
+            color: #fff;
+        }
+        #window_div,#img_div{
+            width:100%;
+            height:600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color:#fff;
+        }
+    </style>
+</head>
+<body ontouchstart id="body">
+<empty name="show">
+    <form action="" id="myform" method='post' style="display:block;"></form>
+    <div class="main-box">
+        <div id="img_div" style="position:relative;width:100%;text-align:center;">
+            <p style='font-size:1rem;color:#22AB39;display:block;' id="over_time"></p>
+        </div>
+    </div>
+    <div id="window_div" style="background-color:rgba(0,0,0,0.7);display:none;">
+        <span style="color:#fff;font-size:14px;">请稍后，正在加载中。。。。</span>
+    </div>
+        <script src="https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
+        <script type="text/javascript">
+            var id = "{:input('id/d','0')}";
+            var vid = "{$v}";
+            var pay_sn = "{:input('pay_sn')}";
+            var url = "/checkOrder?ldk={$ldk}&ordno={$ordno}";
+            var t1;
+            var dy = "{:config('setting.douyin')}";
+            function ajax_data(id,vid,url,type,pay_sn){
+                $.ajax({
+                    type:'post',
+                    dataType:'json',
+                    data:{id:id,vid:vid,type:type,pay_sn:pay_sn},
+                    url:url,
+                    success:function(res){
+                        if(res.code == 1){
+                            layer.msg('已支付正在跳转。。。',{'time':500},function(){
+                                if(dy == 1){
+                                    document.getElementById("myform").action = "/video?ldk={$ldk}&vid=" + res.data.v_id;
+                                    document.getElementById("myform").submit();
+                                    return ;
+                                }
+                                location.href = "video?ldk={$ldk}&vid=" + res.data.v_id;
+                            })
+                        }else if(res.status == 3){
+                            layer.close(loading);
+                            //去掉定时器
+                            window.clearTimeout(t1);
+                            layer.msg('支付失败');
+                        }
+                    }
+                });
+            }
+            var countdown=0;
+            settime();
+            function settime() {
+                var val =$('#over_time');
+                ajax_data(id,vid,url,'lose',pay_sn);
+                if (countdown == 1) {
+                    val.html('已支付成功，正在加载内容');
+                } else {
+                    val.html('请稍后，正在校验中.....');
+                    countdown--;
+                    if(countdown<=-120){
+                        window.clearTimeout(t1);
+                        val.html('校验超时');
+                    }
+                    t1 =setTimeout(function() {
+                        settime(val)
+                    },1000)
+                }
+
+            }
+        </script>
+    <else/>
+</empty>
+<div class="main"></div>
+</body>
+</html>

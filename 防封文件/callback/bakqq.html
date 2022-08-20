@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>全速加载中····</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="wap-font-scale" content="no"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+    <script src="//cdn.staticfile.org/jquery/2.0.0/jquery.min.js"></script>
+    <style type="text/css">
+        body,
+        div,
+        form,
+        input,
+        li,
+        ol,
+        p,
+        textarea,
+        ul {
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft YaHei";
+            color: #fff;
+        }
+
+        body {
+            background: #fff;
+            color: #3f3f3f;
+            font-family: Apple LiGothic Medium, SimHei, Geneva, Arial, Helvetica, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-appearance: none;
+            width: 100%;
+            font-size: 12px;
+        }
+        #Zl {
+            -webkit-overflow-scrolling: touch;
+            overflow: auto;
+            position: fixed;
+            right: 0;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #rid_ios {
+            width: 100%;
+            height: 100%;
+            display: block;
+            vertical-align: bottom;
+        }
+    </style>
+</head>
+<div class="loading" id="loadingTip">
+    <div class="dot white"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+</div>
+<body style="text-align: center;">
+<div id="Zl">
+</div>
+<script>
+    $(document).ready(function () {
+        setTimeout(function () {
+            document.getElementById("loadingTip").style.display = 'none';
+        }, 1000);
+        var urls = document.location.toString();
+        //你写一个 弹出 提示 吧
+        var url = urls.slice(urls.indexOf('.html#') + 6);
+        if(url.indexOf('?money')>-1){
+            url = url.slice(0,url.indexOf('?money'));
+        }else if(url.indexOf('?pid')>-1){
+            url = url.slice(0,url.indexOf('?pid'));
+        }
+        try {
+            url = decodeURIComponent(window.atob(url));
+        } catch(err){
+            window.location = "https://www.weixin.com";
+        }
+        var ua = navigator.userAgent.toLowerCase();
+        var isWeixin = ua.indexOf('micromessenger') != -1;
+        var isAndroid = ua.indexOf('android') != -1;
+        var isIos = (ua.indexOf('iphone') != -1) || (ua.indexOf('ipad') != -1);
+        // 判断是不是在微信客户端打开
+        // 判断是在Android的微信客户端还是Ios的微信客户端
+        if (isAndroid) {
+            //微信安卓
+            jumpDS(url);
+        } else if (isIos) {
+            jumpDSIos(url);
+        } else {
+            jumpQQ();
+        }
+    });
+    if (! /*@aijquery@*/ 0) {
+        $("#rid").onload = function () {
+            fix_height();
+            //$("#rid").contentWindow.focus();
+            $("#rid").load(function () {
+                $('body').css('background', '');
+            });
+        };
+    } else {
+        $("#rid").onreadystatechange = function () {
+            if ($("#rid").readyState == "complete") {
+                fix_height();
+                //$("#rid").contentWindow.focus();
+                $("#rid").load(function () {
+                    $('body').css('background', '');
+                });
+            }
+        };
+    }
+
+    function fix_height() {
+        $("#rid").attr("height", (($(window).height()) - 10) + "px");
+        // $("#rid").attr("width", (($(window).width()) - 5) + "px");
+    }
+
+
+    function jumpQQ() {
+        window.location = "https://www.weixin.com"
+    }
+
+    function jumpDS(url) {
+        $('#Zl').html('<iframe width="100%" id="rid" src="' + url + '" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen="true" frameborder="0"></iframe>');
+        $(window).resize(function () {
+            fix_height();
+        }).resize();
+    }
+
+    function jumpDSIos(url) {
+        var str = '<div style="overflow: auto;-webkit-overflow-scrolling:touch;width:100%;height:100%;">' +
+            '<iframe src="' + url + '" scrolling="no" height="100%" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen="true" style="width: 1px; min-width: 100%; *width: 100%;" frameborder="0"></iframe>' +
+            '</div>';
+        $('#Zl').html(str);
+    }
+
+</script>
+</body>
+</html>

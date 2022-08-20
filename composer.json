@@ -1,0 +1,44 @@
+{
+    "name": "topthink/think",
+    "description": "the new thinkphp framework",
+    "type": "project",
+    "keywords": [
+        "framework",
+        "thinkphp",
+        "ORM"
+    ],
+    "homepage": "http://thinkphp.cn/",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "liu21st",
+            "email": "liu21st@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.6.0",
+        "topthink/framework": "5.1.*",
+        "topthink/think-captcha": "2.0.*",
+        "topthink/think-image": "^1.0",
+        "5ini99/think-addons": "dev-master",
+        "overtrue/pinyin": "~3.0",
+        "phpoffice/phpexcel": "^1.8",
+        "jaeger/querylist": "^4.2",
+        "jaeger/querylist-curl-multi": "^4.0",
+        "jaeger/querylist-absolute-url": "^4.0",
+        "aliyuncs/oss-sdk-php": "^2.3",
+        "topthink/think-queue": "2.*",
+        "endroid/qrcode": "^3.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "app\\": "application"
+        }
+    },
+    "extra": {
+        "think-path": "thinkphp"
+    },
+    "config": {
+        "preferred-install": "dist"
+    }
+}

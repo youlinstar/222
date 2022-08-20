@@ -1,0 +1,43 @@
+{include file="common/head"/}
+<div class="layui-fluid">
+    <div class="table-body">
+        <div class="layui-card-header">批量添加资源</div>
+        <div class="layui-card">
+            <form class="layui-form layui-form-pane" lay-filter="agent">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">视频信息</label>
+                    <div class="layui-input-inline from-inline-7">
+                        <textarea name="row[content]" class="layui-input" style="height:200px;padding:10px;" lay-verify="required" lay-reqText="请输入视频信息" placeholder="视频信息格式：【111】视频标题|视频地址|图片地址"></textarea>
+                        <div class="layui-word-aux" style="color:#f90!important;">一行一个切勿串行.</div>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button type="button" class="layui-btn layui-bg-blue layui-btn-small" lay-submit="" lay-filter="submit">提交</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{include file="common/foot"/}
+<script>
+    layui.use(['form'], function(){
+        var form = layui.form,$= layui.jquery;
+        form.on('submit(submit)', function (data) {
+            loading =layer.load(1, {shade: [0.1,'#fff']});
+            $.post("", data.field, function (res) {
+                layer.close(loading);
+                if (res.status===200){
+                    layer.msg('添加操作成功',{time: 1000, icon: 1},function(){
+                        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                        parent.layer.close(index);//再执行关闭
+                    });
+                } else {
+                    layer.msg(res.msg, {time: 1000, icon: 2});
+                }
+            });
+        })
+    });
+</script>
