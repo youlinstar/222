@@ -68,7 +68,7 @@
                 dataName:'data',
             },
             cols: [[
-                {type: 'checkbox',title:'ID',align:'center',width:50},
+                {fixed: 'left',type: 'checkbox',title:'ID',align:'center',width:50},
                 {field: 'id',title:'ID',align:'center',width:50},
                 {field: 'title',title: '名称',width:240},
                 {field: 'url',title: '图片',align:'center',width:150,templet:function (d) {
@@ -78,7 +78,7 @@
 
                 {field: 'status',align: 'center',title: '{:lang("status")}',width: 100,toolbar: '#status'},
                 {field: 'ctime_text', align: 'center',title: '添加时间',width:150},
-                {align: 'center',toolbar:'#action',width:180}
+                {fixed: 'right',title: '功能操作',align: 'center',toolbar:'#action',width:180}
             ]]
         });
         //选择日期

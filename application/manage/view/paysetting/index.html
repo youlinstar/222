@@ -1,7 +1,5 @@
 {include file="common/head"/}
-<style>
-.layui-table-cell{height: inherit;}
-</style>
+
 <div class="layui-fluid">
     <div class="admin-head">
         <ul>
@@ -80,7 +78,7 @@
                 dataName:'data',
             },
             cols: [[
-                {type: 'checkbox',title:'ID',align:'center',width:50},
+                {fixed: 'left',type: 'checkbox',title:'ID',align:'center',width:50},
                 {field: 'title',title: '名称',width:320},
                 {field: 'label',title:'标识',align:'center',width:160},
                 {field: 'url',title:'申请接口',align:'center',width:160,templet:function(d){
@@ -89,7 +87,7 @@
                 {field: 'pay_channel',title:'通道类型',align:'center',width:120},
                 {field:'status',width:100,title: '状态',align:'center',templet:'#statusTpl'},
                 {field: 'ctime_text', align: 'center',title: '发布时间',width:180},
-                {align: 'center',toolbar:'#action',width:180}
+                {fixed: 'right',title: '功能操作',align: 'center',toolbar:'#action',width:180}
             ]]
         });
         //选择日期

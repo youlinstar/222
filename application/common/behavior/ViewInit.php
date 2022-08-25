@@ -13,6 +13,7 @@ class ViewInit
 {
     public function run(Request $request, $params)
     {
+        halt($GLOBALS);
         $uid = 1;
         $from = $request->param('ldk');
        

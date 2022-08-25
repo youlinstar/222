@@ -1,5 +1,5 @@
 {include file="common/head"/}
-<style>
+<style xmlns="http://www.w3.org/1999/html">
     .layui-table td, .layui-table th {
         padding: 8px 15px !important;
     }
@@ -100,7 +100,9 @@
         cursor: pointer;
     }
 </style>
+
 <div class="layui-fluid">
+
     {if $auth->group_id==1}
         <div class="layui-card">
             <div class="layui-row">
@@ -603,6 +605,7 @@
             }
         });
     }
+    
 </script>
 </body>
 </html>

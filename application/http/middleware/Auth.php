@@ -8,6 +8,7 @@ class Auth
 {
     public function handle($request, \Closure $next)
     {
+        
         $header = request::header();
         $token=null;
         if(array_key_exists('authorization',$header)){

@@ -40,8 +40,7 @@ function checkDomain($url)
 function userAgent()
 {
     $ua = request()->header('USER_AGENT');
-    // file_put_contents('ua1.txt', date('Y-m-d H:i:s').'|'.$ua.json_encode(request())."\r\n", FILE_APPEND);
-//   halt($ua);
+
     $ua = str_replace('WIFI', '', $ua);
      
     $ua = str_replace('4G', '', $ua);
@@ -77,7 +76,7 @@ function decrypt($str)
 }
 
 /**
- * 获取防封链接
+ * 获取防封链接 弃用
  * @param $type
  * @return mixed|string
  */
@@ -95,122 +94,49 @@ function getAntiUrl($type)
  * @param $short_id
  * @return mixed|string
  */
-function getDwz($short_id = 1 , $url = '')
-{
-    $shortModle = new \app\common\model\Short();
+function getDwz($short , $url = ''){
+   
 
-    $short = $shortModle->where('id', $short_id)->find();
-    switch ($short->label) {
-        case 'self':#原始链接
-            return callback(200, 'success', '', $url);
-            break;
-        case 'wechat':#微信
-            $url = sprintf($short->api_url,$short->api_token,$url);
-            return callback(200, 'success', '', $url);
-            break;
-        case 'tinyurl':#猫咪短链接
-            $api = $short->api_url . '?token=' . $short->api_token . '&domain=' . urlencode($url); //新猫咪防封
-            $res = json_decode(file_get_contents($api), true);
-            if ($res['data']['status_code'] == 0) {
-                return callback(200, 'success', '', $res['data']['short_url']);
-            }
-            return callback(404, $res['data']['message']);
-            break;
-        case 'dwz':#DWZ短网址
-            $api = $short->api_url . '?format=json&url=' . urlencode($url); //新猫咪防封
-            $res = json_decode(file_get_contents($api), true);
-            if ($res['status'] == 0) {
-                return callback(200, 'success', '', $res['tinyurl']);
-            }
-            return callback(404, $res['err_msg']);
-            break;
-        case 'qilin':#麒麟短网址
-            $api = $short->api_url . '?username=' . $short->username . '&key=' . $short->api_token . '&url=' .urlencode($url); //新猫咪防封
-            $res = json_decode(file_get_contents($api), true);
-            if (!empty($res['statu'])) {
-                return callback(200, 'success', '', $res['short']);
-            }else{
-                return callback(404, $res['msg']);
-            }
-            break;
-        case 'ck':#私人定制短网址
-            $api_url = $short->api_url . '/api';
-            $data = [
-                "key"=>$short->api_token,
-                "url"=>$url
-                ];
-           
-            $res = httpRequest($api_url,'POST',$data);
-            $res = json_decode($res, true);
-            
-            if ($res['code'] == 1) {
-                return callback(200, 'success', '', $res['url']);
-            }else{
-                return callback(404, $res['msg']);
-            }
-            break;
-        case 'newDwz':#新短链接
-            $api_url = $short->api_url;
-            $data = [
-                "key"=>$short->api_token,
-                "uname"=>$short->username,
-                "url"=>$url
-                ];
-           
-            $res = httpRequest($api_url,'POST',$data);
-            $res = json_decode($res, true);
-            if(isset($res) && !empty($res)){
-                if ($res['status'] == 1) {
-                return callback(200, 'success', '', $res['data']['url']);
-                }else{
-                    return callback(404, $res['msg']);
-                }
-            }else{
-                return callback(404, '错误');
-            }
-            break;
-        case 'kongkong':
-            $api_url=$short->api_url;
-            $res=httpRequest($api_url.$url,'GET');
-            if(isset($res) && !empty($res)){
-                return callback(200, 'success', '', $res);
-            }
-            return callback(404, '错误');
-            break;
-    }
 }
-
-
-
 
 /**
  * 获取域名配置
- * @param int $type 域名类型 1入口 2落地 3支付
+ * @param int $type 域名类型 1入口 2落地 3支付 4标识 5原生短链接入口 6、原生短链接中转 7、后台
  * @param int $uid 用户ID 默认为0
  * @return string
  */
 function getDomain($type = 1, $uid = 0)
 {
-   
+    
     $dominModel = new \app\common\model\Domain();
     if ($uid > 0) {
-        $domain = $dominModel->where(['type' => $type, 'status' => 1, 'uid' => $uid])->orderRand()->find();
-        if (empty($domain)) {
-            #随机获取相应类型域名
-            $domain = $dominModel->where(['type' => $type, 'status' => 1, 'is_bind' => 0])->orderRand()->find();
+
+        # 获取用户绑定域名   
+
+        $domain = $dominModel->where(['type' => $type, 'status' => 1,'is_bind' => 1,'uid'=>$uid])->orderRand()->find();
+        
+        if (empty($domain)) {            
+
+            # 随机获取域名
+
+            $domain = $dominModel->where(['type' => $type, 'status' => 1,'is_bind' => 0])->orderRand()->find();
+
             if (empty($domain)) {
-                exit(json_encode(['code' => 0, 'msg' => '找不到域名请联系管理员设置']));
+                # 后期增加发送短信 进行提醒
+                exit;
             }
         }
     } else {
-        //获取入口域名
+        # 获取域名
         $domain = $dominModel->where(['type' => $type, 'status' => 1,'is_bind' => 0])->orderRand()->find();
         if (empty($domain)) {
-            exit(json_encode(['code' => 0, 'msg' => '找不到域名请联系管理员设置']));
+            exit;
         }
     }
-    //是否启用域名前缀 并且是落地类型
+    # 是否启用域名前缀 并且是落地类型
     $https = $domain['is_ssl'] == 1 ? 'https://' : 'http://';
+    
+    # 落地域名前缀随机
     if (config('setting.pre_rand') && $type == 2) {
         $pre_domain = str_rand() . '.';
         return $https . $pre_domain . trim($domain['domain']);

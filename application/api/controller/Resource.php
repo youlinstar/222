@@ -1,19 +1,18 @@
 <?php
 
-
 namespace app\api\controller;
 
-// use app\common\controller\Common;
-use app\common\model\PaySetting;
 use app\common\model\Agent;
 use app\common\model\Users;
 use app\common\model\PayShow;
-use app\common\model\Spread;
+use app\common\model\Video;
 use app\common\model\VideoSort;
 use think\Db;
 use think\Exception;
 use think\facade\Log;
 use think\facade\Session;
+use think\Request;
+use think\facade\Cache;
 
 class Resource extends Common
 {
@@ -21,110 +20,98 @@ class Resource extends Common
     public function initialize()
     {
         parent::initialize();
-        $this->model = new Spread();
+        $this->model = new Video();
     }
 
-    /**
-     * 我的分类列表
+    /**视频分类
+     * @return void
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
      */
     public function getSort()
-    {
-        $limit = $this->request->param('limit/d', 30);
-        $encode = $this->request->param('encode/d',0);
-        $list = VideoSort::where('status', 1)->limit($limit)->order('indexid asc')->select();
-        if($encode==1){
-            $list = base64_encode(json_encode($list));
-        }
+    {                
+        $list = VideoSort::where('status', 1)->order('indexid asc')->cache(300)->select();
+        
+        $list = base64_encode(json_encode($list));
+        
         $this->success('success', $list);
     }
 
-    /**
-     * 我的推广资源列表
+    /**获取资源列表
+     * @return void
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
      */
     public function getList()
     {
-        $from = $this->request->param('ldk');
-        $user = $GLOBALS['user'];
-        $domain = getDomain(2, $user->id);
-        $pay_domain = getDomain(3, $user->id);
+        $from = $this->ldk;
+        #入口Type
+        $rkType = $this->request->param('rkType/d', 0);
+        if(empty($rkType)){
+            $this->error('参数错误');
+        }
+        switch($rkType)
+        {
+            case 1:
+                $rukou = 'video';
+                break;
+            case 2:
+                $rukou = 'fvideo';
+                break;
+        }
+        $domain = getDomain(2, $this->uid);
+        $pay_domain = getDomain(3, $this->uid);
         $pay_ids = $this->getPayVideo();
         $where = [];
-        // $where[] = ['spread.uid', '=', $user->id];
         $sortid = $this->request->param('cid/d', 0);
         $encode = $this->request->param('encode/d',0);
         if (!empty($sortid)) {
-            $where[] = ['spread.sortid', '=', $sortid];
+            $where[] = ['sortid', '=', $sortid];
         }
         $key = $this->request->param('key/s', '', 'trim');
         if (!empty($key)) {
-            $where[] = ['spread.title', 'like', '%' . $key . '%'];
+            $where[] = ['title', 'like', '%' . $key . '%'];
         }
+        #查询已购
         $payed = $this->request->param('payed/d', 0);
-
         if ($payed && ($pay_ids['is_day'] == 0 && $pay_ids['is_week'] == 0 && $pay_ids['is_month'] == 0)) {
-            $where[] = ['spread.id', 'in', $pay_ids['vid']];
+            $where[] = ['id', 'in', $pay_ids['vid']];
         }
         $limit = $this->request->param('limit/d', 30);
         $page = $this->request->param('page/d', 1);
         $page = $page - 1;
         $pageSize = $page * $limit;
-        $adminInfo = Agent::where('id',$user->id)->find();
-       
-        $list = $this->model->withJoin(['sort' => ['name']])
-            ->where($where)
-            ->order('sorts desc')
-            ->order('ctime desc')
-            ->limit($pageSize, $limit)
-            ->select();
-      
-        $total = $this->model->withJoin(['sort' => ['name']])
-            ->where($where)
-            ->count();
-        $data = [];  
+        $agentInfo = Agent::where('id',$this->uid)->field('money,money1,money2,money3')->find();
+        if(empty($agentInfo)){
+            $this->error('获取失败',null,500);
+        }
+        $list = $this->model->where($where)
+                ->order('sorts desc')
+                ->order('ctime desc')
+                ->orderRand()
+                ->limit($pageSize, $limit)
+                ->field('id,img,title,times,sorts,video_url')
+                ->select();
+        $total = $this->model->where($where)->count();
+
         if (!empty($list)) {
             $list = $list->toArray();
             foreach ($list as $k => $v) {
-                if($v['sorts']>0){
-                     $data[$k] = $v; 
-                    unset($list[$k]);
-                    $data[$k]['h'] = mt_rand(90, 99);
-                    $data[$k]['rand'] = mt_rand(1212, 9083);
-                    if (in_array($v['id'], $pay_ids['vid']) || ($pay_ids['is_day'] == 1 || $pay_ids['is_week'] == 1 || $pay_ids['is_month'] == 1)) {
-                        $data[$k]['pay'] = 1;
-                        $data[$k]['url'] = $domain . "/video?vid={$v['id']}&ldk={$from}";
-                    } else {
-                        if (!empty($pay_domain)) {
-                            $domain = $pay_domain;
-                        }
-                        $data[$k]['pay'] = 0;
-                        $data[$k]['url'] = $domain . "/play?vid={$v['id']}&ldk={$from}";
+                $list[$k]['rand'] = mt_rand(1212, 9083);
+                if (in_array($v['id'], $pay_ids['vid']) || ($pay_ids['is_day'] == 1 || $pay_ids['is_week'] == 1 || $pay_ids['is_month'] == 1)) {
+                    $list[$k]['pay'] = 1;
+                    $list[$k]['url'] = $domain . "/{$rukou}?vid={$v['id']}&ldk={$from}";
+                } else {
+                    if (!empty($pay_domain)) {
+                        $domain = $pay_domain;
                     }
-                     $data[$k]['money'] = $adminInfo->money;
-                     $data[$k]['money1'] = $adminInfo->money1;
-                     $data[$k]['money2'] = $adminInfo->money2;
-                     $data[$k]['money3'] = $adminInfo->money3;
-                }else{
-                    $list[$k]['h'] = mt_rand(90, 99);
-                    $list[$k]['rand'] = mt_rand(1212, 9083);
-                    if (in_array($v['id'], $pay_ids['vid']) || ($pay_ids['is_day'] == 1 || $pay_ids['is_week'] == 1 || $pay_ids['is_month'] == 1)) {
-                        $list[$k]['pay'] = 1;
-                        $list[$k]['url'] = $domain . "/video?vid={$v['id']}&ldk={$from}";
-                    } else {
-                        if (!empty($pay_domain)) {
-                            $domain = $pay_domain;
-                        }
-                        $list[$k]['pay'] = 0;
-                        $list[$k]['url'] = $domain . "/play?vid={$v['id']}&ldk={$from}";
-                    }
-                     $list[$k]['money'] = $adminInfo->money;
-                     $list[$k]['money1'] = $adminInfo->money1;
-                     $list[$k]['money2'] = $adminInfo->money2;
-                     $list[$k]['money3'] = $adminInfo->money3;
+                    $list[$k]['pay'] = 0;
+
                 }
-                
+                $list[$k]['money'] = $agentInfo->money;
             }
-            shuffle($list);
-            $list = array_merge($data,$list);
             
             if($encode==1){
                 $list = base64_encode(json_encode($list));
@@ -133,145 +120,25 @@ class Resource extends Common
         }
         $this->success('success', ['list' => $list, 'total' => $total]);
     }
-    
-    
-    /**
-     * 我的积分资源列表
-     */
-    public function getJfList()
-    {
-        $from = $this->request->param('ldk');
-        $user = $GLOBALS['user'];
-        $domain = getDomain(2, $user->id);
-        $pay_domain = getDomain(3, $user->id);
-        $pay_ids = $this->getPayVideo();
-        $where = [];
-        // $where[] = ['spread.uid', '=', $user->id];
-        $sortid = $this->request->param('cid/d', 0);
-        $encode = $this->request->param('encode/d',0);
-        if (!empty($sortid)) {
-            $where[] = ['spread.sortid', '=', $sortid];
-        }
-        $key = $this->request->param('key/s', '', 'trim');
-        if (!empty($key)) {
-            $where[] = ['spread.title', 'like', '%' . $key . '%'];
-        }
-        $payed = $this->request->param('payed/d', 0);
-
-        if ($payed && ($pay_ids['is_day'] == 0 && $pay_ids['is_week'] == 0 && $pay_ids['is_month'] == 0)) {
-            $where[] = ['spread.id', 'in', $pay_ids['vid']];
-        }
-        $limit = $this->request->param('limit/d', 30);
-        $page = $this->request->param('page/d', 1);
-        $page = $page - 1;
-        $pageSize = $page * $limit;
-        $adminInfo = Agent::where('id',$user->id)->find();
-       
-        $list = $this->model->withJoin(['sort' => ['name']])
-            ->where($where)
-            ->order('sorts desc')
-            ->order('ctime desc')
-            ->limit($pageSize, $limit)
-            ->select();
-      
-        $total = $this->model->withJoin(['sort' => ['name']])
-            ->where($where)
-            ->count();
-        $data = [];  
-        if (!empty($list)) {
-            $list = $list->toArray();
-            foreach ($list as $k => $v) {
-                //视频排序
-                if($v['sorts']>0){
-                     $data[$k] = $v; 
-                    unset($list[$k]);
-                    $data[$k]['h'] = mt_rand(90, 99);
-                    $data[$k]['rand'] = mt_rand(1212, 9083);
-                    if (in_array($v['id'], $pay_ids['vid']) || ($pay_ids['is_day'] == 1 || $pay_ids['is_week'] == 1 || $pay_ids['is_month'] == 1)) {
-                        $data[$k]['pay'] = 1;
-                        $data[$k]['url'] = $domain . "/fvideo?vid={$v['id']}&ldk={$from}";
-                    } else {
-                        if (!empty($pay_domain)) {
-                            $domain = $pay_domain;
-                        }
-                        $data[$k]['pay'] = 0;
-                        $data[$k]['url'] = $domain . "/play?vid={$v['id']}&ldk={$from}";
-                    }
-                     $data[$k]['money'] = $adminInfo->money;
-                     $data[$k]['money1'] = $adminInfo->money1;
-                     $data[$k]['money2'] = $adminInfo->money2;
-                     $data[$k]['money3'] = $adminInfo->money3;
-                }else{
-                    $list[$k]['h'] = mt_rand(90, 99);
-                    $list[$k]['rand'] = mt_rand(1212, 9083);
-                    if (in_array($v['id'], $pay_ids['vid']) || ($pay_ids['is_day'] == 1 || $pay_ids['is_week'] == 1 || $pay_ids['is_month'] == 1)) {
-                        $list[$k]['pay'] = 1;
-                        $list[$k]['url'] = $domain . "/fvideo?vid={$v['id']}&ldk={$from}";
-                    } else {
-                        if (!empty($pay_domain)) {
-                            $domain = $pay_domain;
-                        }
-                        $list[$k]['pay'] = 0;
-                        $list[$k]['url'] = $domain . "/play?vid={$v['id']}&ldk={$from}";
-                    }
-                     $list[$k]['money'] = $adminInfo->money;
-                     $list[$k]['money1'] = $adminInfo->money1;
-                     $list[$k]['money2'] = $adminInfo->money2;
-                     $list[$k]['money3'] = $adminInfo->money3;
-                }
-                
-            }
-            shuffle($list);
-            $list = array_merge($data,$list);
-            
-            if($encode==1){
-                $list = base64_encode(json_encode($list));
-            }
-            
-        }
-        $uabs = userAgent();
-        $userObj = Users::where(['uabs'=>$uabs,'uid'=>$user->id])->find();
-        if(empty($userObj)){
-            $jf = 0;
-        }else{
-            $jf = $userObj->jifen;
-        }
-        $this->success('success', ['list' => $list, 'total' => $total,'jf'=>$jf]);
-    }
-    
-    
-    
-    
-    
-     /**
-     * 我的直播列表
-     */
-    public function getZbList()
-    { 
-    
-        $list = \app\common\model\Zhibo::
-            order('ctime desc')
-            ->find();
-          
-        $list = $list->toArray();
-       
-        return json(['code'=>1,'url'=>$list['link']]);
-        
-    }
 
     /**
-     * 播放影片
+     * 获取视频支付地址
+     * @return void
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
      */
     public function play()
     {
-        $from = $this->request->param('ldk');
-        $video_id = $this->request->param('vid/d', 0);
-        $money = $this->request->param('money/f', 0);
-        $user = $GLOBALS['user'];
+        $from = $this->ldk;
+        #视频ID
+        $video_id = $this->request->param('vid/d', 0);        
+        #入口Type
+        $rkType = $this->request->param('rkType/d', 0);
         #落地域名
-        $land_domain = getDomain(2, $user->id);
+        $land_domain = getDomain(2, $this->uid);
         #支付域名
-        $pay_domain = getDomain(3, $user->id);
+        $pay_domain = getDomain(3, $this->uid);
         if ($pay_domain) {
             $land_domain = $pay_domain;
         }
@@ -280,24 +147,25 @@ class Resource extends Common
         if (empty($spread)) {
             $this->error('资源已经下架了');
         }
+        $agentInfo = Agent::where('id',$this->uid)->field('money,money1,money2,money3,jf,is_day,is_week,is_month,pay_id')->find();
+
         //改为调用统一设置用户的价格
-        $one_money = $user->money;
-        $day_money = $user->money1;
-        $week_money = $user->money2;
-        $month_money = $user->money3;
-        $is_day = $user->is_day;
-        $is_week = $user->is_week;
-        $is_month = $user->is_month;
-      
+        $one_money = $agentInfo->money;
+        $day_money = $agentInfo->money1;
+        $week_money = $agentInfo->money2;
+        $month_money = $agentInfo->money3;
+        $is_day = $agentInfo->is_day;
+        $is_week = $agentInfo->is_week;
+        $is_month = $agentInfo->is_month;
+        
         #查询支付通道
-        if ($user->pay_id == 0) {
-            $user->pay_id = 15;
+        if ($agentInfo->pay_id == 0) {
+            $agentInfo->pay_id = 15;
         }
-        $pay_list = [];
         $pay_list = [
             [
                 'name' => "单片购买 {$one_money} 元",
-                'url' => "$land_domain/play?ldk={$from}&is_type=1&vid={$video_id}",
+                'url' => "$land_domain/play?ldk={$from}&is_type=1&vid={$video_id}&rkType={$rkType}",
                 'flg' => 'dan_fee',
                 'money' => $one_money,
                 'img' => "/default/img/vipicon.png"  //图标地址
@@ -306,7 +174,7 @@ class Resource extends Common
         if ($day_money > 0 && $is_day == 1) {
             array_push($pay_list, [
                 'name' => "包日观看全部 {$day_money} 元",
-                'url' => "$land_domain/play?ldk={$from}&is_type=2&vid={$video_id}",
+                'url' => "$land_domain/play?ldk={$from}&is_type=2&vid={$video_id}&rkType={$rkType}",
                 'flg' => 'day_fee',
                 'money' => $day_money,
                 'img' => "/default/img/vipicon.png"  //图标地址
@@ -315,7 +183,7 @@ class Resource extends Common
         if ($week_money > 0 && $is_week == 1) {
             array_push($pay_list, [
                 'name' => "包周观看全部 {$week_money} 元",
-                'url' => "$land_domain/play?ldk={$from}&is_type=3&vid={$video_id}",
+                'url' => "$land_domain/play?ldk={$from}&is_type=3&vid={$video_id}&rkType={$rkType}",
                 'flg' => 'day_fee',
                 'money' => $week_money,
                 'img' => "/default/img/vipicon.png"  //图标地址
@@ -324,120 +192,67 @@ class Resource extends Common
         if ($month_money > 0 && $is_month == 1) {
             array_push($pay_list, [
                 'name' => "包月观看全部 {$month_money} 元",
-                'url' => "$land_domain/play?ldk={$from}&is_type=4&vid={$video_id}",
+                'url' => "$land_domain/play?ldk={$from}&is_type=4&vid={$video_id}&rkType={$rkType}",
                 'flg' => 'month_fee',
                 'money' => $month_money,
+                'img' => "/default/img/vipicon.png"  //图标地址
+            ]);
+        }     
+
+        if($rkType == 2){
+
+            if(empty($agentInfo->jf)){
+                $jf = 10;
+            }else{
+                $jf = $agentInfo->jf;
+            }
+            array_push($pay_list, [
+                'name' => "{$jf}积分免费观看",
+                'url' => "$land_domain/jfplay?ldk={$from}&vid={$video_id}&uid={$this->uid}",
+                'flg' => 'jf',
+                'money' => $jf,
                 'img' => "/default/img/vipicon.png"  //图标地址
             ]);
         }
         
         $this->success('success', $pay_list);
     }
+
     /**
-     * 积分播放影片
-     */
-    public function jfplay()
-    {
-        $from = $this->request->param('ldk');
-        $video_id = $this->request->param('vid/d', 0);
-        $money = $this->request->param('money/f', 0);
-        $is_jf = $this->request->param('isjf/d', 0);
-        $user = $GLOBALS['user'];
-        #落地域名
-        $land_domain = getDomain(2, $user->id);
-        #支付域名
-        $pay_domain = getDomain(3, $user->id);
-        if ($pay_domain) {
-            $land_domain = $pay_domain;
-        }
-        #查询资源价格
-        $spread = $this->model->where('id', $video_id)->find();
-        if (empty($spread)) {
-            $this->error('资源已经下架了');
-        }
-        //改为调用统一设置用户的价格
-        $one_money = $user->money;
-        $day_money = $user->money1;
-        $week_money = $user->money2;
-        $month_money = $user->money3;
-        $is_day = $user->is_day;
-        $is_week = $user->is_week;
-        $is_month = $user->is_month;
-        $jf = $user->jf;
-        #查询支付通道
-        if ($user->pay_id == 0) {
-            $user->pay_id = 15;
-        }
-        $pay_list = [];
-        $pay_list = [
-            [
-                'name' => "单片购买 {$one_money} 元",
-                'url' => "$land_domain/play?ldk={$from}&is_type=1&vid={$video_id}&isjf={$is_jf}",
-                'flg' => 'dan_fee',
-                'money' => $one_money,
-                'img' => "/default/img/vipicon.png"  //图标地址
-            ]
-        ];
-        if ($day_money > 0 && $is_day == 1) {
-            array_push($pay_list, [
-                'name' => "包日观看全部 {$day_money} 元",
-                'url' => "$land_domain/play?ldk={$from}&is_type=2&vid={$video_id}&isjf={$is_jf}",
-                'flg' => 'day_fee',
-                'money' => $day_money,
-                'img' => "/default/img/vipicon.png"  //图标地址
-            ]);
-        }
-        if ($week_money > 0 && $is_week == 1) {
-            array_push($pay_list, [
-                'name' => "包周观看全部 {$week_money} 元",
-                'url' => "$land_domain/play?ldk={$from}&is_type=3&vid={$video_id}&isjf={$is_jf}",
-                'flg' => 'day_fee',
-                'money' => $week_money,
-                'img' => "/default/img/vipicon.png"  //图标地址
-            ]);
-        }
-        if ($month_money > 0 && $is_month == 1) {
-            array_push($pay_list, [
-                'name' => "包月观看全部 {$month_money} 元",
-                'url' => "$land_domain/play?ldk={$from}&is_type=4&vid={$video_id}&isjf={$is_jf}",
-                'flg' => 'month_fee',
-                'money' => $month_money,
-                'img' => "/default/img/vipicon.png"  //图标地址
-            ]);
-        }
-        $pay_list[] = [
-             'name' => "单片购买{$jf}积分",
-              'url' => "$land_domain/jfplay?ldk={$from}&jf={$jf}&vid={$video_id}&uid={$user->id}&isjf={$is_jf}",
-              'flg' => 'jf',
-              'money' => $jf,
-              'img' => "/default/img/vipicon.png"  //图标地址
-            ];
-        $this->success('success', $pay_list);
-    }
-    /**
-     * 获取已经支付的视频ID
+     * 获取已支付视频
+     * @return array
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
      */
     public function getPayVideo()
     {
-        $ldk = json_decode(decrypt($this->request->param('ldk')),true);
-        $ua = $ldk['ua'];
-        $user = $GLOBALS['user'];
+
         $is_day = 0;
         $is_week = 0;
         $is_month = 0;
         $pay_ids = [];
-        $pay = (new PayShow())->where('etime', '>', time())->where('uid', $user->id)->where('ua',$ua)->select()->toArray();
         
+        $pay = (new PayShow())->where('etime', '>', time())
+                ->where('uid', $this->uid)
+                ->where('ua',$this->form['ua'])
+                ->field('v_id,etime,is_day,is_week,is_month')
+                ->select()
+                ->toArray();
+
         foreach ($pay as $k => $item) {
             
             if ($item['is_day'] == 1 && $item['etime'] > time()) {
                 $is_day = 1;
+                break;
             }
             if ($item['is_week'] == 1 && $item['etime'] > time()) {
                 $is_week = 1;
+                break;
             }
             if ($item['is_month'] == 1 && $item['etime'] > time()) {
                 $is_month = 1;
+                break;
             }
         }
         
@@ -446,7 +261,125 @@ class Resource extends Common
         }
         return ['vid' => $pay_ids, 'is_day' => $is_day, 'is_week' => $is_week, 'is_month' => $is_month];
     }
-  
+
+    /**
+     * 用户登录
+     * @return \think\response\Json
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function login(){
+        
+        if($this->request->isPost()){
+            
+            $pwd = $this->request->param('pwd','','trim');
+            $type = $this->request->param('type',0,'intval');
+            
+            if(empty($pwd) || empty($type) || empty($this->ldk)){
+                return json(['code'=>0,'msg'=>'参数不正确']);
+            }
+            
+            switch ($type) {
+                case '1':
+                    $rukou = 'haokan';
+                    break;
+                case '2':
+                    $rukou = 'fhaokan';
+                    break;
+                case '3':
+                    $rukou = 'zhibo';
+                    break;
+                default:
+                    // code...
+                    break;
+            }
+            
+            #通过密码查找当前代理下用户ua
+            $ua = Users::where(['pwd'=>$pwd,'uid'=>$this->uid])->value('ua');
+            
+            if(empty($ua))
+            {
+                 return json(['code'=>0,'msg'=>'口令错误']);
+            }
+
+            $token = md5(encrypt(json_encode($this->form))).time();
+//            旧ua与新ua
+            $data = ['old_ua'=>$this->form['ua'],'new_ua'=>$ua];
+            Cache::set($token,$data,60);
+            #请求url
+            $domain = trim(getDomain(1, $this->uid)) . '/' . $rukou . '?ldk=' . $this->ldk . '&token=' . $token;
+
+            return json(['code'=>200,'msg'=>'登录成功','url'=>$domain]);
+            
+           
+        }
+        
+        return json(['code'=>0,'非法提交!']);
+    }
+
+    /**
+     * 检测用户积分
+     * @return \think\response\Json
+     */
+    public function checkJfPay()
+    {
+        $from = $this->form;
+        
+        $money = Users::where(['ua'=>$from['ua'],'uid'=>$from['uid']])->value('jifen');
+
+        if(empty($money)){
+            return json(['code'=>0,'msg'=>'用户积分不足']);
+        }
+
+        $payMoney = Agent::where(['id'=>$from['uid']])->value('jf');
+
+        if(empty($money)){
+            $payMoney = 10;
+        }
+
+        if($money < $payMoney){
+            return json(['code'=>0,'msg'=>'用户积分不足']);
+        }
+
+        return json(['code'=>200,'msg'=>'获取成功']);
+
+    }
+
+    /**获取入口地址
+     * @return \think\response\Json
+     */
+    public function getDomain()
+    {
+        $domain = getDomain(1,$this->uid);
+        if(empty($domain)){
+            $this->error('入口不存在');
+        }
+
+        return json(['code'=>200,'msg'=>'获取成功','url'=>$domain]);
+
+    }
+
+    /**
+     * 我的直播列表
+     * @return \think\response\Json
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function getZbList()
+    {
+
+        $list = \app\common\model\Zhibo::order('ctime desc')->find();
+
+        $list = $list->toArray();
+
+        return json(['code'=>1,'url'=>$list['link']]);
+
+    }
+    /**直播地址
+     * @return \think\response\Json|void
+     */
     public function getVideolist(){
         $type = $this->request->param('type/s',1);
         $list = Db::name('zhibo')->where('sortid',$type)->orderRand()->limit(50)->column('link');
@@ -454,56 +387,24 @@ class Resource extends Common
             $url = $list[array_rand($list)];
             return json(['code'=>200,'url'=>base64_encode(json_encode($url))]);
         }
-        
+
     }
+
+    /**直播状态
+     * @return \think\response\Json
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
     public function getStatus(){
-       
+
         $res = Db::name('zhibo')->where(['status'=>1,'sortid'=>2])->find();
         if($res){
             return json(['code'=>200,'status'=>1]);
         }else{
             return json(['code'=>0,'status'=>0]);
         }
-        
+
     }
-    public function getOrderStatus(){
-        $count = Db::name('setting')->where('skey', 'orderTime')->value('value');
-        $count = (int) $count;
-        $now = time();
-        $ltime = $now - $count*60;
-        $res = Db::name('order')->where('ctime', 'between time', [$ltime, $now])->find();
-        
-        if($res){
-            
-            return json(['code'=>200]);
-        }else{
-            return json(['code'=>0]);
-        }
-        
-    }
-    public function login(){
-        
-        if($this->request->isPost()){
-            
-            $card = $this->request->param('pwd','','trim');
-            if(empty($card)){
-                return json(['code'=>0,'msg'=>'参数不正确']);
-            }
-            $user = $GLOBALS['user'];
-            $payModel = new PayShow();
-            
-            $payObj = $payModel->where('uid', $user->id)->where('card',$card)->find();
-            $user = $GLOBALS['user'];
-            if($payObj){
-                if($payObj->etime < time()){
-                    return json(['code'=>0,'msg'=>'会员已到期！']);
-                }
-                Session::set('card',$card);
-                return json(['code'=>200,'msg'=>'登录成功']);
-            } 
-            return json(['code'=>0,'msg'=>'会员不存在']);
-        }
-        
-        return json(['code'=>0,'非法提交!']);
-    }
+
 }

@@ -1,7 +1,5 @@
 {include file="common/head"/}
-<style>
-.layui-table-cell{height: inherit;}
-</style>
+
 <div class="layui-fluid">
     <div class="admin-head">
         <ul>
@@ -93,7 +91,7 @@
                 dataName:'data',
             },
             cols: [[
-                {type: 'checkbox',title:'ID',align:'center',width:50},
+                {fixed: 'left',type: 'checkbox',title:'ID',align:'center',width:50},
                 {field: 'user',title: '申请用户',align:'center',width:150,templet:function(d){
                     return d.user.username+'【'+d.user.id+'】';
                 }},
@@ -120,7 +118,7 @@
                 {field: 'utime_text', align: 'center',title: '审核时间',width:150},
                 {field: 'ctime_text', align: 'center',title: '申请时间',width:150},
                 {if($auth->group_id==1)}
-                 {align: 'center',toolbar:'#action',width:280}
+                 {fixed: 'right',align: 'center',title: '功能操作',toolbar:'#action',width:280}
                 {/if}
             ]]
         });

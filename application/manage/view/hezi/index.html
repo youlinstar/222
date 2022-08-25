@@ -1,6 +1,6 @@
 {include file="common/head"/}
 <style>
-    .layui-table-cell{height: inherit;}
+
     .layui-mb1{
         padding:0 12px;
     }
@@ -8,76 +8,59 @@
 <div class="layui-fluid">
     <div class="admin-head">
         <ul>
-            <li class="on">推广盒子</li>
+            <li class="on">推广列表</li>
         </ul>
     </div>
     <div class="table-body">
+
         <div class="search-tool">
             <form class="layui-form">
                 <div class="layui-inline">
-                   <input type="text" class="layui-input" placeholder="检索日期" id="ondate" style="width:200px;">
+                    <input type="text" class="layui-input" placeholder="检索日期" id="ondate" style="width:200px;">
                     <span class="item-icon"><i class="layui-icon layui-icon-date"></i></span>
-                </div>
-                <div class="layui-inline">
-                    <select id="online" lay-filter="online">
-                        <option value="">全部</option>
-                        <option value="1">启用</option>
-                        <option value="0">禁用</option>
-                    </select>
                 </div>
                 <div class="layui-inline">
                     <input type="text" class="layui-input" placeholder="标题" id="search" style="width:200px;" />
                     <span class="item-icon" id="onsearch"><i class="icon icon-search"></i></span>
                 </div>
             </form>
-            <div class="func-btn" id="func-btn">
-                <a href="javascript:;" class="add layui-btn layui-bg-blue layui-btn-small">
-                    <i class="layui-icon layui-icon-add"></i>
-                    添加盒子
-                </a>
-            </div>
         </div>
+
         <table id="list" lay-filter="list"></table>
     </div>
 </div>
+
 {include file="common/foot"/}
 <script type="text/html" id="action">
-    <a class="layui-btn layui-btn-sm" lay-event="qrcode" title="二维码">
-        <i class="layui-icon layui-icon-component"></i>二维码
-    </a>
-    <a class="layui-btn layui-btn-sm" lay-event="links" title="获取链接">
-        <i class="layui-icon layui-icon-link"></i>获取链接
-    </a>
-    <a class="layui-btn layui-btn-sm" lay-event="edit" title="{:lang('edit')}">
-        <i class="layui-icon layui-icon-edit"></i>{:lang('edit')}
-    </a>
-    <a class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del" title="{:lang('del')}">
-        <i class="layui-icon layui-icon-delete"></i>{:lang('del')}
-    </a>
+    <a class="layui-btn layui-btn-sm" lay-event="zb" title="直播链接">直播链接</a>
+    <a class="layui-btn layui-btn-sm" lay-event="jf" title="积分链接">积分链接</a>
+    <a class="layui-btn layui-btn-sm" lay-event="links" title="普通链接">普通链接</a>
+    <a class="layui-btn layui-btn-sm" lay-event="edit" title="编辑">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del" title="删除">删除 </a>
 </script>
 <script type="text/html" id="statusTpl">
     {{# if(d.status==1){ }}
-        <span class="green">启用</span>
+    <span class="green">启用</span>
     {{# }else{ }}
-        <span class="gray">禁用</span>
+    <span class="gray">禁用</span>
     {{# } }}
 </script>
 <script type="text/html" id="table-toolbar">
-    <div class="layui-btn-container">
-        <button class="layui-btn layui-mb1" lay-event="openAll"><i class="icon icon-qiyong"></i> 批量启用</button>
-        <button class="layui-btn layui-mb1" lay-event="closeAll"><i class="icon icon-jinyong"></i> 批量禁用</button>
+    <div class="layui-btn-container">layui-icon-addition
+        <button lay-event="add" class="add layui-btn layui-bg-blue layui-btn-small"><i class="layui-icon layui-icon-addition"></i>添加</button>
+        <button lay-event="setting" class="setting layui-btn layui-bg-green layui-btn-small"><i class="layui-icon icon icon-setting"></i>推广设置</button>
         <button class="layui-btn layui-btn-danger layui-mb1" lay-event="delAll"><i class="layui-icon layui-icon-delete"></i>批量删除</button>
-
     </div>
 </script>
+
 <script>
     var dateVal='',statusVal='',searchVal='',onlineVal='';
-    layui.use(['table','element','form','laydate'],function(){
-        var table = layui.table, $ = layui.jquery,laydate = layui.laydate,form=layui.form;
+    layui.use(['table','element','form','laydate','upload'],function(){
+        var table = layui.table, $ = layui.jquery,laydate = layui.laydate,form=layui.form,element = layui.element;
         var tableIn = table.render({
             id: 'list',
             elem: '#list',
-            url: '{:url("index")}',
+            url: '{:url("hezi/index")}',
             toolbar:'#table-toolbar',
             method:'get',
             page:true,
@@ -89,22 +72,29 @@
                 dataName:'data',
             },
             cols: [[
-                {type: 'checkbox',title:'ID',align:'center',width:50},
+                {fixed: 'left',type: 'checkbox',title:'ID',align:'center',width:50},
                 {field: 'id',title: 'ID',align:'center',width:60},
-                {field: 'title',title: '名称',width:240},
-                {field: 'video_url', align: 'center',title: '资源链接',width:280},
+                {field: 'title',title: '名称',width:150},
+                {field: 'video_url', align: 'center',title: '资源链接',width:150,templet:function(d){
+                        if(d.video_url){
+                            return d.video_url;
+                        }else{
+                            return ' - '
+                        }
+                }},
                 {field: 'user', align: 'center',title: '所属代理',width:120,templet:function(d){
-                    if(d.user){
-                        return d.user.username+'【'+d.user.id+'】';
-                    }else{
-                        return ' - '
-                    }
-                 }},
+                        if(d.user){
+                            return d.user.username+'【'+d.user.id+'】';
+                        }else{
+                            return ' - '
+                        }
+                }},
                 {field:'status',width:80,title: '状态',align:'center',templet:'#statusTpl'},
                 {field: 'ctime_text', align: 'center',title: '发布时间',width:150},
-                {align: 'center',toolbar:'#action',width:380}
+                {fixed: 'right',title: '功能操作',align: 'center',toolbar:'#action',width:570}
             ]]
         });
+
         //选择日期
         laydate.render({
             elem: '#ondate',
@@ -125,6 +115,7 @@
                 });
             }
         });
+
         //下拉选项
         form.on('select(onstatus)', function(data){
             dateVal=$('#ondate').val(),onlineVal=$('#online').val(),searchVal=$('#search').val();
@@ -170,25 +161,14 @@
                 }
             });
         });
-        //监听添加
-        $('#func-btn .add').on('click',function () {
-            layer.open({
-                title:'添加盒子',
-                type:2,
-                maxmin: true,
-                content:'{:url("add")}',
-                area:['80%','60%'],
-                end:function(){
-                    tableIn.reload();
-                }
-            });
-        });
+
+
         //行列表操作项事件
         table.on('tool(list)', function(obj) {
             var data = obj.data;
             if(obj.event === 'del'){
                 layer.confirm('你确定要删除吗？', {icon: 3}, function (index) {
-                    $.post("{:url('del')}",{ids:data.id},function(res){
+                    $.post("{:url('hezi/del')}",{ids:data.id},function(res){
                         if(res.status===200){
                             layer.msg('删除成功',{time:1000,icon:1});
                             tableIn.reload();
@@ -203,35 +183,88 @@
                     title:'编辑盒子',
                     type:2,
                     maxmin: true,
-                    content:'{:url("edit")}?ids='+data.id,
+                    content:'{:url("hezi/edit")}?ids='+data.id,
                     area:['80%','60%'],
                     end:function(){
                         tableIn.reload();
                     }
                 });
-            }else if(obj.event === 'qrcode'){
-                layer.open({
-                    title:'推广二维码',
-                    content:"<img src='{:url(\'qrcodeUrl\')}?ids="+data.id+"' width='300px' height='300px'/>",
-                    area:['350px','440px'],
-                });
             }else if(obj.event === 'links'){
                 var loading = layer.load(1,{shade: [0.1, '#fff']});
-                $.post("{:url('shortUrl')}?id="+data.id,{},function(res){
+                $.post("{:url('hezi/shortUrl')}?id=" + data.id + "&type=1",{},function(res){
                     layer.close(loading);
                     if(res.status===200){
-                        layer.prompt({title:'盒子链接',value:res.data,btn: ['复制','取消'],yes:function(index,val){
-                            $(".layui-layer-btn0").attr("data-clipboard-text",res.data);
-                            var clipboard = new ClipboardJS('.layui-layer-btn0');
-                            clipboard.on('success', function(e) {
-                                layer.msg('复制成功',{time:1000,icon:1});
-                                layer.close(index);
-                            });
-                            clipboard.on('error', function(e) {
-                                layer.msg('复制失败',{time:1000,icon:2});
-                                layer.close(index);
-                            });
-                        }});
+                        layer.open({
+                            title:'普通推广',
+                            content:"<img src='" + res.img + "' width='300px' height='300px'/> <div style='width: 100%;display: flex;flex-direction: column;margin-top: 10px'><span style='color: red;font-size: 14px;'>您的推广链接：</span><span>" +  res.data +"</span></div>",
+                            btn: ['复制','取消'],yes:function(index,val){
+                                $(".layui-layer-btn0").attr("data-clipboard-text",res.data);
+                                var clipboard = new ClipboardJS('.layui-layer-btn0');
+                                clipboard.on('success', function(e) {
+                                    layer.msg('复制成功',{time:1000,icon:1});
+                                    layer.close(index);
+                                });
+                                clipboard.on('error', function(e) {
+                                    layer.msg('复制失败',{time:1000,icon:2});
+                                    layer.close(index);
+                                });
+                            },
+                            area:['350px','490px'],
+                        });
+                    }else{
+                        layer.msg(res.msg,{time:1000,icon:2});
+                    }
+                });
+            }else if(obj.event === 'jf'){
+                var loading = layer.load(1,{shade: [0.1, '#fff']});
+
+                $.post("{:url('hezi/shortUrl')}?id=" + data.id + "&type=2",{},function(res){
+                    layer.close(loading);
+                    if(res.status===200){
+                        layer.open({
+                            title:'积分推广',
+                            content:"<img src='" + res.img + "' width='300px' height='300px'/> <div style='width: 100%;display: flex;flex-direction: column;margin-top: 10px'><span style='color: red;font-size: 14px;'>您的推广链接：</span><span>" +  res.data +"</span></div>",
+                            btn: ['复制','取消'],yes:function(index,val){
+                                $(".layui-layer-btn0").attr("data-clipboard-text",res.data);
+                                var clipboard = new ClipboardJS('.layui-layer-btn0');
+                                clipboard.on('success', function(e) {
+                                    layer.msg('复制成功',{time:1000,icon:1});
+                                    layer.close(index);
+                                });
+                                clipboard.on('error', function(e) {
+                                    layer.msg('复制失败',{time:1000,icon:2});
+                                    layer.close(index);
+                                });
+                            },
+                            area:['350px','490px'],
+                        });
+                    }else{
+                        layer.msg(res.msg,{time:1000,icon:2});
+                    }
+                });
+            }else if(obj.event === 'zb'){
+                var loading = layer.load(1,{shade: [0.1, '#fff']});
+
+                $.post("{:url('hezi/shortUrl')}?id=" + data.id + "&type=3",{},function(res){
+                    layer.close(loading);
+                    if(res.status===200){
+                        layer.open({
+                            title:'直播推广',
+                            content:"<img src='" + res.img + "' width='300px' height='300px'/> <div style='width: 100%;display: flex;flex-direction: column;margin-top: 10px'><span style='color: red;font-size: 14px;'>您的推广链接：</span><span>" +  res.data +"</span></div>",
+                            btn: ['复制','取消'],yes:function(index,val){
+                                $(".layui-layer-btn0").attr("data-clipboard-text",res.data);
+                                var clipboard = new ClipboardJS('.layui-layer-btn0');
+                                clipboard.on('success', function(e) {
+                                    layer.msg('复制成功',{time:1000,icon:1});
+                                    layer.close(index);
+                                });
+                                clipboard.on('error', function(e) {
+                                    layer.msg('复制失败',{time:1000,icon:2});
+                                    layer.close(index);
+                                });
+                            },
+                            area:['350px','490px'],
+                        });
                     }else{
                         layer.msg(res.msg,{time:1000,icon:2});
                     }
@@ -239,9 +272,6 @@
             }
         });
 
-        function rands(m,n){
-            return Math.floor(Math.random()*(m - n) + n);
-        }
         //头工具栏事件批量操作---删除
         table.on('toolbar(list)', function(obj){
             var checkStatus = table.checkStatus('list');
@@ -250,108 +280,27 @@
                 ids.push(o.id);
             });
             switch(obj.event){
-                case 'editAll':
+                case 'add':
                     layer.open({
-                        title:'修改单片金额',
+                        title:'添加',
                         type:2,
-                        content:'{:url("batchMoney")}?ids='+ids.join(','),
-                        area:['95%','50%'],
+                        maxmin: true,
+                        content:'{:url("hezi/add")}',
+                        area:['80%','60%'],
                         end:function(){
                             tableIn.reload();
                         }
                     });
                     break;
-                case 'tryAll':
-                    var second="{:config('setting.try_see')}";
-                    layer.prompt({title:'修改试看',value: second},function(val, index){
-                            layer.close(index);
-                            var loading = layer.load(1,{shade: [0.1, '#fff']});
-                            $.post("{:url('batchEdit')}",{ids:ids,num:val,type:2},function (res){
-                                layer.close(loading);
-                                if(res.status === 200){
-                                    layer.msg('修改成功', {time: 1000, icon: 1});
-                                    tableIn.reload();
-                                }else{
-                                    layer.msg(res.msg, {time: 1000, icon: 2});
-                                }
-                            });
-                        });
-                    break;
-                case 'dayAll':
-                    var money="{:config('setting.agent_day_min')}";
-                    layer.prompt({title:'设置包日金额',value: money},function(val, index){
-                            layer.close(index);
-                            var loading = layer.load(1,{shade: [0.1, '#fff']});
-                            $.post("{:url('batchEdit')}",{ids:ids,num:val,type:3},function (res){
-                                layer.close(loading);
-                                if(res.status === 200){
-                                    layer.msg('修改成功', {time: 1000, icon: 1});
-                                    tableIn.reload();
-                                }else{
-                                    layer.msg(res.msg, {time: 1000, icon: 2});
-                                }
-                            });
-                        });
-                    break;
-                case 'weekAll':
-                    var money="{:config('setting.agent_week_min')}";
-                    layer.prompt({title:'设置包周金额',value: money},function(val, index){
-                        layer.close(index);
-                        var loading = layer.load(1,{shade: [0.1, '#fff']});
-                        $.post("{:url('batchEdit')}",{ids:ids,num:val,type:4},function (res){
-                            layer.close(loading);
-                            if(res.status === 200){
-                                layer.msg('修改成功', {time: 1000, icon: 1});
-                                tableIn.reload();
-                            }else{
-                                layer.msg(res.msg, {time: 1000, icon: 2});
-                            }
-                        });
-                    });
-                    break;
-                case 'monthAll':
-                    var money="{:config('setting.agent_month_min')}";
-                    layer.prompt({title:'设置包月金额',value: money},function(val, index){
-                            layer.close(index);
-                            var loading = layer.load(1,{shade: [0.1, '#fff']});
-                            $.post("{:url('batchEdit')}",{ids:ids,num:val,type:5},function (res){
-                                layer.close(loading);
-                                if(res.status === 200){
-                                    layer.msg('修改成功', {time: 1000, icon: 1});
-                                    tableIn.reload();
-                                }else{
-                                    layer.msg(res.msg, {time: 1000, icon: 2});
-                                }
-                            });
-                        });
-                    break;
-                case 'openAll':
-                    if(ids.length===0){
-                        return false;
-                    }
-                    var loading = layer.load(1,{shade: [0.1, '#fff']});
-                    $.post("{:url('setUp')}",{ids:ids,params:'{"status":1}'},function (res){
-                        layer.close(loading);
-                        if(res.status === 200){
-                            layer.msg('操作成功', {time: 1000, icon: 1});
+                case 'setting':
+                    layer.open({
+                        title:'推广设置',
+                        type:2,
+                        maxmin: true,
+                        content:'{:url("hezi/setting")}',
+                        area:['70%','90%'],
+                        end:function(){
                             tableIn.reload();
-                        }else{
-                            layer.msg(res.msg, {time: 1000, icon: 2});
-                        }
-                    });
-                    break;
-                case 'closeAll':
-                    if(ids.length===0){
-                        return false;
-                    }
-                    var loading = layer.load(1,{shade: [0.1, '#fff']});
-                    $.post("{:url('setUp')}",{ids:ids,params:'{"status":0}'},function (res){
-                        layer.close(loading);
-                        if (res.status === 200){
-                            layer.msg('操作成功', {time: 1000, icon: 1});
-                            tableIn.reload();
-                        } else {
-                            layer.msg(res.msg, {time: 1000, icon: 2});
                         }
                     });
                     break;
@@ -359,35 +308,28 @@
                     if(ids.length===0){
                         return false;
                     }
-                    var loading = layer.load(1,{shade: [0.1, '#fff']});
-                    $.post("{:url('del')}",{ids:ids}, function (res) {
-                        layer.close(loading);
-                        if (res.status === 200){
-                            layer.msg('删除成功', {time: 1000, icon: 1});
-                            tableIn.reload();
-                        } else {
-                            layer.msg(res.msg, {time: 1000, icon: 2});
-                        }
+                    layer.confirm('你确定要删除吗？', {icon: 3}, function (index) {
+                        $.post("{:url('hezi/del')}",{ids:ids}, function (res) {
+
+                            if (res.status === 200){
+                                layer.msg('删除成功', {time: 1000, icon: 1});
+                                tableIn.reload();
+                            } else {
+                                layer.msg(res.msg, {time: 1000, icon: 2});
+                            }
+                        });
+                        layer.close(index);
                     });
                     break;
-                case 'clearAll':
-                    var loading = layer.load(1,{shade: [0.1, '#fff']});
-                    $.post("{:url('clearAll')}",{}, function (res) {
-                        layer.close(loading);
-                        if (res.status === 200){
-                            layer.msg('清空成功', {time: 1000, icon: 1});
-                            tableIn.reload();
-                        } else {
-                            layer.msg(res.msg, {time: 1000, icon: 2});
-                        }
-                    });
-                    break;
+
                 //自定义头工具栏右侧图标 - 提示
                 case 'LAYTABLE_TIPS':
 
                     break;
             }
         });
-    })
+
+    });
+
 
 </script>

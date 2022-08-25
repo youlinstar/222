@@ -1,19 +1,19 @@
 {include file="common/head"/}
 <div class="layui-fluid">
     <div class="table-body">
-        <div class="layui-card-header">编辑资源</div>
+        <div class="layui-card-header">编辑视频</div>
         <div class="layui-card">
             <form class="layui-form layui-form-pane" lay-filter="agent">
                 <input type="hidden" name="row[id]" value="{$row['id']}"/>
                 <div class="layui-form-item">
-                    <label class="layui-form-label">资源名称</label>
+                    <label class="layui-form-label">视频名称</label>
                     <div class="layui-input-inline from-inline-7">
-                        <input type="text" name="row[title]" value="{$row['title']}" lay-verify="required" lay-reqText="请输入资源名称" placeholder="{:lang('pleaseEnter')}资源名称" class="layui-input">
+                        <input type="text" name="row[title]" value="{$row['title']}" lay-verify="required" lay-reqText="请输入视频名称" placeholder="{:lang('pleaseEnter')}视频名称" class="layui-input">
                     </div>
                 </div>
 
                 <div class="layui-form-item">
-                    <label class="layui-form-label">资源类目</label>
+                    <label class="layui-form-label">视频类目</label>
                     <div class="layui-input-inline from-inline-7">
                         <select name="row[sortid]" lay-filter="tags" lay-search>
                             {volist name="sort" id="v"}
@@ -23,28 +23,28 @@
                     </div>
                 </div>
                 <div class="layui-form-item">
-                    <label class="layui-form-label">资源封面</label>
+                    <label class="layui-form-label">视频封面</label>
                     <div class="layui-input-inline from-inline-7">
-                        <input type="text" lay-verify="required" lay-reqText="请输入资源封面" class="layui-input" placeholder="{:lang('pleaseEnter')}封面链接" name="row[thumb]" id="thumb" value="{$row['thumb']}">
+                        <input type="text" lay-verify="required" lay-reqText="请输入视频封面" class="layui-input" placeholder="{:lang('pleaseEnter')}封面链接" name="row[img]" id="img" value="{$row['img']}">
                         <div class="layui-upload">
                             <button type="button" class="layui-btn" id="onUpload">上传封面</button>
                             <div class="layui-upload-list">
-                                <img class="layui-upload-img" width="86" height="86" src="{$row['thumb']}" id="Image">
+                                <img class="layui-upload-img" width="86" height="86" src="{$row['img']}" id="Image">
                                 <p id="preview"></p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="layui-form-item">
-                    <label class="layui-form-label">资源链接</label>
+                    <label class="layui-form-label">视频链接</label>
                     <div class="layui-input-inline from-inline-7">
-                        <input type="text" name="row[link]" value="{$row['link']}" lay-verify="required" lay-reqText="请输入资源链接" placeholder="{:lang('pleaseEnter')}资源名称" class="layui-input">
+                        <input type="text" name="row[video_url]" value="{$row['video_url']}" lay-verify="required" lay-reqText="请输入视频链接" placeholder="{:lang('pleaseEnter')}视频名称" class="layui-input">
                     </div>
                 </div>
                 <div class="layui-form-item">
-                    <label class="layui-form-label">影片时间</label>
+                    <label class="layui-form-label">视频时间</label>
                     <div class="layui-input-inline from-inline-7">
-                        <input type="text" name="row[times]" value="{$row['times']}" lay-verify="required" lay-reqText="请输入影片时间" placeholder="{:lang('pleaseEnter')}影片时间" class="layui-input">
+                        <input type="text" name="row[times]" value="{$row['times']}" lay-verify="required" lay-reqText="请输入视频时间" placeholder="{:lang('pleaseEnter')}视频时间" class="layui-input">
                     </div>
                 </div>
                 <div class="layui-form-item">
@@ -75,7 +75,7 @@ layui.use(['form','upload','layedit'], function(){
         url: '{:url("UpFiles/upload")}',
         done: function(res){
             if(res.status===200){
-                $('#thumb').val(res.url);
+                $('#img').val(res.url);
                 $('#Image').attr('src',res.url);
             }else{
                 //如果上传失败

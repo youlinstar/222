@@ -63,8 +63,8 @@
                 dataName:'data',
             },
             cols: [[
-                {type: 'checkbox',title:'ID',align:'center',width:50,fixed: true},
-                {field: 'id',title:'ID',align:'center',width:50},
+                {type: 'checkbox',title:'ID',align:'center',width:50},
+                {field: 'id',title:'ID',align:'center',width:150},
                 {field: 'name',title: '名称',width:280},
                 {field: 'thumb',title: '封面',align:'center',width:80,templet:function(d){
                     if(d.thumb){
@@ -75,7 +75,7 @@
                 }},
                 {field: 'indexid',title: '排序',align:'center',width:150},
                 {field: 'status',align: 'center',title: '{:lang("status")}',width: 180,toolbar: '#status'},
-                {align: 'center',toolbar:'#action',width:180}
+                {align: 'center',title: '功能操作',toolbar:'#action',width:180}
             ]]
         });
         //下拉选项

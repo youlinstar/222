@@ -3,6 +3,7 @@
 namespace app\manage\controller;
 use app\manage\lib\Auth;
 use app\common\model\AuthGroup;
+use app\common\model\Domain;
 use Think\Exception;
 use zp\Tree;
 use think\Loader;
@@ -101,7 +102,7 @@ class Common extends Controller
      * 表示注释或字段名
      */
     protected $importHeadType = 'comment';
-
+   
 
     /**
      * 引入后台控制器的traits
@@ -110,6 +111,17 @@ class Common extends Controller
 
     public function initialize()
     {
+        ini_set ('memory_limit', '800M');
+        $ref = $this->request->host();
+        
+        $domainInfo = Domain::where(['domain'=>$ref,'status'=>1])->cache(3600)->find();
+       
+        if(empty($domainInfo)){
+            $jump = 'https://news.qq.com';
+            header("location:{$jump}");
+            exit;
+        }
+        
         $modulename = $this->request->module();
         $controllername = Loader::parseName($this->request->controller());
         $actionname = strtolower($this->request->action());
@@ -129,7 +141,7 @@ class Common extends Controller
         // 检测是否需要验证登录
         if (!$this->auth->match($this->noNeedLogin)){
             //检测是否登录
-            if(!$this->auth->isLogin()){
+            if($this->auth->isLogin() == 1){
                 $url = Session::get('referer');
                 $url = $url ? $url : $this->request->url();
                 if($url == '/'){
@@ -137,6 +149,8 @@ class Common extends Controller
                     exit;
                 }
                 $this->error('请登录后再操作','login/index');
+            }elseif($this->auth->isLogin() == 2){
+                $this->error('您的账号在其他地方登录！请重新登录！','login/index');
             }
           
             // 判断是否需要验证权限
@@ -316,7 +330,7 @@ class Common extends Controller
                     break;
             }
         }
-        
+
         $where = function ($query) use ($where) {
             foreach ($where as $k => $v) {
                 if (is_array($v)) {

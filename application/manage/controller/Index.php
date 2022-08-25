@@ -13,6 +13,7 @@ class Index extends Common
 
     public function index()
     {
+       
         // 获取缓存数据
         $authRule = cache('authRule');
         if (!$authRule) {
@@ -57,7 +58,8 @@ class Index extends Common
                 }
             }
         }
-        
+        $notice=\app\common\model\Article::where(['sort_id'=>1,'status'=>1])->order('ctime desc')->find();
+        $this->assign('notice1',$notice);
         $this->assign('menus', $menus);
         return $this->fetch();
     }
@@ -230,6 +232,6 @@ class Index extends Common
     {
         $notice = \app\common\model\Article::where('sort_id', 1)->where('id',$id)->order('ctime desc')->find();
         $this->assign('notice', $notice);
-               return $this->fetch();
+        return $this->fetch();
     }
 }

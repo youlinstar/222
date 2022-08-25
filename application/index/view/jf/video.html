@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <title>{:config('setting.web_title')}</title>
+    <link rel="stylesheet" href="__STATIC__/common/lib/vant/css/index.css"/>
+    <link rel="stylesheet" href="__STATIC__/index/css/index.css">
+    <script src="__STATIC__/common/lib/vue/vue.js"></script>
+    <script src="__STATIC__/common/lib/vant/js/vant.min.js"></script>
+    <script src="__STATIC__/common/js/jquery.min.js"></script>
+    <script src="__STATIC__/common/js/base64.min.js"></script>
+    <script src="//unpkg.byted-static.com/xgplayer/2.31.2/browser/index.js" charset="utf-8"></script>
+    <script src="//unpkg.byted-static.com/xgplayer-hls.js/2.2.2/browser/index.js" charset="utf-8"></script>
+    <script src="__STATIC__/common/js/clipboard/clipboard.min.js"></script>
+    <script src="//res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script>
+        function onBridgeReady() {
+            WeixinJSBridge.call('hideOptionMenu');
+        }
+        if (typeof WeixinJSBridge == "undefined") {
+            if (document.addEventListener) {
+                document.addEventListener('WeixinJSBridgeReady', onBridgeReady, false);
+            } else if (document.attachEvent) {
+                document.attachEvent('WeixinJSBridgeReady', onBridgeReady);
+                document.attachEvent('onWeixinJSBridgeReady', onBridgeReady);
+            }
+        } else {
+            onBridgeReady();
+        }
+
+        window.onload = function(){
+            var hezi = document.getElementById("hezi");
+            hezi.addEventListener("touchmove",function (event) {
+               event.preventDefault();
+            },{passive: false});
+            var app = document.getElementById("list");
+            var touchstartY;
+            app.addEventListener("touchstart",function (event) {
+                var events = event.touches[0] || event;
+                touchstartY = events.clientY; //获取触摸目标在视口中的y坐标
+            },{passive: false});
+            app.addEventListener("touchmove",function (event) {
+                var events = event.touches[0] || event;
+                //注意app.scrollTop始终为0
+                var scrollTop = app.scrollTop || document.documentElement.scrollTop; //获取滚动部分的高度
+                var clientHeight = document.documentElement.clientHeight; //获取手机屏幕高度（可视部分高度）
+                var scrollHeight = app.scrollHeight; //所有内容的高度
+                if (events.clientY > touchstartY && scrollTop === 0 && event.cancelable)
+                {
+                  event.preventDefault(); //禁止到顶下拉
+                } else if (scrollTop + clientHeight > scrollHeight && event.cancelable)
+                {
+                  // event.preventDefault(); //禁止到底上拉
+                }
+            }, {passive: false});
+         };
+    </script>
+    <style>
+       :root{
+            --background: -webkit-linear-gradient(left,{:config('setting.bgc-left')},{:config('setting.bgc-right')});
+            --text-bgc:{:config('setting.text-bgc')};
+            --text-color:{:config('setting.text-color')};
+        }
+        html {
+            font-size: calc(100vw / 3.75);
+        }
+    </style>
+
+</head>
+<body>
+    <div id="app">
+
+        <div class="wrap">
+            <div id="hezi">
+                <!-- 盒子 -->
+                <div class="hezi" v-show="hezi.status">
+                    <div id="mse" style="width: 100%;" ></div>
+                </div>
+                <div class="ds-title"><span>{{ds_title}}</span></div>
+            </div>
+            <!-- 主体       -->
+            <section class="section" id="list">
+                <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
+                    <van-list v-model="loading" :immediate-check="false" :finished="finished" :finished-text="msg" @load="doGetList" offset="20" direction="down">
+                    <div class="van-clearfix">
+                        <!-- 赖加载 -->
+                        <lazy-component>
+                            <div class="list-item mt20" v-for="item in list">
+                                <div class="img-wrap" @click="doPay(item)">
+                                    <div v-if="item.img" class="thumb">
+                                        <span class="times" v-if="item.times">{{item.times}}</span>
+                                        <img v-lazy="item.img" :src="item.img" width="100%">
+                                    </div>
+                                    <div class="img-tips-left">
+                                        <span>{{item.money}}元观看</span>
+                                        <span>{{item.rand}}人看过</span>
+                                    </div>
+                                </div>
+                                <div class="video-title">{{item.title}}</div>
+                            </div>
+                        </lazy-component>
+                    </div>
+                </van-list>
+                </van-pull-refresh>
+            </section>
+            <!-- 底部 -->
+            <div class="foot">
+
+                <div class="btn" @click="doMain()" >返回首页</div>
+                <div class="btn" @click="doGetList(99,'payed')" v-if="buyStatus">✚已购买</div>
+                <div class="btn" @click="doGetList(-1,'cat')" v-if="backListStatus">返回列表</div>
+            </div>
+        </div>
+
+        <div class="overlay" v-if="overlay"></div>
+
+        <div class="dialog" v-if="dialog.pay.status">
+
+            <div class="video-img">
+                <img style="width: 100%;height:100%" :src="ds_img">
+            </div>
+
+            <div class="video">
+
+                <div class="video-title">
+                    <span >{{ds_title}}</span>
+                </div>
+                <div class="video-list">
+                    <div class="video-item" v-for="(item,index) in dialog.pay.data" @click="linkTo(item.url)" v-if="item.flg !='jf' ">
+
+                        {{item.name}}
+                    </div>
+                </div>
+                <div class="tip">
+                    <div class="tip-wrap">
+                        <span class="tip-title">请及时保留口令,方便找回已购买</span>
+                        <div class="tip-item">
+                            <span class="tip-item-title" >您的口令:{{kouling}}</span>
+                            <div class="copy" @click = "copy()" :data-clipboard-text="kouling">复制</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <div class="qrcode" @click="doQrcode()">防失联</div>
+                <div class="close" @click="doClose()">关闭</div>
+            </div>
+        </div>
+
+        <div class="qrcode-dialog" v-if="dialog.qrcode.status">
+            <div class="item">
+                <div class="title">防止联</div>
+                <div class="line"></div>
+                <div class="qrcode-img">
+                    <img style="width: 100%;height:100%" :src="dialog.qrcode.img">
+                </div>
+                <div class="line"></div>
+                <div class="title">{{dialog.qrcode.title}}</div>
+            </div>
+            <div class="close" @click="doClose()">
+                <van-icon name="close" />
+            </div>
+
+        </div>
+
+
+    </div>
+    <script>
+        //初始化视口高度
+        $('.wrap').css('height',window.innerHeight)
+        Vue.config.productionTip = false
+        Vue.config.lang = 'zh-CN'
+        Vue.use(vant.Lazyload, {
+            lazyComponent: true,
+        });
+
+        new Vue({
+            el: '#app',
+            data: {
+                myPlayer:{},
+                list: [],
+                refreshing: false,
+                total: 0,
+                ds_title: "精彩视频推荐",
+                ds_img: "",
+                loading: false,
+                finished: false,
+                kouling:"{$kouling}",
+                vid: 0,
+                buyStatus:true,
+                backListStatus:false,
+                overlay: false,
+                msg: '没有更多了',
+                ldk:"{$ldk}",
+                rkType:2,
+                hezi:{
+                    status:"{$hezi.status}",
+                    url:"{$hezi.url}",
+                    img:"{$hezi.img}"
+                },
+                params: {
+                    ldk: "{$ldk}",
+                    page: 1,
+                    limit: 20,
+                    encode: 1,
+                    cid: '',
+                    key: '',
+                    rkType:2,
+                    payed: "{:input('payed/d',0)}",
+                },
+                // 消息框
+                dialog: {
+                    pay: {
+                        status: false,
+                        pay: [],
+                    },
+                    qrcode:{
+                        status: false,
+                        img:"{$qrcode.url}",
+                        title:"{$qrcode.title}",
+                    },
+
+                },
+
+            },
+            mounted: function () {
+                this.ds_title = "{$hezi.title}"
+                this.doGetList()
+                if (this.hezi.status) {
+                    this.createPlayer(this.hezi.url,this.hezi.img)
+                }
+
+            },
+            methods: {
+                doMain(){
+                    let vm = this
+                    $.ajax({
+                        url: "/api/resource/getDomain",
+                        type: 'GET',
+                        dataType: 'JSON',
+                        data: {'ldk':vm.ldk},
+                        complete: function (XMLHttpRequest, textStatus) {
+                        },
+                        success: function (res) {
+                            if(res.code==200){
+                                location.href = res.url + '/fhaokan?ldk=' + vm.ldk
+                            }
+                        }
+                    });
+
+                },
+                createPlayer(url,img){
+                     this.myPlayer = new HlsJsPlayer({
+                        "id": "mse",
+                        "url": url,
+                        "poster": img,
+                        "playsinline": true,
+                        "x5-video-player-fullscreen": "false",
+                        "x5-video-orientation": "portraint",
+                        "x5-video-player-type": "h5",
+                        "fluid": true,
+                        "videoInit": false,
+                        "playbackRate": [0.5, 0.75, 1, 1.5, 2],
+                        "closeVideoClick":true,
+                        "pip": true,
+                        "closeVideoTouch":true
+                    });
+                },
+                copy(){
+                    let clipboard = new ClipboardJS(".tip-item .copy")
+                    clipboard.on('success', e => {
+                        vant.Toast.success('复制成功')
+                        e.clearSelection()
+                    })
+                    clipboard.on('error', e => {
+                       vant.Toast.success('复制失败')
+                    })
+                },
+                doClose(e){
+                    this.dialog.pay.status=false
+                    this.dialog.pay.pay=[]
+                    this.dialog.qrcode.status=false
+                    this.overlay=false
+
+                },
+                doQrcode(){
+                    this.dialog.pay.status=false
+                    this.dialog.pay.pay=[]
+                    this.dialog.qrcode.status=true
+                },
+                linkTo(e) {
+                    vant.Toast.loading({
+                        message: '正在调起支付...',
+                        forbidClick: true,
+                        duration: 15000,
+                    });
+                    location.href = e
+                },
+                doTop() {
+                    $('#list').scrollTop(0);
+                },
+                doPay(item) {
+                    let vm = this
+                    vm.vid = item.id
+                    vm.ds_img = item.img
+                    vm.ds_title = item.title
+                    if (item.pay == 1) {
+                        vm.myPlayer.src = item.video_url
+                        vm.myPlayer.poster = item.img
+                        return
+                    }
+
+                    $.ajax({
+                        url: "/api/resource/play",
+                        type: 'GET',
+                        dataType: 'JSON',
+                        data: {'ldk':vm.ldk,'vid':item.id,'rkType':vm.rkType},
+                        complete: function (XMLHttpRequest, textStatus) {
+                        },
+                        success: function (res) {
+                            if(res.code==200){
+                                vm.dialog.pay.data = res.data
+                                vm.dialog.pay.status = true
+                                vm.overlay = true
+                            }
+                        }
+                    });
+                },
+                doGetList(index, row) {
+                    let vm = this
+                    vm.loading=true
+                    //已购
+                    if (row == "payed") {
+                        vm.list = []
+                        vm.finished = false
+                        vm.params.page = 1
+                        vm.params.payed = 1
+                        vm.params.cid = ''
+                        vm.msg = "空空如也,赶紧去选择心仪的影片吧!"
+                        vm.buyStatus = false
+                        vm.backListStatus = true
+
+                    }
+                    if (row == "cat") {
+                        vm.list = []
+                        vm.finished = false
+                        vm.params.page = 1
+                        vm.params.payed = 0
+                        vm.params.key = ''
+                        vm.params.cid = 0
+                        vm.buyStatus = true
+                        vm.backListStatus = false
+                    }
+                    if(vm.params.page == 1){
+                       this.scrollTop = $('#list').scrollTop(0)
+                    }
+                    $.ajax({
+                        url: '/api/resource/getList',
+                        type: 'GET',
+                        dataType: 'JSON',
+                        data: vm.params,
+                        complete: function (XMLHttpRequest, textStatus) {
+                        },
+                        success: function (res) {
+                            vm.loading = false
+                            if (res.code == 200){
+                                if (vm.refreshing) {
+                                    vm.list = []
+                                    vm.refreshing = false
+                                }
+                                vm.loading = false
+                                let temp = res.data.list
+                                if(vm.params.encode==1){
+                                    temp = JSON.parse(Base64.decode(res.data.list))
+                                }
+                                if(temp.length>0){
+                                    if(vm.params.page==1){
+                                        vm.list =temp
+                                    }else{
+                                        vm.list = vm.list.concat(temp)
+                                        if (vm.list.length == res.data.total) {
+                                            vm.finished = true
+                                        }
+                                    }
+                                    vm.params.page++
+                                }else{
+                                    vm.finished = true
+                                }
+
+                            } else {
+                                vant.Toast.fail(res.msg)
+                            }
+                        }
+                    });
+                },
+                onRefresh() {
+                    this.finished = false
+                    this.params.page = 1
+                    this.loading = true
+                    this.doGetList()
+                },
+            }
+        })
+    </script>
+</body>
+</html>

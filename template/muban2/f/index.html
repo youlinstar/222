@@ -10,7 +10,7 @@
     <meta name="x5-orientation" content="portrait">
     <meta name="full-screen" content="yes">
     <meta name="x5-fullscreen" content="true">
-    <title>蜜桃，情欲的归属</title>
+    <title>彩虹飘飘</title>
     <link rel="stylesheet" href="__STATIC__/common/lib/vant/css/index.css"/>
     <script src="__STATIC__/common/lib/vue/vue.js"></script>
     <script src="__STATIC__/common/lib/vant/js/vant.min.js"></script>
@@ -90,7 +90,7 @@
             color: #2e2e2e !important;
         }
         .video-type {
-            background: -webkit-linear-gradient(left,{:config('setting.bgc-left')},{:config('setting.bgc-right')});
+            background: -webkit-linear-gradient(left,rgb(199,39,231),rgb(24, 224, 197));
             font-size: 0.24rem;
             color: #fff;
             padding: 0.12rem 5px;
@@ -183,7 +183,7 @@
         }
 
         .foot {
-            background: -webkit-linear-gradient(left,{:config('setting.bgc-left')},{:config('setting.bgc-right')});
+            background: -webkit-linear-gradient(left,rgb(199,39,231),rgb(24, 224, 197));
             height: 0.90rem;
             display: flex;
             align-items: center;
@@ -317,12 +317,7 @@
             /*padding: 25px 20px 0;*/
             padding: 10px;
         }
-       .van-dialog__content{
-            background: -webkit-linear-gradient(left,{:config('setting.bgc-left')},{:config('setting.bgc-right')});
-        }
-        .van-dialog{
-            background: #000;
-        }
+       
         .van-dialog__header {
             /*padding: 26px 10px 10px 10px;*/
             /*font-weight: 500;*/
@@ -336,12 +331,10 @@
             line-height: 0.6rem;
             height: 0.8rem;
             padding-top: 0.3rem;
-            background: #FFF;
-            padding-bottom: 33px;
         }
         .van-button__text {
-            font-weight: 600;
-            font-size: 20px;
+            font-weight: 500;
+            font-size: 14px;
             color: #8c8c8c;
             line-height: 2.2;
             text-align: center;
@@ -432,7 +425,8 @@
             font-size:10px;
             z-index:999;
         }
-   
+    </style>
+    <style>
         .pay-box {
             display: flex;
             flex-direction: column;
@@ -467,9 +461,8 @@
             width: 280px !important;
             height: 280px !important;
         }   
-        
-    </style>
 
+    </style>
 </head>
 <body>
 <div id="app" class="wrap root">
@@ -555,7 +548,7 @@
             <img :src="ds_img" style="width:100%;height:230px">
         </div>
         <div id="try_mse" style="width:100%;" v-else></div>
-        <div class="pay-box" style="background: -webkit-linear-gradient(left,{:config('setting.bgc-left')},{:config('setting.bgc-right')});">
+        <div class="pay-box" style="background: #fff;">
             <div class="panel" style="display: flex;align-items: center;justify-content: space-between;padding: 10px;">
                 <p style="font-size: 18px;font-weight: bold;" square v-for="(item,index) in dialog.pay.pay"
                :class="setClass(item)" @click="linkTo(item.url)" v-if="item.flg == 'jf'">积分:{{item.money}}</p>
@@ -575,12 +568,12 @@
         </div>
     </van-dialog>
     <van-dialog class="demo-dialog van-dialog" style="width:90%;" v-model="dialog.tgm.status" :title="tgm_title" :before-close="closeDig" confirm-button-text="关闭">
-        <div style="text-align: center;padding: 20px;background: -webkit-linear-gradient(left,{:config('setting.bgc-left')},{:config('setting.bgc-right')});">
+        <div style="text-align: center;padding: 20px;background: -webkit-linear-gradient(left,rgb(199,39,231),rgb(24, 224, 197));">
             <img :src="tgm_img" class="tgm-img">
         </div>
     </van-dialog>
     <van-dialog class="demo-dialog van-dialog" style="width:90%;" v-model="dialog.vip.status" :title="vip_title" :before-close="closeDig" confirm-button-text="关闭">
-        <div style="text-align: center;padding: 20px;background: -webkit-linear-gradient(left,{:config('setting.bgc-left')},{:config('setting.bgc-right')});">
+        <div style="text-align: center;padding: 20px;background: -webkit-linear-gradient(left,rgb(199,39,231),rgb(24, 224, 197));">
             <img :src="vip_img" class="tgm-img">
         </div>
     </van-dialog>

@@ -32,9 +32,9 @@ class Yqm extends Common
             $offset=$page*$limit;
             $where['uid'] = $this->auth->id;
             $total = Db::name('yqm')->where($where)->order('id','DESC')->count();
-            
+
             $list  = Db::name('yqm')->where($where)->order('id','DESC')->limit($offset, $limit)->select();
-          
+
             $result = ['status' => 200, 'msg' => '获取成功!', 'data' => $list, 'total' => $total];
             return json($result);
         }
@@ -49,25 +49,19 @@ class Yqm extends Common
         if ($this->request->isPost()) {
             $num = $this->request->post("num",0);
             if ($num) {
-                
                 $result = false;
                 Db::startTrans();
                 try {
-                    
                     $data = [];
                     for($i=0;$i<$num;$i++){
                         $data[$i]['uid'] = $this->auth->id;
-                        $data[$i]['yqm'] = rand_string(32);
+                        $data[$i]['yqm'] = md5(rand_string(32) . time());
+                        $data[$i]['status']=0;
                         $data[$i]['c_time'] = date('Y-m-d H:i:s',time());
                     }
-                    
-                    
                     $result = Db::name('yqm')->insertAll($data);
-                    
-                    
-                    
                     Db::commit();
-              
+
                 } catch (Exception $e) {
                     Db::rollback();
                     return callback(404, $e->getMessage());
@@ -83,7 +77,7 @@ class Yqm extends Common
         return $this->view->fetch();
     }
 
-   
+
 
     /**
      * 获取id
@@ -107,11 +101,11 @@ class Yqm extends Common
      */
     public function del($ids = "")
     {
-       
+
         if ($ids) {
-            
-            
-           
+
+
+
             Db::startTrans();
             try {
                 $list = Db::name('yqm')->where('id', 'in', $ids)->delete();
@@ -128,8 +122,8 @@ class Yqm extends Common
         }else{
             return callback(404, '参数ids不能为空');
         }
-        
+
     }
 
-   
+
 }

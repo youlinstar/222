@@ -58,7 +58,7 @@ class Common extends Controller
 
     protected $middleware = [
         'Auth' => [
-            'except' => ['getSort', 'getList', 'getZbList','play','checkDomain','importVideo','getDomain','checkWxDomain','checkWxDomain1','getVideoList','getStatus','getOrderStatus','getJfList','jfplay']
+            'except' => ['getDomain','checkJfPay','getSort', 'getList', 'getZbList','play','checkDomain','importVideo','getDomain','checkWxDomain','checkWxDomain1','getVideoList','getStatus','getOrderStatus','getJfList','jfplay','login']
         ]
     ];
 
@@ -70,13 +70,32 @@ class Common extends Controller
      */
     public function __construct(Request $request = null)
     {
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Headers: Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, X-Requested-With');
+        header('Access-Control-Allow-Methods: GET, POST, PATCH, PUT, DELETE');
+        header('Access-Control-Max-Age: 1728000');
+        if (strtoupper($request->method()) == "OPTIONS") {
+            return Response::create()->send();
+        }
         parent::__construct();
         $this->request = is_null($request) ? Request::instance() : $request;
 
         // 控制器初始化
         $this->initialize();
-
-        // 前置操作方法
+        
+        $this->ldk = $this->request->param('ldk');
+		if(empty($this->ldk)){
+		    exit('Hello World');
+		}
+		
+		$data = json_decode(decrypt($this->ldk),true);
+	
+		if(empty($data)){
+		    exit('参数错误');
+		}
+		$this->form = $data;
+		$this->uid = $data['uid'];
+       
         if ($this->beforeActionList) {
             foreach ($this->beforeActionList as $method => $options) {
                 is_numeric($method) ?

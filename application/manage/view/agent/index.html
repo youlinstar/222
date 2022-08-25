@@ -46,13 +46,14 @@
                     <a href="javascript:;" class="editKl layui-btn layui-bg-blue layui-btn-small">
                         批量修改扣量
                     </a>
+
+                    <a href="javascript:;" class="editAllPay layui-btn layui-bg-blue layui-btn-small">
+                       一键改支付
+                    </a>
+                    <a href="javascript:;" class="editPay layui-btn layui-bg-blue layui-btn-small">
+                       批量改支付
+                    </a>
                 {/if}
-                <a href="javascript:;" class="editAllPay layui-btn layui-bg-blue layui-btn-small">
-                   一键改支付
-                </a>
-                <a href="javascript:;" class="editPay layui-btn layui-bg-blue layui-btn-small">
-                   批量改支付
-                </a>
             </div>
         </div>
         
@@ -62,20 +63,27 @@
 
 {include file="common/foot"/}
 <script type="text/html" id="action">
+    {if ($auth->group_id==1)}
     <a lay-event="edit" class="layui-btn layui-btn-sm">{:lang('edit')}</a>
     <a lay-event="pwd" class="layui-btn layui-btn-sm">修改密码</a>
     <a class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del">{:lang('del')}</a>
+    {/if}
 </script>
 <script type="text/html" id="status">
-    <input type="checkbox" name="status" id="{{d.id}}" lay-filter="status" value="{{d.status}}" lay-skin="switch" lay-text="开启|禁用" {{ d.status==1 ? 'checked':'' }}>
+    {{# if(d.id!==1){ }}
+        <input type="checkbox" name="status" id="{{d.id}}" lay-filter="status" value="{{d.status}}" lay-skin="switch" lay-text="开启|禁用" {{ d.status==1 ? 'checked':'' }}>
+    {{# } }}
+
 </script>
 <script type="text/html" id="table-toolbar">
+    {if ($auth->group_id==1)}
     <div class="layui-btn-container">
         <button class="layui-btn layui-bg-blue layui-btn-small" lay-event="addAgent"><i class="icon layui-icon-addition"></i> 添加代理</button>
         <button class="layui-btn" lay-event="openAll"><i class="icon icon-qiyong"></i> 批量启用</button>
         <button class="layui-btn" lay-event="closeAll"><i class="icon icon-jinyong"></i> 批量禁用</button>
         <button class="layui-btn" lay-event="delAll"><i class="layui-icon layui-icon-delete"></i>批量删除</button>
     </div>
+    {/if}
 </script>
 <script>
     var dateVal='',statusVal='',searchVal='';
@@ -96,45 +104,54 @@
                 dataName:'data',
             },
             cols: [[
-                {type: 'checkbox',title:'ID',align:'center',width:50},
-                {field: 'id',title:'ID',align:'center',width:80},
-                {field: 'username',title: '用户名',width:120},
-                {field: 'agents',align:'center',title: '所属上级',width:120,templet:function(d){
-                    return d.agents.username+'【'+d.agents.id+'】';
-                }},
-                {field: 'balance',align:'center',title: '账户余额',width:130,sort:true},
-                {field: 'groups.title',align:'center',title: '用户组',width:120,templet:function(d){
-                    return '<span class="blue_block">'+d.groups.title+'</span>';
-                }},
-                {field: 'cash_pwd',align:'center',title: '提现密码',width:120,templet:function(d){
-                    if(d.cash_pwd){
-                        return d.cash_pwd;
-                    }else{
-                        return '未设置';
-                    }
-                }},
+                    {fixed: 'left', type: 'checkbox',title:'ID',align:'center',width:50},
+                    {fixed: 'left',field: 'id',title:'ID',align:'center',width:80},
+                    {fixed: 'left',field: 'username',title: '用户名',width:120},
+                    {field: 'agents',align:'center',title: '所属上级',width:120,templet:function(d){
+                        return d.agents.username+'【'+d.agents.id+'】';
+                    }},
+                    {field: 'balance',align:'center',title: '账户余额',width:130,sort:true},
+                    {field: 'groups.title',align:'center',title: '用户组',width:120,templet:function(d){
+                        return '<span class="blue_block">'+d.groups.title+'</span>';
+                    }},
+                    {field: 'today_money',align:'center',title: '今日订单金额',width:130,sort:true},
+                    {field: 'today_order',align:'center',title: '今日订单笔数',width:130,sort:true},
+                    {field: 'yesterday_money',align:'center',title: '昨日订单金额',width:130,sort:true},
+                    {field: 'yesterday_order',align:'center',title: '昨日订单笔数',width:130,sort:true},
+
                 {if ($auth->group_id==1)}
-                    {field: 'todayKl',align:'center',title: '当日扣量',width:130,sort:true},
+                    {field: 'todayKl',align:'center',title: '今日扣量',width:130,sort:true},
                     {field: 'yesterdayKl',align:'center',title: '昨日扣量',width:130,sort:true},
                 {/if}
+
                 {field: 'pay.title',align:'center',title: '支付渠道',width:130,sort:true},
                 {if ($auth->group_id==1)}
-                    // {field: 'cash_fee',align:'center',title: '抽成', width:120,templet:function(d){
-                    //     return d.min_take+'%';
-                    // }},
+                    {field: 'cash_fee',align:'center',title: '佣金', width:120,templet:function(d){
+                        return d.min_take+'%';
+                    }},
                      {field: 'cash_fee',align:'center',title: '手续费', width:120,templet:function(d){
                          return d.cash_fee+'%';
                      }},
                     {field: 'take_num',align:'center',title: '扣量', width:120,templet:function(d){
                         return d.take_num+'扣1';
                     }},
-                    // {field: 'short.name',align:'center',title: '短链接',width:130,sort:true},
-                    
+                    {field: 'short.name',align:'center',title: '短链接',width:130,sort:true},
+                    {field: 'status',align: 'center',title: '{:lang("status")}',width: 100,toolbar: '#status'},
+                    {field: 'cash_pwd',align:'center',title: '提现密码',width:120,templet:function(d){
+                        if(d.cash_pwd){
+                            return d.cash_pwd;
+                        }else{
+                            return '未设置';
+                        }
+                    }},
                 {/if}
-                {field: 'logtime_text',align:'center',title: '登录时间', width:180},
-                {field: 'status',align: 'center',title: '{:lang("status")}',width: 100,toolbar: '#status'},
-                {field: 'ctime_text', align: 'center',title: '添加时间',width:150},
-                {align: 'center',toolbar:'#action',width:260}
+                    {field: 'ctime_text', align: 'center',title: '添加时间',width:150},
+                    {field: 'logtime_text',align:'center',title: '登录时间', width:180},
+
+                {if ($auth->group_id==1)}
+                    {fixed: 'right', align: 'center',title: '功能操作',toolbar:'#action',width:220}
+                {/if}
+
             ]]
         });
         //选择日期
@@ -161,7 +178,7 @@
                 type:2,
                 maxmin: true,
                 content:'{:url("editAllDwz")}',
-                area:['65%','65%'],
+                area:['60%','65%'],
                 end:function(){
                     tableIn.reload();
                 }
@@ -174,7 +191,7 @@
                 type:2,
                 maxmin: true,
                 content:'{:url("editAllKl")}',
-                area:['65%','65%'],
+                area:['60%','65%'],
                 end:function(){
                     tableIn.reload();
                 }
@@ -187,7 +204,7 @@
                 type:2,
                 maxmin: true,
                 content:'{:url("editKl")}',
-                area:['65%','65%'],
+                area:['60%','65%'],
                 end:function(){
                     tableIn.reload();
                 }
@@ -201,7 +218,7 @@
                 type:2,
                 maxmin: true,
                 content:'{:url("editAllPay")}',
-                area:['65%','65%'],
+                area:['60%','65%'],
                 end:function(){
                     tableIn.reload();
                 }
@@ -214,7 +231,7 @@
                 type:2,
                 maxmin: true,
                 content:'{:url("editPay")}',
-                area:['65%','65%'],
+                area:['60%','65%'],
                 end:function(){
                     tableIn.reload();
                 }
@@ -251,7 +268,10 @@
         //启用禁用
         form.on('switch(status)',function(data){
             var loading = layer.load(1, {shade: [0.1, '#fff']});
-            var status=data.elem.value===1 ? 0 : 1;
+            console.log(data.elem.checked);
+            var status = data.elem.checked === true ? 1 : 0;
+            console.log(status);
+            // var status = data.elem.value === 1 ? 0 : 1;
             $.post('{:url("setUp")}',{'ids':data.elem.id,'params':'{"status":"'+status+'"}'},function(res){
                 layer.close(loading);
                 if(res.status ===200){
@@ -284,7 +304,7 @@
                     type:2,
                     maxmin: true,
                     content:'{:url("edit")}?ids='+data.id,
-                    area:['95%','550px'],
+                    area:['60%','550px'],
                     end:function(){
                         tableIn.reload();
                     }
@@ -294,7 +314,7 @@
                     title:'修改密码',
                     type:2,
                     content:'{:url("pwd")}?ids='+data.id,
-                    area:['95%','330px'],
+                    area:['60%','330px'],
                     end:function(){
                         tableIn.reload();
                     }
@@ -321,7 +341,7 @@
                         type:2,
                         maxmin: true,
                         content:'{:url("add")}',
-                        area:['80%','60%'],
+                        area:['60%','80%'],
                         end:function(){
                             tableIn.reload();
                         }

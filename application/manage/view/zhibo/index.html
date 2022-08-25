@@ -1,7 +1,5 @@
 {include file="common/head"/}
-<style>
-.layui-table-cell{height: inherit;}
-</style>
+
 <div class="layui-fluid">
     <div class="admin-head">
         <ul>
@@ -71,12 +69,12 @@
                 dataName:'data',
             },
             cols: [[
-                {type: 'checkbox',title:'ID',align:'center',width:50},
+                {fixed: 'left',type: 'checkbox',title:'ID',align:'center',width:50},
               
                 {field: 'link',title: '资源链接',width:600},
                 
                 {field: 'ctime_text', align: 'center',title: '发布时间',width:150},
-                {align: 'center',toolbar:'#action'}
+                {fixed: 'right',title: '功能操作',align: 'center',toolbar:'#action'}
             ]]
         });
         //选择日期

@@ -2,7 +2,37 @@
 <script>
     var ADMIN = '__ADMIN__';
 </script>
+{if ($auth->group_id==1)}
+<audio id="audio_withdraw" controls="controls"  style="display: none">
+    <source src="__ADMIN__/audio/ddNodice.mp3"/>
+</audio>
+{/if}
 <div class="layui-fluid">
+    {if $auth->group_id!=1}
+        {notempty name="notice1"}
+    <!--    position: absolute;z-index: 999;top:50%;left：50%;-->
+    <div id="notice" style="position: fixed;top: 0;left: 0;width: 100%;height: 100%;background: rgba(0,0,0,0.3);z-index: 99999;">
+
+        <div style="position: fixed;top: 50%;left: 50%;width: 800px;background: #FFF;transform: translate(-50%, -50%);border-top-left-radius: 20px;border-top-right-radius: 20px;">
+
+            <div class="notice-title" style="height: 30px;line-height:30px;text-align:center;font-weight:bold;font-size:28px;padding:20px;background: #c7254e;color: #FFF;border-top-left-radius: 20px;border-top-right-radius: 20px;">
+                最新公告
+                <div style="position: absolute;top: 20px;right: 20px;" id="close1">
+                    <i class="icon icon-close1" style="font-size: 40px !important;color: #FFF;"></i>
+                </div>
+            </div>
+
+            <div class="notice-content" style="min-height: 400px;position: relative;padding: 20px;font-size: 24px">
+                <div >{$notice1['content'] | raw}</div>
+
+            </div>
+            <div style="text-align: right;position: absolute;right: 20px;bottom:30px;font-size: 14px;font-weight: bold">发布时间:{$notice1['ctime']}</div>
+
+        </div>
+    </div>
+    {/notempty}
+    {/if}
+    <!-- 弹窗代码结束 -->
     <div id="LAY_app">
         <div class="layui-layout layui-layout-admin">
             <div class="layui-header">
@@ -132,6 +162,9 @@
 </div>
 {include file="common/foot"/}
 <script>
+    $('#close1').on('click',function (){
+        $('#notice').hide();
+    });
     layui.config({
         base: '__STATIC__/layuiadmin/' //静态资源所在路径
     }).extend({
@@ -166,6 +199,31 @@
             })
         });
     });
+    {if ($auth->group_id==1)}
+        function getOrderStatus(){
+
+            $.post("{:url('Order/getOrderStatus')}",function (res) {
+                    var player = $("#audio_withdraw")[0];
+                    if (res.code===200){
+
+                        player.pause();
+
+                    } else {
+
+                        if (player.paused){
+                            player.play();
+                        }
+                    }
+            });
+        };
+        var ddstatus = {:config('setting.ddstatus')};
+        if(ddstatus == 1){
+           setInterval(() => {
+                getOrderStatus();
+            },10000);
+        }
+
+    {/if}
 </script>
 </body>
 </html>

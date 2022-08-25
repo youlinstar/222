@@ -1,7 +1,5 @@
 {include file="common/head"/}
-<style>
-.layui-table-cell{height: inherit;}
-</style>
+
 <div class="layui-fluid">
     <div class="admin-head">
         <ul>
@@ -70,7 +68,7 @@
                 dataName:'data',
             },
             cols: [[
-                {type: 'checkbox',title:'ID',align:'center',width:50},
+                {fixed: 'left',type: 'checkbox',title:'ID',align:'center',width:50},
                 {field: 'title',title: '标题',align:'left',width:340},
                 {field: 'sort.name',title: '类型',align:'center',width:150},
                 {field: 'views',title: '浏览量',align:'center',width:100},
@@ -83,7 +81,7 @@
                 }},
                 {field: 'status',align: 'center',title: '{:lang("status")}',width: 120,toolbar: '#status'},
                 {field: 'ctime_text', align: 'center',title: '发布时间',width:150},
-                {align: 'center',toolbar:'#action',title: '操作',width:240}
+                {fixed: 'right',align: 'center',toolbar:'#action',title: '功能操作',width:240}
             ]]
         });
         //选择日期

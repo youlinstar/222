@@ -10,7 +10,7 @@
     <meta name="x5-orientation" content="portrait">
     <meta name="full-screen" content="yes">
     <meta name="x5-fullscreen" content="true">
-    <title>蜜桃，情欲的归属</title>
+    <title>彩虹飘飘</title>
     <link rel="stylesheet" href="__STATIC__/common/lib/vant/css/index.css"/>
     <script src="__STATIC__/common/lib/vue/vue.js"></script>
     <script src="__STATIC__/common/lib/vant/js/vant.min.js"></script>
@@ -89,7 +89,7 @@
             color: #2e2e2e !important;
         }
         .video-type {
-            background: -webkit-linear-gradient(left,{:config('setting.bgc-left')},{:config('setting.bgc-right')});
+            background: -webkit-linear-gradient(left,rgb(199,39,231),rgb(24, 224, 197));;
             font-size: 0.24rem;
             color: #fff;
             padding: 0.12rem 5px;
@@ -184,7 +184,7 @@
         }
 
         .foot {
-            background: -webkit-linear-gradient(left,{:config('setting.bgc-left')},{:config('setting.bgc-right')});
+            background: -webkit-linear-gradient(left,rgb(199,39,231),rgb(24, 224, 197));
             height: 0.90rem;
             display: flex;
             align-items: center;
@@ -426,26 +426,6 @@
             font-size:10px;
             z-index:999;
         }
-        .van-dialog__content{
-            background: -webkit-linear-gradient(left,{:config('setting.bgc-left')},{:config('setting.bgc-right')});
-            padding-bottom:5px;
-        }
-        .van-dialog{
-            background: #fff;
-        }
-        .van-button--default{
-            /*background: gray;*/
-        }
-        .tip{
-            color: #fff;
-            text-align: center;
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
-        .van-button__text{
-             font-size: .5rem;
-        }
-        
     </style>
     
 </head>
@@ -519,7 +499,7 @@
             <img :src="ds_img" style="width:100%;height:230px">
         </div>
         <div id="try_mse" style="width:100%;" v-else></div>
-        <!--<div class="pay-title">付费即可观看完整视频</div>-->
+        <div class="pay-title">付费即可观看完整视频</div>
         <van-button square v-for="(item,index) in dialog.pay.pay"
                :class="setClass(item)" class="index-pay-item" @click="linkTo(item.url)" > {{item.name}}
         </van-button>

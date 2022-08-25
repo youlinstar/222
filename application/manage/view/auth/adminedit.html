@@ -17,29 +17,7 @@
                         <input type="password" name="row[password]"  placeholder="登录密码为空表示不修改" class="layui-input">
                     </div>
                 </div>
-                <div class="layui-form-item">
-                    <label class="layui-form-label">所属用户组</label>
-                    <div class="layui-input-inline from-inline-3">
-                        <select name="row[group_id]" lay-verify="required" lay-filter="groups">
-                            {volist name="groups" id="v"}
-                                <option value="{$v['id']}" {eq name="$row['group_id']" value="$v.id"}selected{/eq}>{$v['title']}</option>
-                            {/volist}
-                        </select>
-                    </div>
-                </div>
-                <div class="layui-form-item">
-                    <label class="layui-form-label">用户头像</label>
-                    <div class="layui-input-inline from-inline-3">
-                        <input type="hidden" name="row[avatar]" id="avatar" value="{$row['avatar']}">
-                        <div class="layui-upload">
-                            <button type="button" class="layui-btn" id="onUpload">上传头像</button>
-                            <div class="layui-upload-list">
-                                <img class="layui-upload-img" width="76" height="76" src="{$row['avatar']|default='__ADMIN__/images/default.png'}" id="Image">
-                                <p id="preview"></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                
                 <div class="layui-form-item">
                     <label class="layui-form-label">最低提现</label>
                     <div class="layui-input-inline from-inline-5">

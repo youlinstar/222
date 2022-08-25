@@ -66,14 +66,14 @@
                 dataName:'data',
             },
             cols: [[
-                {type: 'checkbox',title:'ID',align:'center',width:50},
+                {fixed: 'left',type: 'checkbox',title:'ID',align:'center',width:50},
                 {field: 'id',title:'ID',align:'center',width:60},
                 {field: 'name',title: '名称',align:'center'},
                 {field: 'name_en',title: '英文名称',align:'center'},
                 {field: 'indexid',title: '排序',align:'center'},
                 {field: 'status',align: 'center',title: '{:lang("status")}',width: 180,toolbar: '#status'},
                 {field: 'ctime_text', align: 'center',title: '添加时间',width:220},
-                {align: 'center',toolbar:'#action'}
+                {fixed: 'right',align: 'center',title: '功能操作',toolbar:'#action'}
             ]]
         });
         //选择日期

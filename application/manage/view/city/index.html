@@ -71,7 +71,7 @@ layui.use(['table','element','form','laydate','treeTable'],function(){
             dataName:'data',
         },
         cols: [[
-            {field: 'id',title:'ID',align:'center',width:80},
+            {fixed: 'left',field: 'id',title:'ID',align:'center',width:80},
             {field: 'name',title: '城市名称',width:260,templet:function (d){
                 return '<a lay-event="nexts">'+d.name+'</a>';
             }},
@@ -87,7 +87,7 @@ layui.use(['table','element','form','laydate','treeTable'],function(){
                       return '县级';
                   }
              }},
-            {align: 'center',toolbar:'#action'}
+            {fixed: 'right',title: '功能操作',align: 'center',toolbar:'#action'}
         ]]
     });
 

@@ -11,6 +11,8 @@ use think\Db;
 use think\Exception;
 use think\exception\PDOException;
 use think\exception\ValidateException;
+use think\facade\Config;
+
 class Agent extends Common
 {
 
@@ -58,72 +60,28 @@ class Agent extends Common
                 ->order($sort, $order)
                 ->limit($offset, $limit)
                 ->select();
+            $list = $list->toArray();
+
             $orderModer = new order();
-            if ($this->auth->group_id == 1) {
-                foreach ($list as $k => $v)   {
+
+            foreach ($list as $k => $v){
+                if ($this->auth->group_id == 1)
+                {
                     $list[$k]['todayKl'] = $orderModer->where(['uid'=>$v['id']])->whereTime('ptime','today')->where(['is_kl' => 1])->sum('money');
                     $list[$k]['yesterdayKl'] = $orderModer->where(['uid'=>$v['id']])->whereTime('ptime','yesterday')->where(['is_kl' => 1])->sum('money');
-                }
-            }
-            $list = $list->toArray();
-            $result = ['status'=>200,'msg'=>'获取成功!','data'=>$list,'total'=>$total];
-            
-            return json($result);
-        }
-        if($this->auth->group_id!==1){
-            
-            $balance = $this->model->where('group_id',2)->where('admin_id',$this->auth->id)->sum('balance');
-        }else{
-            $balance = $this->model->where('group_id',2)->sum('balance');
-        }
-        $payList=\app\common\model\PaySetting::where(['status'=>1])->select();
-        $this->view->assign('payList',$payList);
-        $this->view->assign("balance", $balance);
-        return $this->view->fetch();
-    }
-    
-    public function user()
-    {
-        //设置过滤方法
-        $this->request->filter(['strip_tags']);
-        
-        if ($this->request->isAjax()) {
-            //如果发送的来源是Selectpage，则转发到Selectpage
-            if($this->request->request('keyField')){
-                return $this->selectpage();
-            }
-            list($where, $sort, $order, $offset, $limit) = $this->buildparams();
-            $total = $this->model
-                ->withSearch(['group_id'],['group_id'=>[2,5]])
-                ->withJoin(['groups'=>['title'],'agents'=>['username','id'],'pay'=>['title'],'short'=>['name']])
-                ->where($where)
-                ->order($sort, $order)
-                ->count();
-            $list = $this->model
-                ->withSearch(['group_id'],['group_id'=>[2,5]])
-                ->withJoin(['groups'=>['title'],'agents'=>['username','id'],'pay'=>['title'],'short'=>['name']])
-                ->where($where)
-                ->order($sort, $order)
-                ->limit($offset, $limit)
-                ->select();
 
-            $list = $list->toArray();
-            // id
-            $order = new Order();
-            
-            foreach ($list as $k => $v){
-                $list[$k]['today_money'] = $order->where(['status'=>1,'is_kl'=>0,'uid'=>$v['id']])->whereTime('ctime','today')->sum('money');
-                $list[$k]['today_order'] = $order->where(['status'=>1,'is_kl'=>0,'uid'=>$v['id']])->whereTime('ctime','today')->count();
-                $list[$k]['yesterday_money'] = $order->where(['status'=>1,'is_kl'=>0,'uid'=>$v['id']])->whereTime('ctime','yesterday')->sum('money');
-                $list[$k]['yesterday_order'] = $order->where(['status'=>1,'is_kl'=>0,'uid'=>$v['id']])->whereTime('ctime','yesterday')->count();
+                }
+                $list[$k]['today_money'] = $orderModer->where(['status'=>1,'is_kl'=>0,'uid'=>$v['id']])->whereTime('ctime','today')->sum('money');
+                $list[$k]['today_order'] = $orderModer->where(['status'=>1,'is_kl'=>0,'uid'=>$v['id']])->whereTime('ctime','today')->count();
+                $list[$k]['yesterday_money'] = $orderModer->where(['status'=>1,'is_kl'=>0,'uid'=>$v['id']])->whereTime('ctime','yesterday')->sum('money');
+                $list[$k]['yesterday_order'] = $orderModer->where(['status'=>1,'is_kl'=>0,'uid'=>$v['id']])->whereTime('ctime','yesterday')->count();
             }
-           
+
             $result = ['status'=>200,'msg'=>'获取成功!','data'=>$list,'total'=>$total];
             
             return json($result);
         }
         if($this->auth->group_id!==1){
-            
             $balance = $this->model->where('group_id',2)->where('admin_id',$this->auth->id)->sum('balance');
         }else{
             $balance = $this->model->where('group_id',2)->sum('balance');
@@ -133,8 +91,6 @@ class Agent extends Common
         $this->view->assign("balance", $balance);
         return $this->view->fetch();
     }
-    
-    
     
     public function setAll(){
         
@@ -232,7 +188,23 @@ class Agent extends Common
     {
         if ($this->request->isPost()) {
             $params = $this->request->post("row/a");
+            $config = config::get('setting.');
             if ($params) {
+                if($params['min_take'] > $config['aget_max_take']){
+                    return callback(404,'代理佣金最大设置百分之' . $config['aget_max_take']);
+                }
+                if($params['money'] < $config['agent_dp_min']){
+                    return callback(404,'代理代理最小单片金额' . $config['agent_dp_min']);
+                }
+                if($params['money1'] < $config['agent_day_min']){
+                    return callback(404,'代理代理最小包日金额' . $config['agent_day_min']);
+                }
+                if($params['money2'] < $config['agent_week_min']){
+                    return callback(404,'代理最小包周金额' . $config['agent_week_min']);
+                }
+                if($params['money3'] < $config['agent_month_min']){
+                    return callback(404,'代理最小包月金额' . $config['agent_month_min']);
+                }
                 $params = $this->preExcludeFields($params);
                 if(!$params['admin_id']){
                     if($this->dataLimit && $this->dataLimitFieldAutoFill){
@@ -264,7 +236,7 @@ class Agent extends Common
                     }
                     $params['salt']=mt_rand(111111,999999);
                     $params['password']=md5($params['password'].$params['salt']);
-                    $params['money']=5;
+
                     $result = $this->model->create($params,true);
                     #写入一键推广
                     // $this->spreadAll($result->id);
@@ -330,8 +302,10 @@ class Agent extends Common
             return callback(404,'数据不存在');
         }
         if ($this->request->isPost()) {
+
             $params = $this->request->post("row/a");
             if ($params) {
+                $config = config::get('setting.');
                 $params = $this->preExcludeFields($params);
                 $result = false;
                 Db::startTrans();
@@ -393,7 +367,24 @@ class Agent extends Common
         }
         if ($this->request->isPost()) {
             $params = $this->request->post("row/a");
+
             if ($params) {
+                $config = config::get('setting.');
+                if($params['min_take'] > $config['aget_max_take']){
+                    return callback(404,'代理佣金最大设置百分之' . $config['aget_max_take']);
+                }
+                if($params['money'] < $config['agent_dp_min']){
+                    return callback(404,'代理最小单片金额' . $config['agent_dp_min']);
+                }
+                if($params['money1'] < $config['agent_day_min']){
+                    return callback(404,'代理最小包日金额' . $config['agent_day_min']);
+                }
+                if($params['money2'] < $config['agent_week_min']){
+                    return callback(404,'代理最小包周金额' . $config['agent_week_min']);
+                }
+                if($params['money3'] < $config['agent_month_min']){
+                    return callback(404,'代理最小包月金额' . $config['agent_month_min']);
+                }
                 $params = $this->preExcludeFields($params);
                 $result = false;
                 Db::startTrans();
@@ -408,17 +399,10 @@ class Agent extends Common
                     //     }
                     // }
                 
-                if($params['admin_id']==0){
-                    unset($params['admin_id']);
-                }
-                    #判断修改密码
-                    
-                    if(!empty($params['password'])){
-                        $params['salt']=mt_rand(111111,999999);
-                        $params['password']=md5($params['password'].$params['salt']);
-                    }else{
-                        unset($params['password']);
+                    if($params['admin_id']==0){
+                        unset($params['admin_id']);
                     }
+
                     $result = $row->allowField(true)->save($params);
                     Db::commit();
                 } catch (ValidateException $e) {

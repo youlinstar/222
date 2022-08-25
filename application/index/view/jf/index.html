@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <title>{:config('setting.web_title')}</title>
+    <link rel="stylesheet" href="__STATIC__/common/lib/vant/css/index.css"/>
+    <link rel="stylesheet" href="__STATIC__/index/css/index.css">
+    <script src="__STATIC__/common/lib/vue/vue.js"></script>
+    <script src="__STATIC__/common/lib/vant/js/vant.min.js"></script>
+    <script src="__STATIC__/common/js/jquery.min.js"></script>
+    <script src="__STATIC__/common/js/base64.min.js"></script>
+    <script src="//unpkg.byted-static.com/xgplayer/2.31.2/browser/index.js" charset="utf-8"></script>
+    <script src="//unpkg.byted-static.com/xgplayer-hls.js/2.2.2/browser/index.js" charset="utf-8"></script>
+    <script src="__STATIC__/common/js/clipboard/clipboard.min.js"></script>
+    <script src="//res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script>
+        function onBridgeReady() {
+            WeixinJSBridge.call('hideOptionMenu');
+        }
+        if (typeof WeixinJSBridge == "undefined") {
+            if (document.addEventListener) {
+                document.addEventListener('WeixinJSBridgeReady', onBridgeReady, false);
+            } else if (document.attachEvent) {
+                document.attachEvent('WeixinJSBridgeReady', onBridgeReady);
+                document.attachEvent('onWeixinJSBridgeReady', onBridgeReady);
+            }
+        } else {
+            onBridgeReady();
+        }
+
+        window.onload = function(){
+
+            var app = document.getElementById("list");
+            var touchstartY;
+            app.addEventListener("touchstart",function (event) {
+                var events = event.touches[0] || event;
+                touchstartY = events.clientY; //获取触摸目标在视口中的y坐标
+            },{passive: false});
+            app.addEventListener("touchmove",function (event) {
+                var events = event.touches[0] || event;
+                //注意app.scrollTop始终为0
+                var scrollTop = app.scrollTop || document.documentElement.scrollTop; //获取滚动部分的高度
+                var clientHeight = document.documentElement.clientHeight; //获取手机屏幕高度（可视部分高度）
+                var scrollHeight = app.scrollHeight; //所有内容的高度
+                if (events.clientY > touchstartY && scrollTop === 0 && event.cancelable)
+                {
+                  event.preventDefault(); //禁止到顶下拉
+                } else if (scrollTop + clientHeight > scrollHeight && event.cancelable)
+                {
+                  // event.preventDefault(); //禁止到底上拉
+                }
+            }, {passive: false});
+         };
+    </script>
+    <style>
+       :root{
+            --background: -webkit-linear-gradient(left,{:config('setting.bgc-left')},{:config('setting.bgc-right')});
+        }
+        html{
+            font-size: calc(100vw / 3.75);
+        }
+        .p5{
+            padding: 0.05rem 0.1rem !important;
+        }
+    </style>
+
+</head>
+<body>
+
+    <div id="app">
+
+        <div class="wrap">
+
+            <!-- 主体       -->
+            <section class="section" id="list">
+                <!-- 头部 -->
+                <header>
+                    <!-- 搜索           -->
+                    <div class="top">
+                        <span class="type-have" @click="doGetList(-1,'cat')">今日新片</span>
+                        <input type="text" v-model="params.key" class="input-text color-ff" placeholder="输入搜索关键词" style="user-select: text;">
+                        <div class="btn-search" @click="doSearch()">搜 索 </div>
+                    </div>
+                    <!-- 菜单 -->
+                    <div class="menu" v-if="isShow">
+                        <div class="item active" key="-1" @click="doGetList(-1,'cat')">
+                            全部
+                        </div>
+                        <div class="item" data-cid="0" v-for="(item,index) in cat" @click="doGetList(index , item)" :key="index" :class="activeClass == index ? 'active':''">
+                            {{item.name}}
+                        </div>
+
+                        <div class="item bgc" key="99"  @click="doGetList(99,'payed')">
+                            已购
+                        </div>
+                    </div>
+                </header>
+                <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
+                    <van-list v-model="loading" :immediate-check="false" :finished="finished" :finished-text="msg" @load="doGetList" offset="20"
+                              direction="down">
+                        <div class="van-clearfix">
+                            <!-- 赖加载 -->
+                            <lazy-component>
+                                <div class="list-item mt20" v-for="item in list">
+                                    <div class="img-wrap" @click="doPay(item)">
+                                        <div v-if="item.img" class="thumb">
+                                            <span class="times" v-if="item.times">{{item.times}}</span>
+                                            <img v-lazy="item.img" :src="item.img" width="100%">
+                                        </div>
+                                        <div class="img-tips-left">
+                                            <span>{{item.money}}元观看</span>
+                                            <span>{{item.rand}}人看过</span>
+                                        </div>
+                                    </div>
+                                    <div class="video-title">{{item.title}}</div>
+                                </div>
+                            </lazy-component>
+                        </div>
+                    </van-list>
+                </van-pull-refresh>
+            </section>
+            <!-- 底部 -->
+            <div class="foot">
+
+                <div class="btn p5">我的积分:{{jifen}}</div>
+
+                <div class="btn p5" @click="doQrcode()">防失联</div>
+
+                <div class="btn p5" @click="doTgm()">推广码</div>
+
+                <div class="btn p5" @click="doTop()">返回顶部</div>
+            </div>
+        </div>
+
+        <div class="overlay" v-if="overlay"></div>
+
+        <div class="dialog" v-if="dialog.pay.status">
+
+            <div class="video-img">
+                <img style="width: 100%;height:100%" :src="ds_img">
+            </div>
+
+            <div class="video">
+
+                <div class="video-title">
+                    <span >{{ds_title}}</span>
+                </div>
+                <div class="video-list">
+                    <div class="video-item" v-for="(item,index) in dialog.pay.data" @click="linkTo(item.url)">
+                        {{item.name}}
+                    </div>
+                </div>
+                <div class="tip">
+                    <div class="tip-wrap">
+                        <span class="tip-title">请及时保留口令,方便找回已购买</span>
+                        <div class="tip-item">
+                            <span class="tip-item-title" >您的口令:{{kouling}}</span>
+                            <div class="copy" @click = "copy()" :data-clipboard-text="kouling">复制</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <div class="qrcode" @click="doQrcode()">防失联</div>
+                <div class="tgm" @click="doTgm()">赚积分</div>
+                <div class="login" @click="doLogin()">口令</div>
+                <div class="close" @click="doClose()">关闭</div>
+            </div>
+        </div>
+
+        <div class="qrcode-dialog" v-if="dialog.qrcode.status">
+            <div class="item">
+                <div class="title">防止联</div>
+                <div class="line"></div>
+                <div class="qrcode-img">
+                    <img style="width: 100%;height:100%" :src="dialog.qrcode.img">
+                </div>
+                <div class="line"></div>
+                <div class="title">{{dialog.qrcode.title}}</div>
+            </div>
+            <div class="close" @click="doClose()">
+                <van-icon name="close" />
+            </div>
+
+        </div>
+        <div class="qrcode-dialog" v-if="dialog.tgm.status">
+            <div class="item">
+                <div class="title">我的推广</div>
+                <div class="line"></div>
+                <div class="qrcode-img">
+                    <img style="width: 100%;height:100%" :src="dialog.tgm.img">
+                </div>
+                <div class="line"></div>
+                <div class="title">长按二维码，转发朋友或群赚积分</div>
+            </div>
+            <div class="close" @click="doClose()">
+                <van-icon name="close" />
+            </div>
+
+        </div>
+        <div class="login-dialog" v-if="dialog.login.status">
+            <div class="item">
+                <div class="title">口 令 登 录</div>
+                <div class="form-item">
+                    <label class="form-label">口令:</label>
+
+                    <input type="text" v-model="password" autocomplete="off" placeholder="请输入口令" style="user-select: text;">
+
+                </div>
+                <div class="login-dialog-footer">
+                    <div class="login-close" @click="doClose()">取消</div>
+                    <div class="login-sum" @click="sumLogin()">登录</div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    <script>
+        //初始化视口高度
+        $('.wrap').css('height',window.innerHeight);
+        Vue.config.productionTip = false;
+        Vue.config.lang = 'zh-CN';
+
+        Vue.use(vant.Lazyload, {
+            lazyComponent: true,
+        });
+
+        new Vue({
+            el: '#app',
+            data: {
+                myPlayer:{},
+                list: [],
+                refreshing: false,
+                total: 0,
+                itemindex: 0,
+                activeClass: -1,
+                cat: [],
+                ds_title: "demo",
+                ds_img: "",
+                loading: false,
+                finished: false,
+                isShow:true,
+                password: '',
+                vid: 0,
+                overlay: false,
+                msg: '没有更多了',
+                kouling:"{$kouling}",
+                rkType:2,
+                ldk:"{:input('ldk')}",
+                jifen:"{$jifen}",
+                params: {
+                    ldk: "{:input('ldk')}",
+                    page: 1,
+                    limit: 20,
+                    encode: 1,
+                    cid: '',
+                    key: '',
+                    rkType:2,
+                    payed: "{:input('payed/d',0)}",
+
+                },
+                // 消息框
+                dialog: {
+                    pay: {
+                        status: false,
+                        pay: [],
+                    },
+                    qrcode:{
+                        status: false,
+                        img:"{$qrcode_url}",
+                        title:"{$qrcode_title}",
+                    },
+                    tgm:{
+                        status: false,
+                        img:"{$tgm}",
+                    },
+                    login:{
+                        status:false
+                    }
+                },
+
+            },
+            mounted: function () {
+
+                let vm = this
+                vm.getCat();
+                vm.doGetList(-1,'cat');
+
+                // 滚动条监听
+                window.addEventListener('scroll',function(){
+
+                    let scrollHight = $('#list').scrollTop()
+                    if(scrollHight > 1)
+                    {
+                        vm.isShow = false
+
+                    }else{
+
+                        vm.isShow = true
+                    }
+                },true)
+            },
+            methods: {
+
+                copy(){
+                    let clipboard = new ClipboardJS(".tip-item .copy")
+                    clipboard.on('success', e => {
+                        vant.Toast.success('复制成功')
+                        e.clearSelection();
+                    })
+                    clipboard.on('error', e => {
+                       vant.Toast.success('复制失败')
+                    });
+                },
+                doClose(e){
+                    this.dialog.pay.status=false
+                    this.dialog.pay.pay=[]
+                    this.dialog.qrcode.status=false
+                    this.dialog.tgm.status=false
+                    this.overlay=false
+                    this.dialog.login.status=false
+
+                },
+                doQrcode(){
+                    if( this.overlay === false ){
+                        this.overlay = true
+                    }
+                    this.dialog.pay.status=false
+                    this.dialog.pay.pay=[]
+                    this.dialog.qrcode.status=true
+                },
+                doTgm(){
+                    if( this.overlay === false ){
+                        this.overlay = true
+                    }
+                    this.dialog.pay.status=false
+                    this.dialog.pay.pay=[]
+                    this.dialog.tgm.status=true
+                },
+                doLogin(){
+                    this.dialog.pay.status=false
+                    this.dialog.pay.pay=[]
+                    this.dialog.login.status=true
+                },
+                sumLogin(){
+                    let vm = this
+                    if(!vm.password) {
+                        return vant.Toast.fail('口令不能为空')
+                    }
+
+                    $.ajax({
+                        url: "/api/resource/login",
+                        type: 'POST',
+                        dataType: 'JSON',
+                        data: {'pwd':vm.password,'ldk':vm.ldk,'type':vm.rkType},
+                        complete: function (XMLHttpRequest, textStatus) {
+                        },
+                        success: function (res) {
+                            if(res.code==200){
+                                vant.Toast.success(res.msg);
+                                location.href = res.url
+
+                            }else{
+                                return vant.Toast.fail(res.msg)
+                            }
+                        }
+                    });
+
+                },
+                linkTo(e) {
+                    let vm = this
+                    vant.Toast.loading({
+                        message: '正在调起支付...',
+                        forbidClick: true,
+                        duration: 0,
+                    });
+
+                    if(e.indexOf('jfplay') != -1){
+
+                        $.ajax({
+                            url: "/api/resource/checkJfPay",
+                            type: 'GET',
+                            dataType: 'JSON',
+                            data: {'ldk':vm.ldk,'vid':vm.vid},
+                            complete: function (XMLHttpRequest, textStatus) {
+                            },
+                            success: function (res) {
+                                if(res.code==200){
+                                    location.href = e
+                                }else{
+                                    vant.Toast.clear();
+                                    vm.doTgm()
+                                }
+                            }
+                        });
+                    }else{
+                        location.href = e;
+                    }
+
+                },
+                // 搜索
+                doSearch(e) {
+                    let vm = this;
+                    vm.params.page = 1;
+                    vm.list = [];
+                    this.doGetList("-1", '');
+                },
+                doTop() {
+                    $('#list').scrollTop(0);
+                },
+                doPay(item) {
+                    let vm = this;
+                    vm.vid = item.id;
+                    vm.ds_img = item.img;
+                    vm.ds_title = item.title;
+                    if (item.pay == 1) {
+                        let data = {"vid":vm.vid,"ldk":vm.ldk},
+                            url = 'http://' + window.location.host + '/fvideo';
+
+                        var temp = document.createElement("form");
+                        temp.action = url;
+                        temp.method = "post";
+                        temp.style.display = "none";
+                        for (var x in data) {
+                            var opt = document.createElement("textarea");
+                            opt.name = x;
+                            opt.value = data[x];
+                            temp.appendChild(opt);
+                        }
+                        document.body.appendChild(temp);
+                        temp.submit();
+                        return temp;
+                    }
+
+                    $.ajax({
+                        url: "/api/resource/play",
+                        type: 'GET',
+                        dataType: 'JSON',
+                        data: {'ldk':vm.ldk,'vid':item.id,'rkType':vm.rkType},
+                        complete: function (XMLHttpRequest, textStatus) {
+                        },
+                        success: function (res) {
+                            if(res.code==200){
+                                vm.dialog.pay.data = res.data;
+                                vm.dialog.pay.status = true;
+                                vm.overlay = true;
+                            }
+                        }
+                    });
+                },
+                doGetList(index, row) {
+                    let vm = this;
+                    if(index || index==0){
+                        vm.activeClass = index;
+                    }
+                    vm.loading=true;
+
+                    if (row != undefined && row.id != undefined) {
+                        vm.list = [];
+                        vm.finished = false;
+                        vm.params.page = 1;
+                        vm.params.payed = 0;
+                        vm.params.cid = row.id;
+                    }
+                    //指定类型
+                    if (row == "cat") {
+                        vm.list = [];
+                        vm.finished = false;
+                        vm.params.page = 1;
+                        vm.params.payed = 0;
+                        vm.params.key = '';
+                        vm.params.cid = 0;
+                    }
+                    //已购
+                    if (row == "payed") {
+                        vm.list = [];
+                        vm.finished = false;
+                        vm.params.page = 1;
+                        vm.params.payed = 1;
+                        vm.params.cid = '';
+                        vm.msg = "空空如也,赶紧去选择心仪的影片吧!";
+                    }
+                    if(vm.params.page == 1){
+                       this.scrollTop = $('#list').scrollTop(0);
+                    }
+                    $.ajax({
+                        url: '/api/resource/getList',
+                        type: 'GET',
+                        dataType: 'JSON',
+                        data: vm.params,
+                        complete: function (XMLHttpRequest, textStatus) {
+                        },
+                        success: function (res) {
+                            if (res.code == 200){
+                                if (vm.refreshing) {
+                                    vm.list = []
+                                    vm.refreshing = false
+                                }
+                                vm.loading = false;
+                                let temp = res.data.list;
+                                if(vm.params.encode==1){
+                                    temp = JSON.parse(Base64.decode(res.data.list));
+                                }
+                                if(temp.length>0){
+                                    if (row == "payed") {
+                                        vm.msg = '';
+                                    }
+                                    if(vm.params.page==1){
+                                        vm.list =temp;
+                                    }else{
+                                        vm.list = vm.list.concat(temp);
+                                        if (vm.list.length == res.data.total) {
+                                            vm.finished = true;
+                                        }
+                                    }
+                                    vm.params.page++;
+                                }else{
+                                    vm.finished = true;
+                                }
+
+                            } else {
+                                vant.Toast.fail(res.msg);
+                            }
+                        }
+                    });
+                },
+                onRefresh() {
+                    this.finished = false
+                    this.params.page = 1
+                    this.loading = true
+                    this.doGetList()
+                },
+                getCat() {
+                    let vm = this;
+                    $.ajax({
+                        url: '/api/resource/getSort',
+                        type: 'GET',
+                        dataType: 'JSON',
+                        data: {'ldk':vm.ldk},
+                        complete: function (XMLHttpRequest, textStatus) {
+                        },
+                        success: function (res) {
+                            if(res.code==200){
+
+                                vm.cat=JSON.parse(Base64.decode(res.data));
+
+                            }
+                        }
+                    });
+                },
+
+
+            }
+        })
+    </script>
+</body>
+</html>

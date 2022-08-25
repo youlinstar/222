@@ -53,13 +53,13 @@
                 dataName:'data',
             },
             cols: [[
-                {field: 'indexid',title:'排序',align:'center',edit:'text',width:60,fixed: true},
+                {fixed: 'left',field: 'indexid',title:'排序',align:'center',edit:'text',width:60,fixed: true},
                 {field: 'title', title: '标题'},
                 {field: 'name', align: 'center',title: '配置名', width: 150},
                 {field: 'types', align: 'center',title: '配置类型',width:150},
                 {field: 'group', align: 'center',title: '所属分组', width:150},
                 {field: 'status', align: 'center',title: '{:lang("status")}', width: 120,toolbar: '#status'},
-                {align: 'center', toolbar: '#action'}
+                {fixed: 'right',title: '功能操作',align: 'center', toolbar: '#action'}
             ]]
         });
         //切换tab

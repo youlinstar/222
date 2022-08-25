@@ -1,0 +1,62 @@
+{include file="common/head"/}
+
+<div class="layui-fluid">
+
+    <div class="table-body">
+        <div class="search-tool">
+            <form class="layui-form">
+                <div class="layui-inline">
+                   <input type="text" class="layui-input" placeholder="检索日期" id="ondatepay" style="width:200px;">
+                    <span class="item-icon"><i class="layui-icon layui-icon-date"></i></span>
+                </div>
+            </form>
+        </div>
+        <table id="list" lay-filter="list"></table>
+    </div>
+</div>
+
+{include file="common/foot"/}
+
+<script>
+    var dateVal='';
+    layui.use(['table','element','form','laydate'],function(){
+        var table = layui.table, $ = layui.jquery,laydate = layui.laydate,form=layui.form,element = layui.element;
+        var tableIn = table.render({
+            id: 'list',
+            elem: '#list',
+            url: '{:url("payOrderList")}',
+            method:'get',
+            page:true,
+            response:{
+                statusName:'status',
+                statusCode:200,
+                msgName:'msg',
+                countName:'total',
+                dataName:'data',
+            },
+            cols: [[
+                {field: 'title',align:'center',title: '支付渠道',width:200},
+                {field: 'money', align: 'center',title: '订单金额(元)'},
+                {field: 'order', align: 'center',title: '订单(笔)'},
+                {field: 'klmoney', align: 'center',title: '扣量金额(元)'},
+                {field: 'klorder', align: 'center',title: '扣量(笔)'}
+            ]]
+        });
+
+        //选择日期
+        laydate.render({
+            elem: '#ondatepay',
+            range: '-',
+            done:function(value, date, endDate){
+                dateVal=value;
+
+                table.reload('list',{
+                    where:{
+                        date:dateVal,
+                    }
+                });
+            }
+        });
+
+    })
+</script>

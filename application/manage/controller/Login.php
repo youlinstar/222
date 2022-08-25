@@ -6,6 +6,7 @@ use app\common\model\Admin;
 use think\facade\Config;
 use think\facade\Hook;
 use think\Validate;
+use think\captcha\Captcha;
 class Login extends Common
 {
 
@@ -17,7 +18,7 @@ class Login extends Common
 
     public function index(){
         $url = $this->request->get('url', 'index/index');
-        if($this->auth->isLogin()){
+        if($this->auth->isLogin() == 3){
             $this->success('您已经登录，不需重复登录', $url);
         }
         if ($this->request->isPost()) {
@@ -62,12 +63,12 @@ class Login extends Common
     }
     public function reg(){
 		 $data = input("post.");
-		  $config = cache('db_config_data');
-		if(!$config){            
-            $config = api('Config/lists');                          
+         $config = cache('db_config_data');
+		if(!$config){
+            $config = api('Config/lists');
             cache('db_config_data',$config);
         }
-        config($config); 
+        config($config);
 
         if(config('web_site_close') == 0  ){
             $this->error('站点已经关闭，请稍后访问~');
@@ -75,21 +76,19 @@ class Login extends Common
 		 if(config('user_allow_register')==0){
 			 return json(['code' => 0, 'url' => '', 'msg' => "注册已关闭"]);
 		 }
-		 
+
 		 $member=Db::name('member')->where('account', $data['account'])->find();
 		 if(!empty($member)){
 			 return json(['code' => 0, 'url' => '', 'msg' => '用户名已存在']);
 		 }
-		 
-		 
+
 		 $yqm=Db::name('yqm')->where(['yqm'=>$data['yqm'],"zt"=>'未使用'])->find();
 		 if(empty($yqm)){
-			return json(['code' => 0, 'url' => '', 'msg' => '邀请码不存在']); 
-			 
+			return json(['code' => 0, 'url' => '', 'msg' => '邀请码不存在']);
 		 }
-		 
+
 		 Db::name('yqm')->where('yqm', $data['yqm'])->update(['name'=>$data['account'],'zt'=>'已使用']);
-		 
+
 		 $param=[];
 		 $param['account']=$data['account'];
 		 $param['nickname']=$data['nickname'];
@@ -105,17 +104,17 @@ class Login extends Common
 		 $shangji = Db::name('member')->where('id',$yqm['userid'])->find();
 		 $param['level'] = $shangji['level'] + 1;
 		 $userid=Db::name('member')->insertGetId($param);
-		 
+
 		  $user = new UserType();
 		 $info = $user->getRoleInfo(1);
-        
+
         session('dailiuid', $userid);         //用户ID
         session('dailiname', $param['nickname']);  //用户名
         session('dlportrait', $param['head_img']); //用户头像
         session('dlrolename', $info['title']);    //角色名
         session('dlrule', $info['rules']);        //角色节点
         session('dlname', $info['name']);         //角色权限
-  
+
         //更新管理员状态
         $param = [
             'login_num' =>  1,
@@ -124,7 +123,8 @@ class Login extends Common
         ];
 
         Db::name('member')->where('id',$userid)->update($param);
-		 
-		 return json(['code' => 1, 'url' => url('index/index'), 'msg' => '注册成功！']); 
+
+		 return json(['code' => 1, 'url' => url('index/index'), 'msg' => '注册成功！']);
 	}
+
 }

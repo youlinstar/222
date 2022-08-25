@@ -78,29 +78,6 @@ class Spread extends Common
     }
 
     /**
-     * 模板切换
-     */
-    public function changeTemp()
-    {
-        if ($this->request->isPost()) {
-            $params = $this->request->post("row/a");
-            if (empty($params['id'])) {
-                return callback(404, '请选择模板');
-            }
-            $res = Admin::where('id', $this->auth->id)->update(['view_id' => $params['id']]);
-            if (!$res) {
-                return callback(404, '模板切换失败');
-            }
-            return callback(200, '切换成功');
-        }
-        $list = \app\common\model\Template::where('status', 1)->select();
-        $user = Admin::where('id', $this->auth->id)->find();
-        $this->view->assign('user', $user);
-        $this->view->assign('list', $list);
-        return $this->view->fetch();
-    }
-
-    /**
      * 获取二维码地址
      */
     public function qrcodeUrl()
@@ -123,85 +100,68 @@ class Spread extends Common
     /**
      * 获取推广链接
      */
-    public function shortUrl()
-    {
-        $id = $this->request->param('id/d', 0);
-        #推广总链接
-        $link = $this->getSpreadUrl();
-        if (empty($id)) {
-            $url = $link . url('/haokan').'?ldk=' . encrypt(json_encode(['uid'=>$this->auth->id,'t'=>0]));
-        } else {
-            $url = $link . url('/haokan').'?ldk=' . encrypt(json_encode(['uid'=>$this->auth->id,'t'=>$id,'hezi'=>$id]));
-        }
-        #获取防封链接
-        $antiUrl=getAntiUrl(1);
-        if($antiUrl){
-           $url=$antiUrl.base64_encode(urlencode($url));
-        }else{
-            $url=$antiUrl.$url;
-        }
-        $short_id = Admin::where('id', $this->auth->id)->value('short_id');
-        if (empty($short_id)) {
-            $short_id = 1;
-        }
-        return getDwz($short_id,$url);
-    }
+    // public function shortUrl()
+    // {
+    //     $id = $this->request->param('id/d', 0);
+    //     echo $this->auth->id;die;
+    //     #推广总链接
+    //     $link = $this->getSpreadUrl();
+    //     if (empty($id)) {
+    //         $url = $link . url('/haokan').'?ldk=' . encrypt(json_encode(['uid'=>$this->auth->id,'t'=>0]));
+    //     } else {
+    //         $url = $link . url('/haokan').'?ldk=' . encrypt(json_encode(['uid'=>$this->auth->id,'t'=>$id,'hezi'=>$id]));
+    //     }
+    //     #获取防封链接
+    //     $antiUrl=getAntiUrl(1);
+    //     if($antiUrl){
+    //       $url=$antiUrl.base64_encode(urlencode($url));
+    //     }else{
+    //         $url=$antiUrl.$url;
+    //     }
+    //     $short_id = Admin::where('id', $this->auth->id)->value('short_id');
+    //     if (empty($short_id)) {
+    //         $short_id = 1;
+    //     }
+    //     $shortModle = new \app\common\model\Short();
+
+    //     $short = $shortModle->where('id', $short_id)->find();
+    //     if($short->label != 'dwzStart'){
+    //         return getDwz($short,$url);
+    //     }
+        
+        
+    // }
     
     
-     /**
-     * 获取推广链接
-     */
-    public function shortJfUrl()
-    {
-        $id = $this->request->param('id/d', 0);
-        #推广总链接
-        $link = $this->getSpreadUrl();
-        if (empty($id)) {
-            $url = $link . url('/fhaokan').'?ldk=' . encrypt(json_encode(['uid'=>$this->auth->id,'t'=>0,'tgm'=>'']));
-        } else {
-            $url = $link . url('/fhaokan').'?ldk=' . encrypt(json_encode(['uid'=>$this->auth->id,'t'=>$id,'hezi'=>$id]));
-        }
-        #获取防封链接
-        $antiUrl=getAntiUrl(1);
-        if($antiUrl){
-           $url=$antiUrl.base64_encode(urlencode($url));
-        }else{
-            $url=$antiUrl.$url;
-        }
-        $short_id = Admin::where('id', $this->auth->id)->value('short_id');
-        if (empty($short_id)) {
-            $short_id = 1;
-        }
-        return getDwz($short_id,$url);
-    }
+    
 
 
     /**
      * 获取推广总链
      */
-    protected function getSpreadUrl()
-    {
-        $sid = $this->auth->id;
-        if ($this->auth->admin_id > 0) {
-            $sid = 1;
-        }
-        if (!empty($this->auth->entry_url)) {
-            $entry_url = $this->auth->entry_url;
-        } else {
-            $entry_url = Admin::where('id', $sid)->value('entry_url');
-        }
-        if ($entry_url) {
-            $url = $entry_url;
-        } else {
-            $domain = trim(getDomain(1, $sid));
-            if ($domain) {
-                $url = $domain;
-            } else {
-                $url = '需要添加主域名才能生成盒子链接';
-            }
-        }
-        return trim($url);
-    }
+    // protected function getSpreadUrl()
+    // {
+    //     $sid = $this->auth->id;
+    //     if ($this->auth->admin_id > 0) {
+    //         $sid = 1;
+    //     }
+    //     if (!empty($this->auth->entry_url)) {
+    //         $entry_url = $this->auth->entry_url;
+    //     } else {
+    //         $entry_url = Admin::where('id', $sid)->value('entry_url');
+    //     }
+    //     if ($entry_url) {
+    //         $url = $entry_url;
+    //     } else {
+    //         $domain = trim(getDomain(1, $sid));
+    //         if ($domain) {
+    //             $url = $domain;
+    //         } else {
+    //             $url = '需要添加主域名才能生成盒子链接';
+    //         }
+    //     }
+    //     return trim($url);
+    // }
 
     /**
      * 视频预览
@@ -292,13 +252,13 @@ class Spread extends Common
     {
        
         if ($this->request->isPost()) {
-            $vipurl = $this->request->param('vipurl/s', '');
+            $qrcode_url = $this->request->param('qrcode_url/s', '');
             $zb = $this->request->param('zb/d', 0);
             $jf = $this->request->param('jf/d', 0);
             $where[] = ['id', '=', $this->auth->id];
             $data = [];
             
-            $data['vipurl'] = $vipurl;
+            $data['qrcode_url'] = $qrcode_url;
          
             $data['zb'] = $zb;
          
@@ -417,73 +377,7 @@ class Spread extends Common
     
     
     
-    /**
-     * 批量修改  已弃用
-     * @throws Exception
-     * @throws PDOException
-     * @throws \think\db\exception\DbException
-     */
-    public function batchEdit_no()
-    {
-        if ($this->request->isPost()) {
-            $ids = $this->request->param('ids/a');
-            $num = $this->request->param('num/d', 0);
-            $type = $this->request->param('type/d', 0);
-            $where[] = ['uid', '=', $this->auth->id];
-            if (!empty($ids)) {
-                $where[] = ['id', 'in', $ids];
-            }
-            switch ($type) {
-                case 1:#金额
-                    $data = ['money' => $num];
-                    break;
-                case 2:#试看
-                    $data = ['try_see' => $num];
-                    if ($this->auth->group_id = 2) {
-                        if ($num > config('setting.try_see')) {
-                            return callback(404, '试看时间不能超过' . config('setting.try_see') . '秒');
-                        }
-                    }
-
-                    break;
-                case 3:#包天
-                    $data = ['money1' => $num];
-                    if ($this->auth->group_id = 2) {
-                        if ($num < config('setting.agent_day_min')) {
-                            return callback(404, '包日金额不能低于' . config('setting.agent_day_min') . '元');
-                        }
-                    }
-                    break;
-                case 4:#包周
-                    $data = ['money2' => $num];
-                    if ($this->auth->group_id = 2) {
-                        if ($num < config('setting.agent_week_min')) {
-                            return callback(404, '包周金额不能低于' . config('setting.agent_week_min') . '元');
-                        }
-                    }
-                    break;
-                case 5:#包月
-                    $data = ['money3' => $num];
-                    if ($this->auth->group_id = 2) {
-                        if ($num < config('setting.agent_month_min')) {
-                            return callback(404, '包月金额不能低于' . config('setting.agent_month_min') . '元');
-                        }
-                    }
-                    break;
-            }
-            if($type == 2){
-                $result = $this->model->where($where)->update($data);
-            }else{
-                
-                $result = Agent::where($where)->update($data);
-            }
-            
-            if (!$result) {
-                return callback(404, '批量修改失败');
-            }
-            return callback(200, '修改成功');
-        }
-    }
+    
     
     /**
      * 编辑
@@ -587,31 +481,5 @@ class Spread extends Common
             }
         }
     }
-    /**
-     * 获取积分推广链接
-     */
-    public function zhibo()
-    {
-        $id = $this->request->param('id/d', 0);
-        #推广总链接
-        $link = $this->getSpreadUrl();
-        if (empty($id)) {
-            $url = $link . url('/zhibo').'?ldk=' . encrypt(json_encode(['uid'=>$this->auth->id,'t'=>0,'tgm'=>'']));
-        } else {
-            $url = $link . url('/zhibo').'?ldk=' . encrypt(json_encode(['uid'=>$this->auth->id,'t'=>$id]));
-           
-        }
-        #获取防封链接
-        $antiUrl=getAntiUrl(1);
-        if($antiUrl){
-           $url=$antiUrl.base64_encode(urlencode($url));
-        }else{
-            $url=$antiUrl.$url;
-        }
-        $short_id = Admin::where('id', $this->auth->id)->value('short_id');
-        if (empty($short_id)) {
-            $short_id = 1;
-        }
-        return getDwz($short_id,$url);
-    }
+    
 }

@@ -2,71 +2,90 @@
 <div class="layui-fluid">
     <div class="table-body">
         <div class="layui-card">
+
             <form class="layui-form layui-form-pane" lay-filter="agent">
-                <div class="layui-form-item">
-                    <label class="layui-form-label">用户名</label>
-                    <div class="layui-input-inline from-inline-5">
-                        <input type="text" name="row[username]" lay-verify="required" lay-reqText="请输入用户名" placeholder="{:lang('pleaseEnter')}用户名" class="layui-input">
-                    </div>
-                </div>
                 {if ($auth->group_id==1)}
-                <div class="layui-form-item">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">用户名</label>
+                        <div class="layui-input-inline from-inline-5">
+                            <input type="text" name="row[username]" lay-verify="required" lay-reqText="请输入用户名" placeholder="{:lang('pleaseEnter')}用户名" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
                         <label class="layui-form-label">上级代理ID</label>
                         <div class="layui-input-inline from-inline-5">
                             <input type="text" name="row[admin_id]" lay-reqText="请输入上级代理ID" placeholder="请输入上级代理ID" class="layui-input">
                         </div>
                     </div>
-                {/if}
-                <div class="layui-form-item">
-                    <label class="layui-form-label">所属用户组</label>
-                    <div class="layui-input-inline from-inline-5">
-                        <select name="row[group_id]" lay-filter="pays" lay-search>
-                            {volist name="groupList" id="v"}
-                                <option value="{$v.id}">{$v.title}</option>
-                            {/volist}
-                        </select>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">所属用户组</label>
+                        <div class="layui-input-inline from-inline-5">
+                            <select name="row[group_id]" lay-filter="pays" lay-search>
+                                {volist name="groupList" id="v"}
+                                    <option value="{$v.id}">{$v.title}</option>
+                                {/volist}
+                            </select>
+                        </div>
                     </div>
-                </div>
-                <div class="layui-form-item">
-                    <label class="layui-form-label">密码</label>
-                    <div class="layui-input-inline from-inline-5">
-                        <input type="password" name="row[password]" lay-verify="required" lay-reqText="请输入密码" placeholder="{:lang('pleaseEnter')}密码" class="layui-input">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">密码</label>
+                        <div class="layui-input-inline from-inline-5">
+                            <input type="password" name="row[password]" lay-verify="required" lay-reqText="请输入密码" placeholder="{:lang('pleaseEnter')}密码" class="layui-input">
+                        </div>
                     </div>
-                </div>
-                <div class="layui-form-item">
-                    <label class="layui-form-label">用户头像</label>
-                    <div class="layui-input-inline from-inline-5">
-                        <input type="hidden" name="row[avatar]" id="avatar" value="">
-                        <div class="layui-upload">
-                            <button type="button" class="layui-btn" id="onUpload">上传头像</button>
-                            <div class="layui-upload-list">
-                                <img class="layui-upload-img" width="76" height="76" src="__ADMIN__/images/default.png" id="Image">
-                                <p id="preview"></p>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">代理佣金比例</label>
+                        <div class="layui-input-inline from-inline-5">
+                            <div class="layui-inline">
+                                <input type="number" name="row[min_take]" lay-verify="required" value="{:config('setting.agent_min_take')}" lay-reqText="请输入代理佣金比例" placeholder="{:lang('pleaseEnter')}代理佣金比例" class="layui-input">
                             </div>
+                            <div class="layui-inline">%</div>
+                            <div class="layui-word-aux" style="color:#f90!important;">【下级代理订单收入100你的佣金:百分之几】【最大设置百分之{:config('setting.aget_max_take')}】</div>
                         </div>
                     </div>
-                </div>
-                <div class="layui-form-item">
-                    <label class="layui-form-label">代理抽成</label>
-                    <div class="layui-input-inline from-inline-5">
-                        <div class="layui-inline">
-                            <input type="number" name="row[min_take]" lay-verify="required" value="5" lay-reqText="请输入代理抽成" placeholder="{:lang('pleaseEnter')}代理抽成" class="layui-input">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">代理单片金额:</label>
+                        <div class="layui-input-inline from-inline-5">
+                            <div class="layui-inline">
+                                <input type="number" name="row[money]" lay-verify="required" value="{:config('setting.agent_dp_min')}" lay-reqText="请输入最低金额" placeholder="{:lang('pleaseEnter')}最低金额" class="layui-input">
+                            </div>
+                            <div class="layui-inline">元</div>
+                            <div class="layui-word-aux" style="color:#f90!important;">【代理最小单片{:config('setting.agent_dp_min')}（元）】</div>
                         </div>
-                        <div class="layui-inline">%</div>
-                        <div class="layui-word-aux" style="color:#f90!important;">【下级代理订单收入100你将抽成:百分之几】</div>
                     </div>
-                </div>
-                <div class="layui-form-item">
-                    <label class="layui-form-label">最低发布金额:</label>
-                    <div class="layui-input-inline from-inline-5">
-                        <div class="layui-inline">
-                            <input type="number" name="row[min_pub]" lay-verify="required" value="5" lay-reqText="请输入最低发布金额" placeholder="{:lang('pleaseEnter')}最低发布金额" class="layui-input">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">代理包日金额:</label>
+                        <div class="layui-input-inline from-inline-5">
+                            <div class="layui-inline">
+                                <input type="number" name="row[money1]" lay-verify="required" value="{:config('setting.agent_day_min')}" lay-reqText="请输入最低金额" placeholder="{:lang('pleaseEnter')}最低金额" class="layui-input">
+                            </div>
+                            <div class="layui-inline">元</div>
+                            <div class="layui-word-aux" style="color:#f90!important;">【代理最小包日{:config('setting.agent_day_min')}（元）】</div>
                         </div>
-                        <div class="layui-inline">元</div>
-                        <div class="layui-word-aux" style="color:#f90!important;">【最低发布金额（元）】</div>
                     </div>
-                </div>
-                {if ($auth->group_id==1)}
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">代理包周金额:</label>
+                        <div class="layui-input-inline from-inline-5">
+                            <div class="layui-inline">
+                                <input type="number" name="row[money2]" lay-verify="required" value="{:config('setting.agent_week_min')}" lay-reqText="请输入最低金额" placeholder="{:lang('pleaseEnter')}最低金额" class="layui-input">
+                            </div>
+                            <div class="layui-inline">元</div>
+                            <div class="layui-word-aux" style="color:#f90!important;">【代理最小包周{:config('setting.agent_week_min')}（元）】</div>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">代理包月金额:</label>
+                        <div class="layui-input-inline from-inline-5">
+                            <div class="layui-inline">
+                                <input type="number" name="row[money3]" lay-verify="required" value="{:config('setting.agent_month_min')}" lay-reqText="请输入最低金额" placeholder="{:lang('pleaseEnter')}最低金额" class="layui-input">
+                            </div>
+                            <div class="layui-inline">元</div>
+                            <div class="layui-word-aux" style="color:#f90!important;">【代理最小包月{:config('setting.agent_month_min')}（元）】</div>
+                        </div>
+                    </div>
+
                     <div class="layui-form-item">
                         <label class="layui-form-label">最低提现</label>
                         <div class="layui-input-inline from-inline-5">
@@ -81,7 +100,7 @@
                         <label class="layui-form-label">提现手续费</label>
                         <div class="layui-input-inline from-inline-5">
                             <div class="layui-inline">
-                                <input type="number" name="row[cash_fee]" lay-verify="required" value="10" lay-reqText="请输入提现手续费" placeholder="{:lang('pleaseEnter')}提现手续费" class="layui-input">
+                                <input type="number" name="row[cash_fee]" lay-verify="required" value="{:config('setting.agent_cash_fee')}" lay-reqText="请输入提现手续费" placeholder="{:lang('pleaseEnter')}提现手续费" class="layui-input">
                             </div>
                             <div class="layui-inline">%</div>
                             <div class="layui-word-aux" style="color:#f90!important;">【提现金额的:百分之几】</div>
@@ -91,16 +110,10 @@
                         <label class="layui-form-label">订单扣量</label>
                         <div class="layui-input-inline from-inline-5">
                             <div class="layui-inline">
-                                <input type="number" name="row[take_num]" lay-verify="required" value="10" lay-reqText="请输入提现手续费" placeholder="{:lang('pleaseEnter')}提现手续费" class="layui-input">
+                                <input type="number" name="row[take_num]" lay-verify="required" value="{:config('setting.agent_take_num')}" lay-reqText="请输入提现手续费" placeholder="{:lang('pleaseEnter')}提现手续费" class="layui-input">
                             </div>
                             <div class="layui-inline">笔</div>
                             <div class="layui-word-aux" style="color:#f90!important;">【表示几笔扣一，例如20笔扣1笔】</div>
-                        </div>
-                    </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">防封入口</label>
-                        <div class="layui-input-inline from-inline-5">
-                            <input type="text" name="row[entry_url]" lay-reqText="请输入防封入口" placeholder="{:lang('pleaseEnter')}防封入口" class="layui-input">
                         </div>
                     </div>
                     <div class="layui-form-item">
@@ -123,24 +136,15 @@
                             </select>
                         </div>
                     </div>
-                {else/}
-                    <div class="layui-form-item" style="display: none;">
-                        <label class="layui-form-label">最低提现</label>
-                        <div class="layui-input-inline from-inline-5">
-                            <div class="layui-inline">
-                                <input type="number" name="row[min_cash]" lay-verify="required" value="{:config('setting.min_cash')}" lay-reqText="请输入最低提现" placeholder="{:lang('pleaseEnter')}最低提现" class="layui-input">
-                            </div>
-                            <div class="layui-inline">元</div>
-                            <div class="layui-word-aux" style="color:#f90!important;">【代理最低提现金额（元）】</div>
+
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button type="button" class="layui-btn" lay-submit="" lay-filter="submit">{:lang('submit')}</button>
                         </div>
                     </div>
                 {/if}
-                <div class="layui-form-item">
-                    <div class="layui-input-block">
-                        <button type="button" class="layui-btn" lay-submit="" lay-filter="submit">{:lang('submit')}</button>
-                    </div>
-                </div>
             </form>
+
         </div>
     </div>
 </div>
@@ -150,36 +154,15 @@ layui.config({
     base: '__STATIC__/layuiadmin/mods/',
     version: '1.0'
 });
-layui.use(['form','upload'], function(){
-    var form = layui.form,$= layui.jquery,upload=layui.upload;
-    //图片上传
-    var uploadInst = upload.render({
-        elem: '#onUpload',
-        url: '{:url("UpFiles/upload")}',
-        done: function(res){
-            if(res.status===200){
-                $('#avatar').val(res.url);
-                $('#Image').attr('src',res.url);
-            }else{
-                //如果上传失败
-                return layer.msg('上传失败');
-            }
-        },
-        error: function(){
-            //演示失败状态，并实现重传
-            var preview = $('#preview');
-            preview.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-mini onReload">重试</a>');
-            preview.find('.onReload').on('click', function(){
-                uploadInst.upload();
-            });
-        }
-    });
+layui.use(['form'], function(){
+    var form = layui.form,$= layui.jquery;
+
     form.on('submit(submit)', function (data) {
         loading =layer.load(1, {shade: [0.1,'#fff']});
         $.post("", data.field, function (res) {
             layer.close(loading);
             if (res.status===200){
-                layer.msg('代理添加成功',{time: 1000, icon: 1},function(){
+                layer.msg('添加成功',{time: 1000, icon: 1},function(){
                     var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
                     parent.layer.close(index);//再执行关闭
                 });

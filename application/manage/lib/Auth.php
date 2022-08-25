@@ -1,5 +1,5 @@
 <?php
-//decode by http://www.yunlu99.com/
+
 namespace app\manage\lib;
 
 use app\common\model\Admin;
@@ -198,22 +198,22 @@ class Auth extends \zp\Auth
      */
     public function isLogin()
     {
-        if ($this->logined) {
-            return true;
-        }
+//        if ($this->logined) {
+//            return true;
+//        }
         $admin = Session::get('admin');
         if (!$admin) {
-            return false;
+            return 1;
         }
         //判断是否同一时间同一账号只能在一个地方登录
 //        if (Config::get('zpadmin.login_unique')){
-//            $my = Admin::get($admin['id']);
-//            if(!$my || $my['token'] != $admin['token']){
-//                return false;
-//            }
+            $my = Admin::get($admin['id']);
+            if(!$my || $my['token'] != $admin['token']){
+                return 2;
+            }
 //        }
         $this->logined = true;
-        return true;
+        return 3;
     }
 
     /**

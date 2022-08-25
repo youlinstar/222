@@ -16,29 +16,7 @@
                         <input type="password" name="row[password]" value="" placeholder="不修改密码请留空" class="layui-input">
                     </div>
                 </div>
-                <div class="layui-form-item">
-                    <label class="layui-form-label">用户头像</label>
-                    <div class="layui-input-inline from-inline-5">
-                        <input type="hidden" name="row[avatar]" id="avatar" value="{$row['avatar']}">
-                        <div class="layui-upload">
-                            <button type="button" class="layui-btn" id="onUpload">上传头像</button>
-                            <div class="layui-upload-list">
-                                <img class="layui-upload-img" width="76" height="76" src="{$row['avatar']|default='__ADMIN__/images/default.png'}" id="Image">
-                                <p id="preview"></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="layui-form-item">
-                    <label class="layui-form-label">短链接</label>
-                    <div class="layui-input-inline from-inline-5">
-                        <select name="row[short_id]" lay-filter="short" lay-search>
-                            {volist name="shortList" id="v"}
-                                <option value="{$v.id}" {eq name="$row['short_id']" value="$v.id"}selected{/eq}>{$v.name}</option>
-                            {/volist}
-                        </select>
-                    </div>
-                </div>
+
                 <div class="layui-form-item">
                     <div class="layui-input-block">
                         <button type="button" class="layui-btn" lay-submit="" lay-filter="submit">{:lang('submit')}</button>

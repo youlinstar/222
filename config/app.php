@@ -19,7 +19,7 @@ return [
     // 应用地址
     'app_host'               => '',
     //系统版本
-    'app_version'            => '5.0.1',
+    'app_version'            => '5.1.39',
     // 应用调试模式
     'app_debug'              => true,
     // 应用Trace

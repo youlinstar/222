@@ -1,7 +1,5 @@
 {include file="common/head"/}
-<style>
-.layui-table-cell{height: inherit;}
-</style>
+
 <div class="layui-fluid">
     <div class="admin-head">
         <ul>
@@ -79,7 +77,7 @@
                 {field: 'name',title: '下级用户',width:380},
                 {field:'status',width:80,title: '资源状态',align:'center',templet:'#statusTpl'},
                 {field: 'c_time', align: 'center',title: '创建时间',width:150},
-                {align: 'center',toolbar:'#action',width:180}
+                {align: 'center',title: '功能操作',toolbar:'#action',width:180}
             ]]
         });
        

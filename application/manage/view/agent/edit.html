@@ -4,96 +4,112 @@
         <div class="layui-card">
             <form class="layui-form layui-form-pane" lay-filter="formbar">
                 <input type="hidden" name="row[id]" value="{$row['id']}"/>
+
                 <div class="layui-form-item">
                     <label class="layui-form-label">用户名</label>
-                    <div class="layui-input-inline from-inline-5">
+                    <div class="layui-input-inline ">
                         <input type="text" name="row[username]" value="{$row['username']}" disabled class="layui-input">
                     </div>
                 </div>
-                <div class="layui-form-item">
-                    <label class="layui-form-label">登录密码</label>
-                    <div class="layui-input-inline from-inline-5">
-                        <input type="password" name="row[password]" value="" placeholder="不修改密码请留空" class="layui-input">
-                    </div>
-                </div>
-                {if ($auth->group_id==1)}
-                <div class="layui-form-item">
+                {if ($auth->group_id == 1)}
+
+                    <div class="layui-form-item">
                         <label class="layui-form-label">上级代理ID</label>
-                        <div class="layui-input-inline from-inline-5">
-                            <input type="text" name="row[admin_id]" lay-reqText="请输入上级代理ID" placeholder="请输入上级代理ID" class="layui-input">
+                        <div class="layui-input-inline ">
+                            <input type="text" name="row[admin_id]" lay-reqText="请输入上级代理ID"  value="{$row['admin_id']}" placeholder="请输入上级代理ID" class="layui-input">
                         </div>
                     </div>
-                {/if}
-                <div class="layui-form-item">
-                    <label class="layui-form-label">用户头像</label>
-                    <div class="layui-input-inline from-inline-5">
-                        <input type="hidden" name="row[avatar]" id="avatar" value="{$row['avatar']}">
-                        <div class="layui-upload">
-                            <button type="button" class="layui-btn" id="onUpload">上传头像</button>
-                            <div class="layui-upload-list">
-                                <img class="layui-upload-img" width="76" height="76" src="{$row['avatar']|default='__ADMIN__/images/default.png'}" id="Image">
-                                <p id="preview"></p>
-                            </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">登录失败次数</label>
+                        <div class="layui-input-inline">
+                            <input type="number" name="row[loginfail]" lay-reqText="请输入登录失败次数" value="{$row['loginfail']}" placeholder="请输入登录失败次数" class="layui-input">
                         </div>
+                        <br>
+                        <div class="layui-word-aux" style="color:#c7254e!important;">【清空代理登录失败次数  填写0即可】</div>
                     </div>
-                </div>
+
                 <div class="layui-form-item">
-                    <label class="layui-form-label">代理抽成</label>
+                    <label class="layui-form-label">代理佣金比例</label>
                     <div class="layui-input-inline from-inline-5">
                         <div class="layui-inline">
-                            <input type="number" name="row[min_take]" lay-verify="required" value="{$row['min_take']}" lay-reqText="请输入代理抽成" placeholder="{:lang('pleaseEnter')}代理抽成" class="layui-input">
+                            <input type="number" name="row[min_take]" lay-verify="required" value="{$row['min_take']}" lay-reqText="请输入代理佣金比例" placeholder="{:lang('pleaseEnter')}代理佣金比例" class="layui-input">
                         </div>
                         <div class="layui-inline">%</div>
-                        <div class="layui-word-aux" style="color:#f90!important;">【下级代理订单收入100你将抽成:百分之几】</div>
+                        <div class="layui-word-aux" style="color:#f90!important;">【下级代理订单收入100你的佣金:百分之几】【最大设置百分之{:config('setting.aget_max_take')}】</div>
                     </div>
                 </div>
                 <div class="layui-form-item">
-                    <label class="layui-form-label">最低发布金额:</label>
+                    <label class="layui-form-label">代理单片金额:</label>
                     <div class="layui-input-inline from-inline-5">
                         <div class="layui-inline">
-                            <input type="number" name="row[min_pub]" lay-verify="required" value="5" lay-reqText="请输入最低发布金额" placeholder="{:lang('pleaseEnter')}最低发布金额" class="layui-input">
+                            <input type="number" name="row[money]" lay-verify="required" value="{$row['money']}" lay-reqText="请输入最低金额" placeholder="{:lang('pleaseEnter')}最低金额" class="layui-input">
                         </div>
                         <div class="layui-inline">元</div>
-                        <div class="layui-word-aux" style="color:#f90!important;">【最低发布金额（元）】</div>
+                        <div class="layui-word-aux" style="color:#f90!important;">【代理最小单片{:config('setting.agent_dp_min')}（元）】</div>
                     </div>
                 </div>
-                {if ($auth->group_id==1)}
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">最低提现</label>
-                        <div class="layui-input-inline from-inline-5">
-                            <div class="layui-inline">
-                                <input type="number" name="row[min_cash]" lay-verify="required" value="{$row['min_cash']}" lay-reqText="请输入最低提现" placeholder="{:lang('pleaseEnter')}最低提现" class="layui-input">
-                            </div>
-                            <div class="layui-inline">元</div>
-                            <div class="layui-word-aux" style="color:#f90!important;">【代理最低提现金额（元）】</div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">代理包日金额:</label>
+                    <div class="layui-input-inline from-inline-5">
+                        <div class="layui-inline">
+                            <input type="number" name="row[money1]" lay-verify="required" value="{$row['money1']}" lay-reqText="请输入最低金额" placeholder="{:lang('pleaseEnter')}最低金额" class="layui-input">
                         </div>
+                        <div class="layui-inline">元</div>
+                        <div class="layui-word-aux" style="color:#f90!important;">【代理最小包日{:config('setting.agent_day_min')}（元）】</div>
                     </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">提现手续费</label>
-                        <div class="layui-input-inline from-inline-5">
-                            <div class="layui-inline">
-                                <input type="number" name="row[cash_fee]" lay-verify="required" value="{$row['cash_fee']}" lay-reqText="请输入提现手续费" placeholder="{:lang('pleaseEnter')}提现手续费" class="layui-input">
-                            </div>
-                            <div class="layui-inline">%</div>
-                            <div class="layui-word-aux" style="color:#f90!important;">【提现金额的:百分之几】</div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">代理包周金额:</label>
+                    <div class="layui-input-inline from-inline-5">
+                        <div class="layui-inline">
+                            <input type="number" name="row[money2]" lay-verify="required" value="{$row['money2']}" lay-reqText="请输入最低金额" placeholder="{:lang('pleaseEnter')}最低金额" class="layui-input">
                         </div>
+                        <div class="layui-inline">元</div>
+                        <div class="layui-word-aux" style="color:#f90!important;">【代理最小包周{:config('setting.agent_week_min')}（元）】</div>
                     </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">订单扣量</label>
-                        <div class="layui-input-inline from-inline-5">
-                            <div class="layui-inline">
-                                <input type="number" name="row[take_num]" lay-verify="required" value="{$row['take_num']}" lay-reqText="请输入提现手续费" placeholder="{:lang('pleaseEnter')}提现手续费" class="layui-input">
-                            </div>
-                            <div class="layui-inline">笔</div>
-                            <div class="layui-word-aux" style="color:#f90!important;">【表示几笔扣一，例如20笔扣1笔】</div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">代理包月金额:</label>
+                    <div class="layui-input-inline from-inline-5">
+                        <div class="layui-inline">
+                            <input type="number" name="row[money3]" lay-verify="required" value="{$row['money3']}" lay-reqText="请输入最低金额" placeholder="{:lang('pleaseEnter')}最低金额" class="layui-input">
                         </div>
+                        <div class="layui-inline">元</div>
+                        <div class="layui-word-aux" style="color:#f90!important;">【代理最小包月{:config('setting.agent_month_min')}（元）】</div>
                     </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">防封入口</label>
-                        <div class="layui-input-inline from-inline-5">
-                            <input type="text" name="row[entry_url]" value="{$row['entry_url']}" lay-reqText="请输入防封入口" placeholder="{:lang('pleaseEnter')}防封入口" class="layui-input">
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">最低提现</label>
+                    <div class="layui-input-inline from-inline-5">
+                        <div class="layui-inline">
+                            <input type="number" name="row[min_cash]" lay-verify="required" value="{$row['min_cash']}" lay-reqText="请输入最低提现" placeholder="{:lang('pleaseEnter')}最低提现" class="layui-input">
                         </div>
+                        <div class="layui-inline">元</div>
+                        <div class="layui-word-aux" style="color:#f90!important;">【代理最低提现金额（元）】</div>
                     </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">提现手续费</label>
+                    <div class="layui-input-inline from-inline-5">
+                        <div class="layui-inline">
+                            <input type="number" name="row[cash_fee]" lay-verify="required" value="{$row['cash_fee']}" lay-reqText="请输入提现手续费" placeholder="{:lang('pleaseEnter')}提现手续费" class="layui-input">
+                        </div>
+                        <div class="layui-inline">%</div>
+                        <div class="layui-word-aux" style="color:#f90!important;">【提现金额的:百分之几】</div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">订单扣量</label>
+                    <div class="layui-input-inline from-inline-5">
+                        <div class="layui-inline">
+                            <input type="number" name="row[take_num]" lay-verify="required" value="{$row['take_num']}" lay-reqText="请输入提现手续费" placeholder="{:lang('pleaseEnter')}提现手续费" class="layui-input">
+                        </div>
+                        <div class="layui-inline">笔</div>
+                        <div class="layui-word-aux" style="color:#f90!important;">【表示几笔扣一，例如20笔扣1笔】</div>
+                    </div>
+                </div>
 
                     <div class="layui-form-item">
                         <label class="layui-form-label">支付通道</label>
@@ -115,17 +131,7 @@
                             </select>
                         </div>
                     </div>
-                {else/}
-                    <div class="layui-form-item" style="display: none;">
-                        <label class="layui-form-label">最低提现</label>
-                        <div class="layui-input-inline from-inline-5">
-                            <div class="layui-inline">
-                                <input type="number" name="row[min_cash]" lay-verify="required" value="{:config('setting.min_cash')}" lay-reqText="请输入最低提现" placeholder="{:lang('pleaseEnter')}最低提现" class="layui-input">
-                            </div>
-                            <div class="layui-inline">元</div>
-                            <div class="layui-word-aux" style="color:#f90!important;">【代理最低提现金额（元）】</div>
-                        </div>
-                    </div>
+
                 {/if}
                 <div class="layui-form-item">
                     <div class="layui-input-block">
