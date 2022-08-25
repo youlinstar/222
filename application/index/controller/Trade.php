@@ -1444,7 +1444,7 @@ class Trade extends Common
         // }
         // $newUrl = $antiUrl.$url;
         
-        $short_id = Admin::where('id',$id)->value('short_id');
+        /*$short_id = Admin::where('id',$id)->value('short_id');
         $res = getDwz($short_id,$url);
         
         if(!isset($res) || empty($res)){
@@ -1454,7 +1454,7 @@ class Trade extends Common
         if (isset($res['status']) && $res['status'] == 200) {
             $url = $res['data'];
             return $url;
-        }
+        }*/
         
         return $url;
         

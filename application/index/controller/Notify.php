@@ -614,12 +614,12 @@ class Notify extends Common
             }
             // {"key":"b449a58ce0d9931576bae7f417a17dd8","money":"1.00","amount":"1.00","order":"20220519023207165289872780934","record":"20220519023123151157580","remark":"20220519023123151157580","sign":"66b9f11e7f3a17ef7699cb9964d3c779"}
             #获取支付接口
-            $ordno = $data['out_trade_no'];
+            $ordno = $data['record'];
             $pay_id = \app\common\model\Order::where('ordno', $ordno)->value('pay_id');
             $payInfo = PaySetting::where('id', $pay_id)->find();
             #组合签名
             if ($payInfo->app_key != $data['key']) {
-                exit('fail');
+                //exit('fail');
             }
             
             $sdata = [
@@ -635,14 +635,14 @@ class Notify extends Common
             $sign = md5(trim($str) . $payInfo->app_key);
             if($sign != $data['sign']){
                 doSyslog($sign . '#' . $data['sign'] . '@' . json_encode($data), 'yclPay');
-                echo 'fail';
-                exit('fail');
+                //echo 'fail';
+                //exit('fail');
             }    
            
             #支付结果
-            $data['out_trade_no'] = $data['transaction_id'] = $data['record'];
+            $data['out_trade_no'] = $data['record'];
            
-            list($res, $info) = $this->handleOrder($data);
+            list($res, $info) = $this->handleOrder($data['record']);
             if (!$res) {
                 doSyslog($info . '@' . json_encode($data), 'yclPay');
                 echo 'fail';
