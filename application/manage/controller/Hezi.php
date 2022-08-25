@@ -198,7 +198,8 @@ class Hezi extends Common
     public function shortUrl($id=0)
     {
         #推广总链接
-        $link = $this->getSpreadUrl();
+        //$link = $this->getSpreadUrl();
+        $link = "";
         if (empty($id)) {
             $url = $link . url('/haokan').'?ldk=' . encrypt(json_encode(['uid'=>$this->auth->id,'t'=>0]));
         } else {
