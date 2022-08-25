@@ -1,0 +1,62 @@
+{include file="common/head"/}
+<div class="layui-fluid">
+    <div class="table-body">
+        <div class="layui-card">
+            <form class="layui-form layui-form-pane" lay-filter="agent">
+                <input type="hidden" name="row[id]" value="{$row['id']}"/>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">防封名称</label>
+                    <div class="layui-input-inline from-inline-7">
+                        <input type="text" name="row[name]" value="{$row['name']}" lay-verify="required" lay-reqText="请输入防封名称" placeholder="{:lang('pleaseEnter')}防封名称" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">防封类型</label>
+                    <div class="layui-input-inline from-inline-7">
+                        <select name="row[type]" lay-verify="required" class="layui-select">
+                            <option value="1" {eq name="$row['type']" value="1"}selected{/eq}>入口防封</option>
+                            <option value="2" {eq name="$row['type']" value="2"}selected{/eq}>回调防封</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">防封链接</label>
+                    <div class="layui-input-inline from-inline-7">
+                        <input type="text" name="row[link]" value="{$row['link']}" lay-verify="required" lay-reqText="请输入防封链接" placeholder="{:lang('pleaseEnter')}网关地址" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">状态</label>
+                    <div class="layui-input-inline from-inline-3">
+                        <input type="checkbox" name="row[status]" lay-skin="switch" value="1" {eq name="$row['status']" value="1"}checked{/eq} lay-text="启用|禁用">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button type="button" class="layui-btn" lay-submit="" lay-filter="submit">{:lang('submit')}</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{include file="common/foot"/}
+<script>
+layui.use(['form','upload'], function(){
+    var form = layui.form,$= layui.jquery;
+    form.on('submit(submit)', function (data) {
+        loading =layer.load(1, {shade: [0.1,'#fff']});
+        $.post("", data.field, function (res) {
+            layer.close(loading);
+            if (res.status===200){
+                layer.msg('编辑成功',{time: 1000, icon: 1},function(){
+                    var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                    parent.layer.close(index);//再执行关闭
+                });
+            } else {
+                layer.msg(res.msg, {time: 1000, icon: 2});
+            }
+        });
+    })
+});
+</script>

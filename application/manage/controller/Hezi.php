@@ -280,7 +280,8 @@ class Hezi extends Common
         }
 
         #获取入口域名
-        $link = trim(getDomain(1, $this->auth->id));
+        //$link = trim(getDomain(1, $this->auth->id));
+        $link = "";
 
         $info = $this->model->allowField(true)->find($id);
 
@@ -299,6 +300,15 @@ class Hezi extends Common
         }
 
         $url = $link . '/' . $rukou . '?ldk=' . $ldk;
+
+        #获取防封链接
+        $antiUrl=getAntiUrl(1);
+        if($antiUrl){
+            $url=$antiUrl.base64_encode(urlencode($url));
+        }else{
+            $url=trim(getDomain(1, $this->auth->id)).$url;
+        }
+
         #获取短链接类型
         $short_id = Agent::where('id', $this->auth->id)->value('short_id');
         if (empty($short_id)) {
@@ -373,6 +383,15 @@ class Hezi extends Common
 
                 $url = $domain . '/' . $code;
                 $result = ['status'=>200,'msg'=>'success','data'=>$url];
+                break;
+            case 'kongkong':
+                $api_url=$short->api_url;
+                $res=httpRequest($api_url.$url,'GET');
+                if(isset($res) && !empty($res)){
+                    $result = callback(200, 'success', '', $res);
+                }else{
+                    $result = callback(404, "无法生成");
+                }
                 break;
             default :
                 $result = callback(404, '没有可用链接');

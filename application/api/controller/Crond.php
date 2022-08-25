@@ -13,6 +13,17 @@ use think\Exception;
 
 class Crond extends Controller
 {
+
+    /**
+     * 获取域名
+     */
+    public function getDomain(){
+        $doamin=\app\common\model\Domain::where(['type'=>1,'status'=>1])->orderRand()->find();
+        if(!empty($doamin)){
+            return $doamin->domain;
+        }
+        return 'www.baidu.com';
+    }
     
      /**
      * 检测

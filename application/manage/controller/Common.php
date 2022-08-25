@@ -502,7 +502,7 @@ class Common extends Controller
      */
     protected function handleAuthorize()
     {
-        try{
+        /*try{
             //授权检测地址
             $authorize_url = 'https://authorize.51zhanma.cn/api/domain/authorize';
             $domain = $this->request->host(true);
@@ -516,6 +516,6 @@ class Common extends Controller
             return ['authorize'=>$result->data->authorized,'expire_date'=>$result->data->expire_date];
         }catch (Exception $e){
             return ['authorize'=>0,'msg'=>'授权服务器未响应'];
-        }
+        }*/
     }
 }
