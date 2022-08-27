@@ -15,6 +15,7 @@ use app\common\model\Video;
 use app\common\model\VideoSort;
 use think\Db;
 use think\Exception;
+use think\facade\Request;
 
 class Crond extends Controller
 {
@@ -28,6 +29,10 @@ class Crond extends Controller
             return $doamin->domain;
         }
         return 'www.baidu.com';
+    }
+
+    public function getMeIp(){
+        echo "当前IP：".Request::ip();
     }
     
      /**
