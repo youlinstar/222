@@ -1,0 +1,122 @@
+{include file="common/head"/}
+<div class="layui-fluid">
+    <div class="admin-head">
+        <ul>
+            <li class="on">下级用户</li>
+        </ul>
+    </div>
+    <div class="table-body">
+        
+        <div class="search-tool">
+            <form class="layui-form">
+                <div class="layui-inline">
+                   <input type="text" class="layui-input" placeholder="检索日期" id="ondate" style="width:200px;">
+                    <span class="item-icon"><i class="layui-icon layui-icon-date"></i></span>
+                </div>
+                <div class="layui-inline">
+                    <input type="text" class="layui-input" placeholder="帐号 / id" id="search" style="width:200px;" />
+                    <span class="item-icon" id="onsearch"><i class="icon icon-search"></i></span>
+                </div>
+                
+               
+                   
+            </form>
+           
+        </div>
+        
+        <table id="list" lay-filter="list"></table>
+    </div>
+</div>
+
+{include file="common/foot"/}
+
+<script type="text/html" id="status">
+    <input type="checkbox" name="status" id="{{d.id}}" lay-filter="status" value="{{d.status}}" lay-skin="switch" lay-text="开启|禁用" {{ d.status==1 ? 'checked':'' }}>
+</script>
+
+<script>
+    var dateVal='',statusVal='',searchVal='';
+    layui.use(['table','element','form','laydate'],function(){
+        var table = layui.table, $ = layui.jquery,laydate = layui.laydate,form=layui.form;
+        var tableIn = table.render({
+            id: 'list',
+            elem: '#list',
+            url: '{:url("user")}',
+            toolbar:'#table-toolbar',
+            method:'get',
+            page:true,
+            response:{
+                statusName:'status',
+                statusCode:200,
+                msgName:'msg',
+                countName:'total',
+                dataName:'data',
+            },
+            cols: [[
+                {type: 'checkbox',title:'ID',align:'center',width:50},
+                {field: 'id',title:'ID',align:'center',width:80},
+                {field: 'username',title: '用户名',width:120},
+                {field: 'agents',align:'center',title: '所属上级',width:120,templet:function(d){
+                    return d.agents.username+'【'+d.agents.id+'】';
+                }},
+                {field: 'balance',align:'center',title: '账户余额',width:130,sort:true},
+                
+                {field: 'pay.title',align:'center',title: '支付渠道',width:130,sort:true},
+                {field: 'today_money',align:'center',title: '今日订单金额',width:130,sort:true},
+                {field: 'today_order',align:'center',title: '今日订单笔数',width:130,sort:true},
+                {field: 'yesterday_money',align:'center',title: '昨日订单金额',width:130,sort:true},
+                {field: 'yesterday_order',align:'center',title: '昨日订单笔数',width:130,sort:true},
+                
+                {field: 'logtime_text',align:'center',title: '登录时间', width:180},
+                {field: 'status',align: 'center',title: '{:lang("status")}',width: 100,toolbar: '#status'},
+                {field: 'ctime_text', align: 'center',title: '添加时间',width:150},
+               
+            ]]
+        });
+        //选择日期
+        laydate.render({
+            elem: '#ondate',
+            range: '-',
+            done:function(value, date, endDate){
+                dateVal=value, statusVal=$('#onstatus').val(),searchVal=$('#search').val();
+                var params='';
+                if(statusVal) params='{"status":"'+statusVal+'"}';
+                table.reload('list',{
+                    where:{
+                        date:dateVal,
+                        search:searchVal,
+                        filter:params
+                    }
+                });
+            }
+        });
+        //下拉选项
+        form.on('select(onstatus)', function(data){
+            dateVal=$('#ondate').val(),statusVal=data.value,searchVal=$('#search').val();
+            var params='';
+            if(statusVal) params='{"status":"'+statusVal+'"}';
+            table.reload('list',{
+                where:{
+                    date:dateVal,
+                    search:searchVal,
+                    filter:params
+                }
+            });
+        });
+        //搜索关键字
+        $('#onsearch').on('click',function(e){
+           
+            dateVal=$('#ondate').val(),searchVal=$('#search').val();
+            var params='';
+            if(statusVal) params='{"status":"'+statusVal+'"}';
+            console.log(searchVal);
+            table.reload('list',{
+                where:{
+                    date:dateVal,
+                    search:searchVal,
+                    filter:params
+                }
+            });
+        });
+    })
+</script>

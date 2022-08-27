@@ -470,5 +470,56 @@ class Agent extends Common
         $this->view->assign('payList',$payList);
         return $this->view->fetch();
     }
-    
+
+    public function user()
+    {
+        //设置过滤方法
+        $this->request->filter(['strip_tags']);
+
+        if ($this->request->isAjax()) {
+            //如果发送的来源是Selectpage，则转发到Selectpage
+            if($this->request->request('keyField')){
+                return $this->selectpage();
+            }
+            list($where, $sort, $order, $offset, $limit) = $this->buildparams();
+            $total = $this->model
+                ->withSearch(['group_id'],['group_id'=>[2,5]])
+                ->withJoin(['groups'=>['title'],'agents'=>['username','id'],'pay'=>['title'],'short'=>['name']])
+                ->where($where)
+                ->order($sort, $order)
+                ->count();
+            $list = $this->model
+                ->withSearch(['group_id'],['group_id'=>[2,5]])
+                ->withJoin(['groups'=>['title'],'agents'=>['username','id'],'pay'=>['title'],'short'=>['name']])
+                ->where($where)
+                ->order($sort, $order)
+                ->limit($offset, $limit)
+                ->select();
+
+            $list = $list->toArray();
+            // id
+            $order = new Order();
+
+            foreach ($list as $k => $v){
+                $list[$k]['today_money'] = $order->where(['status'=>1,'is_kl'=>0,'uid'=>$v['id']])->whereTime('ctime','today')->sum('money');
+                $list[$k]['today_order'] = $order->where(['status'=>1,'is_kl'=>0,'uid'=>$v['id']])->whereTime('ctime','today')->count();
+                $list[$k]['yesterday_money'] = $order->where(['status'=>1,'is_kl'=>0,'uid'=>$v['id']])->whereTime('ctime','yesterday')->sum('money');
+                $list[$k]['yesterday_order'] = $order->where(['status'=>1,'is_kl'=>0,'uid'=>$v['id']])->whereTime('ctime','yesterday')->count();
+            }
+
+            $result = ['status'=>200,'msg'=>'获取成功!','data'=>$list,'total'=>$total];
+
+            return json($result);
+        }
+        if($this->auth->group_id!==1){
+
+            $balance = $this->model->where('group_id',2)->where('admin_id',$this->auth->id)->sum('balance');
+        }else{
+            $balance = $this->model->where('group_id',2)->sum('balance');
+        }
+        $payList=\app\common\model\PaySetting::where(['status'=>1])->select();
+        $this->view->assign('payList',$payList);
+        $this->view->assign("balance", $balance);
+        return $this->view->fetch();
+    }
 }
