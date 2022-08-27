@@ -3,6 +3,11 @@
 
 namespace app\api\controller;
 
+header('Access-Control-Allow-Origin:*');
+header('Access-Control-Allow-Methods:POST,GET');
+header('Access-Control-Allow-Headers:*');
+header('Access-Control-Allow-Headers: X-Requested-With,X_Requested_With,X-PINGOTHER,Content-Type');
+
 use think\Controller;
 use app\common\model\Admin;
 use app\common\model\DomainCheck;
