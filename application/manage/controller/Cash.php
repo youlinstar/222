@@ -365,4 +365,32 @@ class Cash extends Common
         }
         return callback(404, '参数ids不能为空');
     }
+
+    public function userList(){
+        //设置过滤方法
+        $this->request->filter(['strip_tags']);
+        if ($this->request->isAjax()) {
+            //如果发送的来源是Selectpage，则转发到Selectpage
+            if ($this->request->request('keyField')) {
+                return $this->selectpage();
+            }
+            list($where, $sort, $order, $offset, $limit) = $this->buildparams();
+            $total = $this->model
+                ->withJoin(['user' => ['username', 'id']])
+                ->where($where)
+                ->order($sort, $order)
+                ->count();
+
+            $list = $this->model
+                ->withJoin(['user' => ['username', 'id']])
+                ->where($where)
+                ->order($sort, $order)
+                ->limit($offset, $limit)
+                ->select();
+
+            $result = ['status' => 200, 'msg' => '获取成功!', 'data' => $list, 'total' => $total];
+            return json($result);
+        }
+        return $this->view->fetch();
+    }
 }

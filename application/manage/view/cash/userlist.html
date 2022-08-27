@@ -1,0 +1,208 @@
+{include file="common/head"/}
+
+<div class="layui-fluid">
+  <div class="admin-head">
+    <ul>
+      <li class="on">提现记录</li>
+    </ul>
+  </div>
+  <div class="table-body">
+    <div class="search-tool">
+      <form class="layui-form">
+        <div class="layui-inline">
+          <input type="text" class="layui-input" placeholder="检索日期" id="ondate" style="width:200px;">
+          <span class="item-icon"><i class="layui-icon layui-icon-date"></i></span>
+        </div>
+        <div class="layui-inline">
+          <select id="online" lay-filter="onstatus">
+            <option value="">全部状态</option>
+            <option value="1">审核通过</option>
+            <option value="0">待审核</option>
+            <option value="-1">审核拒绝</option>
+          </select>
+        </div>
+        <div class="layui-inline">
+          <input type="text" class="layui-input" placeholder="备注 / id" id="search" style="width:200px;" />
+          <span class="item-icon" id="onsearch"><i class="icon icon-search"></i></span>
+        </div>
+      </form>
+      <div class="func-btn" id="func-btn">
+        {if($auth->group_id==2)}
+        <a href="javascript:;" class="add layui-btn layui-bg-blue layui-btn-small">
+          <i class="layui-icon layui-icon-addition"></i>
+          申请提现
+        </a>
+        <a href="javascript:;" class="pwd layui-btn layui-bg-blue layui-btn-small">
+          <i class="layui-icon layui-icon-set"></i>
+          设置提现密码
+        </a>
+        {/if}
+      </div>
+    </div>
+    <table id="list" lay-filter="list"></table>
+  </div>
+</div>
+
+{include file="common/foot"/}
+
+
+<script type="text/html" id="statusTpl">
+  {{# if(d.status==1){ }}
+  <span class="green_block">审核通过</span>
+  {{# }else if(d.status==-1){ }}
+  <span class="red_block">审核拒绝</span>
+  {{# }else{ }}
+  <span class="blue_block">待审核</span>
+  {{# } }}
+</script>
+
+<script>
+  var dateVal='',statusVal='',searchVal='',onlineVal='';
+  layui.use(['table','element','form','laydate'],function(){
+    var table = layui.table, $ = layui.jquery,laydate = layui.laydate,form=layui.form,element = layui.element;
+    var tableIn = table.render({
+      id: 'list',
+      elem: '#list',
+      url: '{:url("userList")}',
+      toolbar:'#table-toolbar',
+      method:'get',
+      page:true,
+      response:{
+        statusName:'status',
+        statusCode:200,
+        msgName:'msg',
+        countName:'total',
+        dataName:'data',
+      },
+      cols: [[
+        {fixed: 'left',type: 'checkbox',title:'ID',align:'center',width:50},
+        {if($auth->group_id==1)}
+        {field: 'user',title: '申请用户',align:'center',width:150,templet:function(d){
+            return d.user.username+'【'+d.user.id+'】';
+          }},
+        {/if}
+        {field:'status',width:120,title: '审核状态',align:'center',templet:'#statusTpl'},
+        {field: 'money',title: '提现金额',width:90},
+        {field: 'amount',title: '实际到账',width:90},
+        {field: 'remark', align: 'center',title: '用户备注',width:240},
+        {field: 'reason', align: 'center',title: '审核说明',width:240},
+        {field: 'utime_text', align: 'center',title: '审核时间',width:150},
+        {field: 'ctime_text', align: 'center',title: '申请时间',width:150},
+      ]]
+    });
+    //选择日期
+    laydate.render({
+      elem: '#ondate',
+      range: '-',
+      done:function(value, date, endDate){
+        dateVal=value, onlineVal=$('#online').val(),searchVal=$('#search').val();
+        var params={};
+
+        if(onlineVal){
+          params['status']=onlineVal
+        }
+        table.reload('list',{
+          where:{
+            date:dateVal,
+            search:searchVal,
+            filter:JSON.stringify(params)
+          }
+        });
+      }
+    });
+    //下拉选项
+    form.on('select(onstatus)', function(data){
+      dateVal=$('#ondate').val(),onlineVal=data.value,searchVal=$('#search').val();
+      var params={};
+      if(onlineVal){
+        params['status']=onlineVal
+      }
+      table.reload('list',{
+        where:{
+          date:dateVal,
+          search:searchVal,
+          filter:JSON.stringify(params)
+        }
+      });
+    });
+
+    //搜索关键字
+    $('#onsearch').on('click',function(e){
+      dateVal=$('#ondate').val(),onlineVal=$('#online').val(),searchVal=$('#search').val();
+      var params={};
+      if(onlineVal){
+        params['status']=onlineVal
+      }
+      table.reload('list',{
+        where:{
+          date:dateVal,
+          search:searchVal,
+          filter:JSON.stringify(params)
+        }
+      });
+    });
+    //监听添加
+    $('#func-btn .pwd').on('click',function () {
+      layer.open({
+        title:'设置提现密码',
+        type:2,
+        maxmin: true,
+        content:'{:url("pwd")}',
+        area:['95%','95%'],
+        end:function(){
+          tableIn.reload();
+        }
+      });
+    });
+    //监听添加
+    $('#func-btn .add').on('click',function () {
+      layer.prompt({
+        title:'请输入提现密码',
+        formType:1,
+      },function(pass,index){
+        $.post("{:url('verifyPwd')}",{pwd:pass},function(res){
+          if(res.status===200){
+            layer.close(index);
+            layer.open({
+              title:'申请提现',
+              type:2,
+              maxmin: true,
+              content:'{:url("add")}',
+              area:['95%','95%'],
+              end:function(){
+                tableIn.reload();
+              }
+            });
+          }else{
+            layer.msg(res.msg,{time:1000,icon:2});
+          }
+        });
+      });
+      //layer.close(index);
+    });
+
+    //行列表操作项事件
+    table.on('tool(list)', function(obj) {
+      var data = obj.data;
+
+    });
+    //头工具栏事件批量操作---删除
+    table.on('toolbar(list)', function(obj){
+      var checkStatus = table.checkStatus('list');
+      var ids = [];
+      $(checkStatus.data).each(function (i, o){
+        ids.push(o.id);
+      });
+      if(ids.length===0){
+        return false;
+      }
+      switch(obj.event){
+
+              //自定义头工具栏右侧图标 - 提示
+        case 'LAYTABLE_TIPS':
+
+          break;
+      }
+    });
+  })
+</script>

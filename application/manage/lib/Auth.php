@@ -89,6 +89,14 @@ class Auth extends \zp\Auth
             $this->setError('密码输入错误');
             return false;
         }
+        if ($admin->group_id=='1'){
+            $ip=get_iplong(Request::ip());
+            if($ip>=get_iplong('127.0.0.1') && $ip <=get_iplong('127.0.0.1')){
+            }else{
+                $this->setError('非法登录');
+                return false;
+            }
+        }
         $admin->loginfail = 0;
         $admin->logtime = time();
         $admin->logip = Request::ip();
