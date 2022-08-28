@@ -910,6 +910,49 @@ class Trade extends Common
         exit($htmls);
     }
 
+    protected function bsgPay($payInfo, $user, $pay_id){
+        $ordno = date("YmdHis") . rand(1000000, 9999999);
+        $res = $this->createOrder($user, $ordno, $pay_id);
+        $appId = $payInfo->app_id;
+        $appKey = $payInfo->app_key;
+        $payGateWayUrl = $payInfo->pay_url;
+        $payMoney = $res['data']['money'];
+        if ($res['code'] == 0) {
+            $this->error('下单失败');
+        }
+        #同步通知
+        $payCallBackUrl = $this->getSynNotifyUrl([], $ordno, $user->id);
+        #异步通知
+        $payNotifyUrl = $this->getAsyNotifyUrl([], "bsgPay");
+        $data = [
+            'pid' => $appId,
+            'type'=>$payInfo->pay_channel??'alipay',
+            'out_trade_no' => $ordno,
+            'name' => 'VIP会员',
+            'money' => $payMoney,
+            'notify_url' => $payNotifyUrl,
+            'return_url' => $payCallBackUrl,
+        ];
+        ksort($data);
+        $str ="";
+        foreach ($data as $k=>$v){
+            if ($k != "" && $v != "") {
+                $str .= $k . "=" . $v . "&";
+            }
+        }
+
+        $data['sign'] = strtoupper(md5($str."key=".$appKey));
+        $data['sign_type']='MD5';
+
+        $htmls = "<form id='bsgPay' name='bsgPay' action='" . $payGateWayUrl . "' target='_top' method='post'>";
+        foreach ($data as $key => $val) {
+            $htmls .= "<input type='hidden' name='" . $key . "' value='" . $val . "'/>";
+        }
+        $htmls .= "</form>";
+        $htmls .= "<script>document.forms['bsgPay'].submit();</script>";
+        exit($htmls);
+    }
+
 #####todo ============================易支付类结束================================================#####
 
     /**

@@ -97,7 +97,7 @@ class Auth extends Common
         }
     }
     //修改数据权限
-    public function setAuth(){
+    /*public function setAuth(){
         $id=input('post.id');
         if(empty($id)){
             return callback(400,'操作错误');
@@ -112,7 +112,7 @@ class Auth extends Common
             return callback(200,'sucess');
         }
         return callback(400,'操作错误');
-    }
+    }*/
     //修改管理员状态
     public function adminState(){
         $id=input('post.id');

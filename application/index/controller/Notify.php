@@ -850,6 +850,52 @@ class Notify extends Controller
         }
     }
 
+    /**
+     * 北上广支付异步通知
+     * @return void
+     */
+    public function bsgPay()
+    {
+        try {
+            $data = $this->request->param();
+            if (empty($data)) {
+                exit('数据获取失败');
+            }
+            // {"sign":"4FF4758AA87206F0A7DB0D6F6766D827","money":"4","trade_no":"4200001420202206247237786844","out_trade_no":"202206242200437144630","name":"VIP\\u4f1a\\u5458","pid":"137","type":"jsapi"}',
+            #获取支付接口
+            $ordno = $data['out_trade_no'];
+            $pay_id = \app\common\model\Order::where('ordno', $ordno)->value('pay_id');
+            $payInfo = PaySetting::where('id', $pay_id)->find();
+            ksort($data);
+            #组合签名
+            $str ="";
+            foreach ($data as $k=>$v){
+                if ($k != "" && $v != "" && ("sign" != $k||"sign_type"!=$k)) {
+                    $str .= $k . "=" . $v . "&";
+                }
+            }
+            $sign = strtoupper(md5($str."key=".$payInfo->app_key));
+            if ($sign !== $data['sign']) {
+                doSyslog($sign . '#' . $data['sign'] . '@' . json_encode($data), 'bsgPay');
+                exit('签名验证失败');
+            }
+            #支付结果
+
+            $data['transaction_id'] = $data['trade_no'];
+            $data['money'] = $data['money'] / 100;
+            list($res, $info) = $this->handleOrder($data);
+            if (!$res) {
+                doSyslog($info . '@' . json_encode($data), 'bsgPay');
+                exit('订单受理失败');
+            }
+            exit('success');
+
+        } catch (Exception $e) {
+            doSyslog($e->getMessage() . '@' . json_encode($data), 'bsgPay');
+            exit('异常');
+        }
+    }
+
     #####todo ============================易支付类结束================================================#####
 
 
