@@ -234,7 +234,36 @@ class Crond extends Controller
         exit('失败,没有域名');
         
     }
-    
-   
+
+    public function check5()
+    {
+        $api_url="https://api.uouin.com/app/wx";
+        $api_user="aa12345";
+        $api_token="47Vcp1IUe5Mci3M";
+        $domains = \app\common\model\Domain::where('status',1)->whereNotIn('type',[7])->select();
+        $fail = 0;
+        $sussces = 0;
+        if (!empty($domains)) {
+            foreach ($domains as $domain) {
+                $result = httpRequest($api_url, 'GET', ['username' =>$api_user, 'key' =>$api_token, 'url' =>$domain->domain]);
+
+                $result = json_decode($result, true);
+                if(empty($result)){
+                    $fail ++;
+                    continue;
+                }
+                if ($result['code'] != "1001") {
+                    echo $result['msg']??''.PHP_EOL;
+                    $fail ++;
+                    $domain->delete();
+                }
+                $sussces ++;
+                sleep(1);
+            }
+
+            exit('成功'.$sussces.'条,失败'.$fail.'条');
+        }
+        exit('失败,没有域名');
+    }
 
 }
