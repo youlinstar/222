@@ -181,9 +181,11 @@ class View
     {
         // 模板变量
         $vars = array_merge(self::$var, $this->data, $vars);
+
         // 页面缓存
         ob_start();
         ob_implicit_flush(0);
+
         // 渲染输出
         try {
             $method = $renderContent ? 'display' : 'fetch';
@@ -199,6 +201,7 @@ class View
         if ($this->filter) {
             $content = call_user_func_array($this->filter, [$content]);
         }
+
         return $content;
     }
 

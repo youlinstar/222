@@ -1192,6 +1192,7 @@ class Template
                 //支持加载变量文件名
                 $templateName = $this->get(substr($templateName, 1));
             }
+
             $template = $this->parseTemplateFile($templateName);
 
             if ($template) {
@@ -1229,7 +1230,7 @@ class Template
                 $path = isset($module) ? $this->app->getAppPath() . $module . DIRECTORY_SEPARATOR . basename($this->config['view_path']) . DIRECTORY_SEPARATOR : $this->config['view_path'];
             }
 
-            $template = realpath($path . $template . '.' . ltrim($this->config['view_suffix'], '.'));
+            $template = $path . $template . '.' . ltrim($this->config['view_suffix'], '.');
         }
 
         if (is_file($template)) {

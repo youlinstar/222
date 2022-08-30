@@ -76,11 +76,11 @@ class Think
      */
     public function fetch($template, $data = [], $config = [])
     {
-
         if ('' == pathinfo($template, PATHINFO_EXTENSION)) {
             // 获取模板文件名
             $template = $this->parseTemplate($template);
         }
+
         // 模板不存在 抛出异常
         if (!is_file($template)) {
             throw new TemplateNotFoundException('template not exists:' . $template, $template);
@@ -122,18 +122,21 @@ class Think
             // 跨模块调用
             list($module, $template) = explode('@', $template);
         }
-        $depr = $this->config['view_depr'];
+
         if ($this->config['view_base']) {
             // 基础视图目录
             $module = isset($module) ? $module : $request->module();
             $path   = $this->config['view_base'] . ($module ? $module . DIRECTORY_SEPARATOR : '');
         } else {
-            $path = isset($module) ? $this->app->getAppPath() . $module . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR : str_replace('/', $depr, $this->config['view_path']);
+            $path = isset($module) ? $this->app->getAppPath() . $module . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR : $this->config['view_path'];
         }
+
+        $depr = $this->config['view_depr'];
 
         if (0 !== strpos($template, '/')) {
             $template   = str_replace(['/', ':'], $depr, $template);
             $controller = Loader::parseName($request->controller());
+
             if ($controller) {
                 if ('' == $template) {
                     // 如果模板文件名为空 按照默认规则定位
@@ -146,7 +149,7 @@ class Think
             $template = str_replace(['/', ':'], $depr, substr($template, 1));
         }
 
-        return $path. ltrim($template, '/') . '.' . ltrim($this->config['view_suffix'], '.');
+        return $path . ltrim($template, '/') . '.' . ltrim($this->config['view_suffix'], '.');
     }
 
     protected function getActionTemplate($request)
