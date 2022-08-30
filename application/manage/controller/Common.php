@@ -138,6 +138,8 @@ class Common extends Controller
 
         $this->auth = Auth::instance();
         $this->auth->setRequestUri($path);
+        $this->noNeedLogin[]='mfacheck';
+        $this->noNeedRight[]='mfacheck';
         // 检测是否需要验证登录
         if (!$this->auth->match($this->noNeedLogin)){
             //检测是否登录

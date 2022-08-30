@@ -3,6 +3,7 @@
 namespace app\manage\controller;
 use app\manage\model\AdminLog;
 use app\common\model\Admin;
+use Sonata\GoogleAuthenticator\GoogleAuthenticator;
 use think\facade\Config;
 use think\facade\Hook;
 use think\Validate;
@@ -43,13 +44,17 @@ class Login extends Common
             }
             AdminLog::setTitle('登陆操作');
             $result = $this->auth->login($username, $password, $keeplogin ? 86400 : 0);
-            if ($result === true){
+            if ($result === true) {
                 return callback(200,'登录成功',url($url),['id' => $this->auth->id, 'username' => $username, 'avatar' => $this->auth->avatar]);
-            } else {
-                $msg = $this->auth->getError();
-                $msg = $msg ? $msg : '用户名或密码错误';
-                return callback(400,$msg);
             }
+
+            if ($result==="MFA") {
+                return callback(200,'请先通过MFA验证',url('login/mfaCheck',['username'=>$username]));
+            }
+
+            $msg = $this->auth->getError();
+            $msg = $msg ? $msg : '用户名或密码错误';
+            return callback(400,$msg);
         }
         // 根据客户端的cookie,判断是否可以自动登录
         if ($this->auth->autologin()){
@@ -127,4 +132,33 @@ class Login extends Common
 		 return json(['code' => 1, 'url' => url('index/index'), 'msg' => '注册成功！']);
 	}
 
+    public function mfaCheck()
+    {
+        if ($this->request->isPost()) {
+            $code = $this->request->post('code');
+            $username = $this->request->post('username');
+            $userId=cache('user_mfa_check:'.$username);
+            if (empty($userId)){
+                $this->error('MFA认证时效过期！');
+            }
+            $userInfo=$this->auth->getUserInfo($userId);
+            $googleAuthenticator = new GoogleAuthenticator();
+            $secret=$userInfo->mfa_secret;
+            if ($googleAuthenticator->checkCode($secret, $code)){
+                $this->auth->loginBymfa($userInfo);
+                return callback(200,'登录成功',url('index/index'),['id' => $this->auth->id, 'username' => $username, 'avatar' => $this->auth->avatar]);
+            }
+
+            return callback(400,'认证失败');
+        }
+        if (empty($this->request->get('username'))){
+            $this->error('缺少参数！');
+        }
+        $username=$this->request->get('username');
+        if (empty(cache('user_mfa_check:'.$username))){
+            $this->error('MFA认证时效过期！');
+        }
+        $this->assign('username',$username);
+        return $this->view->fetch();
+    }
 }

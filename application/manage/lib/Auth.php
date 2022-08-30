@@ -89,14 +89,22 @@ class Auth extends \zp\Auth
             $this->setError('密码输入错误');
             return false;
         }
-        if ($admin->group_id=='1'){
+        /*if ($admin->group_id=='1'){
             $ip=get_iplong(Request::ip());
             if($ip>=get_iplong('127.0.0.1') && $ip <=get_iplong('127.0.0.1')){
             }else{
                 $this->setError('非法登录');
                 return false;
             }
+        }*/
+
+        //MFA认证
+        if ($admin->group_id=='1'){
+            //相信存入缓存，认证通过再登录
+            cache('user_mfa_check:'.$username, $admin->id, 3600);
+            return "MFA";
         }
+
         $admin->loginfail = 0;
         $admin->logtime = time();
         $admin->logip = Request::ip();
@@ -104,6 +112,18 @@ class Auth extends \zp\Auth
         $admin->save();
         Session::set("admin", $admin->toArray());
         $this->keeplogin($keeptime);
+        return true;
+    }
+
+    public function loginBymfa($admin)
+    {
+        $admin->loginfail = 0;
+        $admin->logtime = time();
+        $admin->logip = Request::ip();
+        $admin->token = Random::uuid();
+        $admin->save();
+        Session::set("admin", $admin->toArray());
+        $this->keeplogin(0);
         return true;
     }
 

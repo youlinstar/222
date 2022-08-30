@@ -70,18 +70,18 @@ class Auth extends Common
                 return callback(400,$msg);
             }
             return callback(200,'更新成功',url('auth/adminlist'));
-        }else{
-            $groups = AuthGroup::where('is_auth',0)->select();
-            $info = Admin::where('id',$ids)->find();
-            $payList=\app\common\model\PaySetting::where(['status'=>1])->select();
-            $shortList=Short::where('status',1)->select();
-            $this->view->assign('payList',$payList);
-            $this->view->assign('shortList',$shortList);
-            $this->assign('row',$info);
-            $this->assign('groups',$groups);
-            $this->assign('title',lang('edit').lang('admin'));
-            return view('adminedit');
         }
+
+        $groups = AuthGroup::where('is_auth',0)->select();
+        $info = Admin::where('id',$ids)->find();
+        $payList=\app\common\model\PaySetting::where(['status'=>1])->select();
+        $shortList=Short::where('status',1)->select();
+        $this->view->assign('payList',$payList);
+        $this->view->assign('shortList',$shortList);
+        $this->assign('row',$info);
+        $this->assign('groups',$groups);
+        $this->assign('title',lang('edit').lang('admin'));
+        return view('adminedit');
     }
 
 

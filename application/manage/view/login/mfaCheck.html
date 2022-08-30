@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>登录</title>
+  <link rel="stylesheet" href="__STATIC__/layuiadmin/layui/css/layui.css" media="all" />
+  <link rel="stylesheet" href="__ADMIN__/css/login.css" />
+  <link rel="stylesheet" href="__STATIC__/common/css/font.css" />
+</head>
+<body class="login-bady">
+<div class="wraper" id="wraper">
+  <canvas id="canvas"></canvas>
+  <div class="login">
+    <header>
+      <h1>MFA认证</h1>
+    </header>
+    <div class="login-bar">
+      <form class="layui-form layui-form-pane" method="post">
+        {:token()}
+        <div class="layui-form-item">
+          <label class="login-icon fs1">
+            <span class="icon icon-user"></span>
+          </label>
+          <input type="text" name="code" lay-verify="required" placeholder="请输入MFA码" value="" class="layui-input">
+        </div>
+        <div class="layui-form-item">
+          <input type="hidden" name="username" value="{$username}">
+          <button type="submit" class="layui-btn btn-submit" lay-submit lay-filter="login">提交</button>
+        </div>
+      </form>
+    </div>
+    <footer>
+      <p>{:config('setting.web_name')}</p>
+    </footer>
+  </div>
+</div>
+<script src="__ADMIN__/js/rAF.js"></script>
+<script src="__ADMIN__/js/login.js"></script>
+<script type="text/javascript" src="__STATIC__/layuiadmin/layui/layui.js"></script>
+<script>
+  layui.use('form',function(){
+    var form = layui.form,$ = layui.jquery;
+    //监听提交
+    form.on('submit(login)', function(data){
+      loading =layer.load(1, {shade: [0.1,'#fff'] });//0.1透明度的白色背景
+      $.post('{:url("login/mfaCheck")}',data.field,function(res){
+        layer.close(loading);
+        if(res.status === 200){
+          layer.msg(res.msg, {icon: 1, time: 1000}, function(){
+            location.href = res.url;
+          });
+        }else{
+          layer.msg(res.msg, {icon: 2, anim: 6, time: 1000});
+        }
+      });
+      return false;
+    });
+  });
+</script>
+</body>
+</html>

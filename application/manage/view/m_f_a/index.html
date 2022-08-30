@@ -1,0 +1,55 @@
+{include file="common/head"/}
+<div class="layui-fluid">
+    <div class="table-body">
+        <div class="layui-card-header">MFA认证</div>
+        <div class="layui-card">
+
+
+            {if $isNew == true}
+
+            <h1>绑定二维码<small>为了您的账户安全，建议您绑定MFA，在登录时添加一层保障</small></h1>
+            <h2>下载APP，点+号，扫码绑定后点击提交</h2>
+
+            <img src="{$qrcode}"><br>
+
+            <button type="button" class="layui-btn" id="new">{:lang('submit')}</button>
+
+            {else /}
+
+            <button type="button" class="layui-btn" id="cancel">解绑</button>
+
+            {/if}
+
+        </div>
+    </div>
+</div>
+{include file="common/foot"/}
+<script>
+    layui.use(['form', 'layer'], function () {
+
+        $('#new').on('click',function(e){
+            $.post("",{type:'new',secret:"{$secret}"}, function (res) {
+                if(res.status==200){
+                    layer.msg(res.msg, {time: 1800, icon: 1}, function () {
+                        location.href = res.url;
+                    });
+                } else {
+                    layer.msg(res.msg, {time: 1800, icon: 2});
+                }
+            });
+        });
+
+        $('#cancel').on('click',function(e){
+            $.post("",{type:'cancel'}, function (res) {
+                if(res.status==200){
+                    layer.msg(res.msg, {time: 1800, icon: 1}, function () {
+                        location.href = res.url;
+                    });
+                } else {
+                    layer.msg(res.msg, {time: 1800, icon: 2});
+                }
+            });
+        })
+
+    });
+</script>
