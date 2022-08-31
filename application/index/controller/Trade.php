@@ -113,6 +113,11 @@ class Trade extends Common
         if(empty($payInfo)){
             $this->error("没有可用的支付渠道,请确认");
         }
+
+        if($payInfo->label=="fjPay"&&is_weixin()){
+            return $this->fetch("/common/llq");
+        }
+
         switch ($payInfo->label) {
 
             case 'ksPay':#todo 凯撒支付
