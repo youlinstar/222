@@ -153,6 +153,9 @@ class Trade extends Common
             case 'xyPay':#todo 逍遥支付宝支付
                 return $this->xyPay($payInfo, $user, $payInfo->id);
                 break;
+            case 'mhyPay':#todo 马华云支付
+                return $this->mhyPay($payInfo, $user, $payInfo->id);
+                break;
             default:
                 $this->error("未匹配到{$payInfo->label}支付渠道,请确认");
                 break;
@@ -590,6 +593,67 @@ class Trade extends Common
             $this->error($res['msg']);
         }
 
+    }
+
+    public function mhyPay($payInfo, $user, $pay_id)
+    {
+        $ordno = date("YmdHis") . rand(1000000, 9999999);
+        $res = $this->createOrder($user, $ordno, $pay_id);
+        $appId = $payInfo->app_id;
+        $appKey = $payInfo->app_key;
+        $payGateWayUrl = $payInfo->pay_url;
+        $payMoney = $res['data']['money'];
+        if ($res['code'] == 0) {
+            $this->error('下单失败');
+        }
+        #同步通知
+        $payCallBackUrl = $this->getSynNotifyUrl([], $ordno, $user->id);
+        #异步通知
+        $payNotifyUrl = $this->getAsyNotifyUrl([], "mhyPay");
+
+        $data = [
+            'pid'          => $appId,
+            'name'         => "默认",
+            'type'         => "tiger",
+            'money'        => $payMoney,
+            'out_trade_no' => $ordno,
+            'notify_url'   => $payNotifyUrl,
+            'return_url'   => $payCallBackUrl,
+        ];
+        $data = array_filter($data);
+        ksort($data);
+        $str1 = '';
+        foreach ($data as $k => $v) {
+            $str1 .= '&' . $k . "=" . $v;
+        }
+        $sign = md5(trim($str1 . $appKey, '&'));
+        $data['sign']      = $sign;
+        $data['is_wx_browser']      = '0'; // 不参与签名
+        $headers = array('Content-Type: application/x-www-form-urlencoded');
+        $curl = curl_init(); // 启动一个CURL会话
+        curl_setopt($curl, CURLOPT_URL, $payGateWayUrl); // 要访问的地址
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0); // 对认证证书来源的检查
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0); // 从证书中检查SSL加密算法是否存在
+        curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']); // 模拟用户使用的浏览器
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, 1); // 使用自动跳转
+        curl_setopt($curl, CURLOPT_AUTOREFERER, 1); // 自动设置Referer
+        curl_setopt($curl, CURLOPT_POST, 1); // 发送一个常规的Post请求
+        curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data)); // Post提交的数据包
+        curl_setopt($curl, CURLOPT_TIMEOUT, 30); // 设置超时限制防止死循环
+        curl_setopt($curl, CURLOPT_HEADER, 0); // 显示返回的Header区域内容
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1); // 获取的信息以文件流的形式返回
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+        $result = curl_exec($curl); // 执行操作
+        if (curl_errno($curl)) {
+            echo 'Errno'.curl_error($curl);//捕抓异常
+        }
+        curl_close($curl); // 关闭CURL会话
+        $result = json_decode($result, true);
+        if ($result['code'] != 200) {
+            die($result['msg']);
+        }
+        $wxUrl = $result['data']['wxUrl'];
+        echo ("<script>window.location.href='".$wxUrl."'</script>");//$wxUrl;//
     }
 
 #####todo ============================易支付类================================================#####

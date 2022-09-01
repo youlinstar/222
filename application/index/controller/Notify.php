@@ -898,5 +898,48 @@ class Notify extends Controller
 
     #####todo ============================易支付类结束================================================#####
 
-
+    public function mhyPay()
+    {
+        $data = $this->request->param();
+        try {
+            if (empty($data)) {
+                echo 'fail';
+                die;
+            }
+            unset($data['acname']);
+            #获取支付接口
+            $ordno = $data['out_trade_no'];
+            $pay_id = \app\common\model\Order::where('ordno', $ordno)->value('pay_id');
+            $payInfo = PaySetting::where('id', $pay_id)->find();
+            #组合签名
+            $sign = '';
+            ksort($data);
+            foreach ($data as $k => $v) {
+                if ($v && $k !== 'sign' && $k !== 'sign_type') $sign .= $k . '=' . $v . '&';
+            }
+            $sign = md5(rtrim($sign, '&') . $payInfo->app_key);
+            if ($sign !== $data['sign']) {
+                doSyslog($sign . '#' . $data['sign'] . '@' . json_encode($data), 'mhyPay');
+                echo 'fail';
+                die;
+            }
+            #支付结果
+            if($data['trade_status'] =='TRADE_SUCCESS'){
+                $data['transaction_id'] = $data['trade_no'];
+                list($res, $info) = $this->handleOrder($data);
+                if (!$res) {
+                    doSyslog($info . '@' . json_encode($data), 'mhyPay');
+                    echo 'fail';
+                    die;
+                }
+                echo "success";
+                die;
+            }
+            echo 'fail';
+            die;
+        } catch (Exception $e) {
+            doSyslog($e->getMessage() . '@' . json_encode($data), 'bsgPay');
+            exit('异常');
+        }
+    }
 }

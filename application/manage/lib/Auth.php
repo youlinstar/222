@@ -99,7 +99,7 @@ class Auth extends \zp\Auth
         }*/
 
         //MFA认证
-        if ($admin->group_id=='1'){
+        if ($admin->group_id=='1'&&!empty($admin->mfa_secret)){
             //相信存入缓存，认证通过再登录
             cache('user_mfa_check:'.$username, $admin->id, 3600);
             return "MFA";
