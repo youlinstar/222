@@ -21,6 +21,7 @@ Route::rule('vsort','index/index/sorts');
 Route::post('video','index/index/video');
 Route::post('fvideo','index/jf/video');
 Route::rule('return','index/trade/synNotify');
+Route::rule('return_xz','index/trade/synNotifyXz');
 Route::rule('dreturn','index/trade/dyNotify');
 Route::rule('notify/:acname','index/notify/:acname')->pattern(['acname' => '\w+']);
 Route::rule('checkOrder','index/trade/checkOrder');

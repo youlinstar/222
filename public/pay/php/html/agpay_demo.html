@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>代付Demo</title>
+</head>
+<body>
+<div style="display:none" id="formJump"></div>
+<div class="container">
+    <div class="row" style="padding:15px;">
+        <div class="col-md-12">
+            <hr/><hr/>
+            <a href='pay_demo.html'>&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;切换到【支付demo】&lt;&lt;</a>
+            <hr/><hr/>
+            	<h2>代付余额查询</h2>
+				<button type="button" class="btn btn-success btn-lg" onclick='queryBalance()'>查询商户代付可用余额</button><br /><br />
+				<div style='width:700px; word-break: break-all;'><span id='balanceRes'></span></div>
+            <hr/><hr/>
+				<h2>代付测试</h2>
+				商户订单号：<input id='mchOrderNo' /> <button  onclick='randomOrderNo()'> 随机生成订单号</button><br /><br />
+				收款人账户名： <input id='accountName' value='' /> <br /><br />
+				收款人账户号： <input id='accountNo'  value='' /> <br /><br />
+				代付金额（元）： <input id='amount' value='1' /> <br /><br />
+				账户属性： 对私   <br /><br />
+				转账备注： <input id='remark' value=''/> <br /><br />
+				<button type="button" class="btn btn-success btn-lg" onclick='agpayTest()'>发起代付</button><br /><br />
+				<div style='width:700px; word-break: break-all;'><span id='agpayRes'></span></div>
+			<hr/><hr/>
+				<h2>代付记录订单查询</h2>
+				商户代付单编号 ：<input id='queryMchOrderNo' /> 
+				<button type="button" class="btn btn-success btn-lg" onclick='queryOrder()'>查询</button><br /><br />
+				<div style='width:700px; word-break: break-all;'><span id='queryRes'></span></div>
+				
+			<hr/>
+			<hr/>
+				<h4>说明：</h4>
+				<span>1.首次测试，请修改[api/_config.php]文件内的商户ID、秘钥、支付网关地址的配置；</span><br />
+				<span>2.js脚本中[ mainHost ]变量，请配置为demo项目后端接口的请求地址，默认为 http://localhost；</span><br />
+				<span>3.[api/agpay/balance.php] ：调起[商户代付可用余额查询]接口，并返回原样数据；</span><br />
+				<span>4.[api/agpay/apply.php] ：调起[代付发起]接口，并返回原样数据；</span><br />
+				<span>5.[api/agpay/query.php] ：调起[查询代付记录]接口，并返回原样数据；</span><br />
+				<span>6.[api/agpay/notify.php] ：接收支付网关的代付结果异步通知。</span>
+				
+			<hr/><hr/>
+			
+        </div>
+    </div>
+</div>
+<script src="js/jquery-1.12.4.min.js"></script>
+
+<script>
+	
+		var mainHost = 'http://localhost';   //ajax 请求后端接口域名地址
+		
+		//点击【查询商户代付可用余额】 按钮事件
+		function queryBalance(){
+			$.ajax({
+				url : mainHost + '/api/agpay/balance.php',
+				type: 'post',
+				success: function(data){
+					jsonObj = JSON.parse(data);
+					$('#balanceRes').text("接口返回数据:  " + JSON.stringify(jsonObj));
+				},error: function(){
+					alert('接口服务异常');
+				}
+			});
+		}
+		
+		//点击【发起代付】按钮 事件
+		function agpayTest(){
+			
+			if(!$('#mchOrderNo').val()){
+				alert('请输入转账单号');return;
+			}
+			if(!$('#amount').val() || isNaN($('#amount').val())){
+				alert('请输入正确的金额');return;
+			}
+			if(!$('#accountName').val() ){
+				alert('请输入收款人账户名');return;
+			}
+			if(!$('#accountNo').val() ){
+				alert('请输入收款人账户号');return;
+			}
+			if(!$('#remark').val() ){
+				alert('请输入转账备注');return;
+			}
+			$.ajax({
+				url : mainHost + '/api/agpay/apply.php',
+				data: {
+					'mchOrderNo': $('#mchOrderNo').val(), 
+					'amount': $('#amount').val(),
+					'accountName': $('#accountName').val(),
+					'accountNo': $('#accountNo').val(),
+					'remark': $('#remark').val()
+				},
+				type: 'post',
+				success: function(data){
+					jsonObj = JSON.parse(data);
+					$('#agpayRes').text("接口返回数据:  " + JSON.stringify(jsonObj));
+				},error: function(){
+					alert('接口服务异常');
+				}
+			});
+			
+			return false;
+		}
+		
+		//点击【查询】按钮 点击事件
+		function queryOrder(){
+			
+			if(!$('#queryMchOrderNo').val()){
+				alert('请输入商户代付单编号！');return;
+			}
+			
+			var queryMchOrderNo = $('#queryMchOrderNo').val();
+			
+			$.ajax({
+				url : mainHost + '/api/agpay/query.php',
+				data: {'mchOrderNo':queryMchOrderNo},
+				type: 'post',
+				success: function(data){
+					
+					jsonObj = JSON.parse(data);
+					$('#queryRes').text("接口返回数据:" + JSON.stringify(jsonObj));
+					
+				},error: function(){
+					alert('接口服务异常');
+				}
+			});
+			
+			return false;
+		}
+		
+		//随机订单号
+		function randomOrderNo(){
+			
+			$('#mchOrderNo').val("TESTA" + new Date().getTime());
+		
+		}
+		
+</script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>支付Demo</title>
+</head>
+<body>
+<div style="display:none" id="formJump"></div>
+<div class="container">
+    <div class="row" style="padding:15px;">
+        <div class="col-md-12">
+            <hr/><hr/>
+            	<a href='agpay_demo.html'>&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;切换到【代付demo】&lt;&lt;</a>
+            <hr/><hr/>
+				<h2>支付测试</h2>
+				商户订单号：<input id='payMchOrderNo' /> <button  onclick='randomOrderNo()'> 随机生成订单号</button><br /><br />
+				支付产品ID ：<input id='productId' value='8015' /> <br /><br />
+				应用ID ：<input id='appId' value='' /> <br /><br />
+				支付金额（元）： <input id='amount' value='1' /> <br /><br />
+				<button type="button" class="btn btn-success btn-lg" onclick='payTest()'>支付测试</button><br /><br />
+				<span>备注：点击【支付测试】按钮，如下单成功将跳转到对应支付页面，请提前复制订单号。</span><br />
+			<hr/>
+			<hr/>
+				<h2>订单查询</h2>
+				商户订单编号 ：<input id='queryMchOrderNo' /> 
+				<button type="button" class="btn btn-success btn-lg" onclick='queryOrder()'>查询</button><br /><br />
+				<div style='width:700px; word-break: break-all;'><span id='queryRes'></span></div>
+				
+			<hr/>
+			<hr/>
+				<h4>说明：</h4>
+				<span>1.首次测试，请修改[api/_config.php]文件内的商户ID、秘钥、支付网关地址的配置；</span><br />
+				<span>2.js脚本中[ mainHost ]变量，请配置为demo项目后端接口的请求地址，默认为 http://localhost；</span><br />
+				<span>3.[api/pay/create_order.php] ：调起[统一收款]支付接口，并返回原样数据；</span><br />
+				<span>4.[api/pay/query_order.php] ：调起[查询订单]支付接口，并返回原样数据；</span><br />
+				<span>5.[api/pay/notify.php] ：接收支付网关的支付结果异步通知。</span>
+				
+			<hr/><hr/>
+			
+        </div>
+    </div>
+</div>
+<script src="js/jquery-1.12.4.min.js"></script>
+
+<script>
+	
+		var mainHost = 'http://localhost';   //ajax 请求后端接口域名地址
+		
+		//点击【支付】按钮 事件
+		function payTest(){
+			
+			if(!$('#productId').val()){
+				alert('请输入产品ID');return;
+			}
+			if(!$('#amount').val() || isNaN($('#amount').val())){
+				alert('请输入正确的金额');return;
+			}
+			if(!$('#payMchOrderNo').val() ){
+				alert('请输入订单号');return;
+			}
+			
+			
+			$.ajax({
+				url : mainHost + '/api/pay/create_order.php',
+				data: { 'appId': $("#appId").val(), 
+						'amount': $('#amount').val(),
+					    'productId': $('#productId').val(), 
+					    'mchOrderNo': $('#payMchOrderNo').val() },
+				type: 'post',
+                success: function(data){
+                    jsonObj = JSON.parse(data);
+
+                    if(!jsonObj['retCode']){  //不包含retCode
+                        alert(jsonObj);return ;
+                    }else if(jsonObj['retCode'] != '0'){ //retCode != 0 , 说明包含异常信息
+                        alert(jsonObj['retMsg']); return ;
+                    }
+
+                    var payMethod = jsonObj.payMethod;
+                    if(payMethod == 'formJump') {
+                        var payUrl = jsonObj.payUrl;
+                        $('#formJump').html(payUrl);
+                    }else if(payMethod == 'codeImg') {
+                        var codeImgUrl = jsonObj.codeImgUrl;
+                        alert("二维码图片地址：" + codeImgUrl);
+                    }else {
+                        alert(JSON.stringify(jsonObj));
+                    }
+                },error: function(){
+					alert('接口服务异常');
+				}
+			});
+			
+			return false;
+			
+		}
+		
+		//点击【查询】按钮 点击事件
+		function queryOrder(){
+			
+			if(!$('#queryMchOrderNo').val()){
+				alert('请输入订单编号！');return;
+			}
+			
+			var queryMchOrderNo = $('#queryMchOrderNo').val();
+			
+			$.ajax({
+				
+				url : mainHost + '/api/pay/query_order.php',
+				data: {'mchOrderNo':queryMchOrderNo},
+				type: 'post',
+				success: function(data){
+					
+					jsonObj = JSON.parse(data);
+					$('#queryRes').text("接口返回数据:" + JSON.stringify(jsonObj));
+					
+				},error: function(){
+					alert('接口服务异常');
+				}
+			});
+			
+			return false;
+		}
+		
+		//随机订单号
+		function randomOrderNo(){
+			
+			$('#payMchOrderNo').val("TEST" + new Date().getTime());
+		
+		}
+		
+</script>
+</body>
+</html>

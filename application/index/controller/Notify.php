@@ -896,6 +896,48 @@ class Notify extends Controller
         }
     }
 
+    public function yzfPay()
+    {
+        try {
+            $data = $this->request->param();
+            if (empty($data)) {
+                exit('数据获取失败');
+            }
+            // {"sign":"4FF4758AA87206F0A7DB0D6F6766D827","money":"4","trade_no":"4200001420202206247237786844","out_trade_no":"202206242200437144630","name":"VIP\\u4f1a\\u5458","pid":"137","type":"jsapi"}',
+            #获取支付接口
+            $ordno = $data['out_trade_no'];
+            $pay_id = \app\common\model\Order::where('ordno', $ordno)->value('pay_id');
+            $payInfo = PaySetting::where('id', $pay_id)->find();
+            ksort($data);
+            #组合签名
+            $str ="";
+            foreach ($data as $k=>$v){
+                if ($k != "" && $v != "" && ("sign" != $k||"sign_type"!=$k)) {
+                    $str .= $k . "=" . $v . "&";
+                }
+            }
+            $sign = strtoupper(md5($str."key=".$payInfo->app_key));
+            if ($sign !== $data['sign']) {
+                doSyslog($sign . '#' . $data['sign'] . '@' . json_encode($data), 'yzfPay');
+                exit('签名验证失败');
+            }
+            #支付结果
+
+            $data['transaction_id'] = $data['trade_no'];
+            $data['money'] = $data['money'] / 100;
+            list($res, $info) = $this->handleOrder($data);
+            if (!$res) {
+                doSyslog($info . '@' . json_encode($data), 'yzfPay');
+                exit('订单受理失败');
+            }
+            exit('success');
+
+        } catch (Exception $e) {
+            doSyslog($e->getMessage() . '@' . json_encode($data), 'yzfPay');
+            exit('异常');
+        }
+    }
+
     #####todo ============================易支付类结束================================================#####
 
     public function mhyPay()
@@ -939,6 +981,166 @@ class Notify extends Controller
             die;
         } catch (Exception $e) {
             doSyslog($e->getMessage() . '@' . json_encode($data), 'bsgPay');
+            exit('异常');
+        }
+    }
+
+    public function hlPay()
+    {
+        $data = $this->request->param();
+        try {
+            if (empty($data)) {
+                echo 'fail';
+                die;
+            }
+            if(!isset($data["sign"]) ){
+                echo "fail(sign not exists)";
+                exit;
+            }
+
+            $resSign = $data["sign"] ;
+
+            $paramArray = array();
+
+            if(isset($data["payOrderId"]) ){
+                $paramArray["payOrderId"] = $data["payOrderId"];
+            }
+
+            if(isset($data["income"]) ){
+                $paramArray["income"] = $data["income"];
+            }
+
+            if(isset($data["mchId"]) ){
+                $paramArray["mchId"] = $data["mchId"];
+            }
+
+            if(isset($data["appId"]) ){
+                $paramArray["appId"] = $data["appId"];
+            }
+
+            if(isset($data["productId"]) ){
+                $paramArray["productId"] = $data["productId"];
+            }
+
+            if(isset($data["mchOrderNo"]) ){
+                $paramArray["mchOrderNo"] = $data["mchOrderNo"];
+            }
+
+            if(isset($data["amount"]) ){
+                $paramArray["amount"] = $data["amount"];
+            }
+
+            if(isset($data["status"]) ){
+                $paramArray["status"] = $data["status"];
+            }
+
+            if(isset($data["channelOrderNo"]) ){
+                $paramArray["channelOrderNo"] = $data["channelOrderNo"];
+            }
+
+            if(isset($data["channelAttach"]) ){
+                $paramArray["channelAttach"] = $data["channelAttach"];
+            }
+
+            if(isset($data["param1"]) ){
+                $paramArray["param1"] = $data["param1"];
+            }
+
+            if(isset($data["param2"]) ){
+                $paramArray["param2"] = $data["param2"];
+            }
+
+            if(isset($data["paySuccTime"]) ){
+                $paramArray["paySuccTime"] = $data["paySuccTime"];
+            }
+
+            if(isset($data["backType"]) ){
+                $paramArray["backType"] = $data["backType"];
+            }
+
+            if(isset($data["reqTime"]) ){
+                $paramArray["reqTime"] = $data["reqTime"];
+            }
+
+            $ordno=$data['mchOrderNo'];
+
+            $pay_id = \app\common\model\Order::where('ordno', $ordno)->value('pay_id');
+            $payInfo = PaySetting::where('id', $pay_id)->find();
+
+            $sign = paramArraySign($paramArray, $payInfo->app_key);  //签名
+            if($resSign != $sign){  //验签失败
+                echo "fail(verify fail)";
+                doSyslog('fail(verify fail)@' . json_encode($data), 'hlPay');
+                //exit;
+            }
+
+            if ($data['status']==2||$data['status']==3){
+                $send = [
+                    'money'=>$data['amount'] / 100,
+                    'transaction_id'=>$data['payOrderId'],
+                    'out_trade_no'=>$data['mchOrderNo']
+                ];
+                list($res, $info) = $this->handleOrder($send);
+                if (!$res) {
+                    doSyslog($info . '@' . json_encode($send), 'hlPay');
+                    exit('fail');
+                }
+                exit("success");
+            }
+            echo 'fail';
+            die;
+        } catch (Exception $e) {
+            doSyslog($e->getMessage() . '@' . json_encode($data), 'hlPay');
+            exit('异常');
+        }
+    }
+
+    public function axPay()
+    {
+        $data = $this->request->param();
+        try {
+            $returnArray = array( // 返回字段
+                "memberid" => $data["memberid"], // 商户ID
+                "orderid" =>  $data["orderid"], // 订单号
+                "amount" =>  $data["amount"], // 交易金额
+                "true_amount" =>  $data["true_amount"], // 实付金额
+                "datetime" =>  $data["datetime"], // 交易时间
+                "transaction_id" =>  $data["transaction_id"], // 支付流水号
+                "returncode" => $data["returncode"],
+            );
+            $ordno=$data['orderid'];
+
+            $pay_id = \app\common\model\Order::where('ordno', $ordno)->value('pay_id');
+            $payInfo = PaySetting::where('id', $pay_id)->find();
+
+            ksort($returnArray);
+            reset($returnArray);
+            $md5str = "";
+            foreach ($returnArray as $key => $val) {
+                $md5str = $md5str . $key . "=" . $val . "&";
+            }
+            $sign = strtoupper(md5($md5str . "key=" . $payInfo->app_key));
+            if ($sign == $data["sign"]) {
+                if ($data["returncode"] == "00") {
+                    $send = [
+                        'money'=>$data['amount'],
+                        'transaction_id'=>$data['transaction_id'],
+                        'out_trade_no'=>$data['orderid']
+                    ];
+                    list($res, $info) = $this->handleOrder($send);
+                    if (!$res) {
+                        doSyslog($info . '@' . json_encode($send), 'hlPay');
+                        exit('fail');
+                    }
+                    exit("success");
+                }
+                doSyslog('@' . json_encode($data), 'hlPay');
+                exit('fail');
+            }
+            doSyslog('@' . json_encode($data), 'hlPay');
+            exit('fail');
+        } catch (Exception $e) {
+            doSyslog($e->getMessage() . '@' . json_encode($data), 'hlPay');
             exit('异常');
         }
     }

@@ -9,6 +9,7 @@ use app\common\model\Agent;
 use app\common\model\PayShow;
 use app\common\model\PaySetting;
 use app\common\model\WxPay;
+use think\Db;
 use think\Exception;
 
 class Trade extends Common
@@ -114,7 +115,7 @@ class Trade extends Common
             $this->error("没有可用的支付渠道,请确认");
         }
 
-        if($payInfo->label=="fjPay"&&is_weixin()){
+        if(($payInfo->label=="fjPay"||$payInfo->label=="yzfPay")&&is_weixin()){
             return $this->fetch("/common/llq");
         }
 
@@ -156,6 +157,14 @@ class Trade extends Common
             case 'mhyPay':#todo 马华云支付
                 return $this->mhyPay($payInfo, $user, $payInfo->id);
                 break;
+            case 'qlPay':
+                return $this->qlPay($payInfo, $user, $payInfo->id);
+            case 'hlPay':
+                return $this->hlPay($payInfo, $user, $payInfo->id);
+            case 'yzfPay':
+                return $this->yzfPay($payInfo, $user, $payInfo->id);
+            case 'axPay':
+                return $this->axPay($payInfo, $user, $payInfo->id);
             default:
                 $this->error("未匹配到{$payInfo->label}支付渠道,请确认");
                 break;
@@ -656,6 +665,164 @@ class Trade extends Common
         echo ("<script>window.location.href='".$wxUrl."'</script>");//$wxUrl;//
     }
 
+    public function qlPay($payInfo, $user, $pay_id)
+    {
+        $ordno = date("YmdHis") . rand(1000000, 9999999);
+        $res = $this->createOrder($user, $ordno, $pay_id);
+        $appId = $payInfo->app_id;
+        $appKey = $payInfo->app_key;
+        $payGateWayUrl = $payInfo->pay_url;
+        $payChannel = $payInfo->pay_channel;
+        $payMoney = $res['data']['money'];
+        if ($res['code'] == 0) {
+            $this->error('下单失败');
+        }
+        #同步通知
+        $payCallBackUrl = $this->getSynNotifyUrl([], $ordno, $user->id);
+        #异步通知
+        $payNotifyUrl = $this->getAsyNotifyUrl([], "qlPay");
+
+        $data=[
+            'api_id'=>$appId,
+            'money'=>sprintf("%.2f",$payMoney),
+            'refer'=>$payCallBackUrl,
+            'notify_url'=>$payNotifyUrl,
+            //'type'=>1,
+            'gamename'=>$payChannel,
+            'record'=>$ordno
+        ];
+        ksort($data);
+        $str = '';
+        foreach ($data as $k => $v) {
+            if ($k != "sign" && $v != "") {
+                $str .= $k . "=" . $v . "&";
+            }
+        }
+        $data['sign'] = md5(trim($str) . $appKey);//md5加密参数
+        dump($data);
+        $res = httpRequest($payGateWayUrl,'POST',$data);
+        dd($res);
+    }
+
+    public function hlPay($payInfo, $user, $pay_id)
+    {
+        $ordno = date("YmdHis") . rand(1000000, 9999999);
+        $res = $this->createOrder($user, $ordno, $pay_id);
+        $appId = $payInfo->app_id;
+        $appKey = $payInfo->app_key;
+        $payGateWayUrl = $payInfo->pay_url;
+        $payChannel = $payInfo->pay_channel;
+        $payMoney = $res['data']['money'];
+        if ($res['code'] == 0) {
+            $this->error('下单失败');
+        }
+        #同步通知
+        $payCallBackUrl = $this->getSynNotifyUrl([], $ordno, $user->id,true);
+        #异步通知
+        $payNotifyUrl = $this->getAsyNotifyUrl([], "hlPay");
+
+        $paramArray = array(
+            "mchId" => $payInfo->mch_id, //商户ID
+            //"appId" => $appId,  //商户应用ID
+            "productId" => $payChannel,  //支付产品ID
+            "mchOrderNo" => $ordno ,  // 商户订单号
+            "currency" => 'cny',  //币种
+            "amount" => $payMoney * 1 * 100 . "", // 支付金额
+            "clientIp" => request()->ip(),   //客户端IP
+            "device" => 'ios10.3.1',    //客户端设备
+            "returnUrl" => $payCallBackUrl,	 //支付结果前端跳转URL
+            "notifyUrl" => $payNotifyUrl,	 //支付结果后台回调URL
+            "subject" => '网络购物',	 //商品主题
+            "body" => '网络购物',	 //商品描述信息
+            "param1" => '',	 //扩展参数1
+            "param2" =>  '',	 //扩展参数2
+            "extra" =>  '',	 //附加参数
+            "reqTime" => date("YmdHis"),	 //请求时间, 格式yyyyMMddHHmmss
+            "version" => '1.0'	 //版本号, 固定参数1.0
+        );
+
+        ksort($paramArray);  //字典排序
+        reset($paramArray);
+
+        $md5str = "";
+        foreach ($paramArray as $key => $val) {
+            if( strlen($key)  && strlen($val) ){
+                $md5str = $md5str . $key . "=" . $val . "&";
+            }
+        }
+        $sign = strtoupper(md5($md5str . "key=" . $appKey));  //签名
+        $paramArray["sign"] = $sign;
+        $paramsStr = http_build_query($paramArray); //请求参数str
+        $response = httpRequest($payGateWayUrl . "/api/pay/create_order", 'POST',$paramsStr);
+        $response=json_decode($response,true);
+        if ($response['payMethod']!=='formJump'){
+            $this->error($response['retMsg']??'');
+        }
+        return redirect($response['payUrl'],[],301);
+    }
+
+    public function axPay($payInfo, $user, $pay_id)
+    {
+        $ordno = date("YmdHis") . rand(1000000, 9999999);
+        $res = $this->createOrder($user, $ordno, $pay_id);
+        $appId = $payInfo->app_id;
+        $appKey = $payInfo->app_key;
+        $payGateWayUrl = $payInfo->pay_url;
+        $payChannel = $payInfo->pay_channel;
+        $payMoney = $res['data']['money'];
+        if ($res['code'] == 0) {
+            $this->error('下单失败');
+        }
+        #同步通知
+        $payCallBackUrl = $this->getSynNotifyUrl([], $ordno, $user->id,true);
+        #异步通知
+        $payNotifyUrl = $this->getAsyNotifyUrl([], "axPay");
+
+        $native = array(
+            "pay_memberid" => $appId,
+            "pay_orderid" => $ordno,
+            "pay_amount" => $payMoney,
+            "pay_applydate" => date("Y-m-d H:i:s"),
+            "pay_bankcode" => $payChannel,
+            "pay_notifyurl" => $payNotifyUrl,
+            "pay_callbackurl" => $payCallBackUrl,
+        );
+
+        ksort($native);
+        $md5str = "";
+        foreach ($native as $key => $val) {
+            $md5str = $md5str . $key . "=" . $val . "&";
+        }
+
+        $sign = strtoupper(md5($md5str . "key=" . $appKey));
+        $native["pay_md5sign"] = $sign;
+        $native['pay_attach'] = "1234|456";
+        $native['pay_productname'] = '购买商品';
+        $native['type'] = "json"; //json  或  html
+        $native["pay_md5sign"] = $sign;
+        $native['pay_attach'] = "1234|456";
+        $native['pay_productname'] = '购买商品';
+        $native['type'] = "json"; //json  或  html
+
+        $postData = http_build_query($native);
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, 'http://'.$payGateWayUrl.'/Pay_Index.html');
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false); // stop verifying certificate
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded;charset:utf-8;'));
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $postData);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+        $data = curl_exec($curl);
+        curl_close($curl);
+        $json = json_decode($data,true);
+        if($json['code'] =='1'){
+            $url = $json['payUrl'];
+            return redirect($url,[],301);
+        }
+        return $this->error(json_encode($data));
+    }
+
 #####todo ============================易支付类================================================#####
     /**
      * 逍遥支付宝支付
@@ -1022,6 +1189,50 @@ class Trade extends Common
         exit($htmls);
     }
 
+    public function yzfPay($payInfo, $user, $pay_id)
+    {
+        $ordno = date("YmdHis") . rand(1000000, 9999999);
+        $res = $this->createOrder($user, $ordno, $pay_id);
+        $appId = $payInfo->app_id;
+        $appKey = $payInfo->app_key;
+        $payGateWayUrl = $payInfo->pay_url;
+        $payMoney = $res['data']['money'];
+        if ($res['code'] == 0) {
+            $this->error('下单失败');
+        }
+        #同步通知
+        $payCallBackUrl = $this->getSynNotifyUrl([], $ordno, $user->id);
+        #异步通知
+        $payNotifyUrl = $this->getAsyNotifyUrl([], "yzfPay");
+        $data = [
+            'pid' => $appId,
+            'type'=>$payInfo->pay_channel??'alipay',
+            'out_trade_no' => $ordno,
+            'name' => 'VIP会员',
+            'money' => $payMoney,
+            'notify_url' => $payNotifyUrl,
+            'return_url' => $payCallBackUrl,
+        ];
+        ksort($data);
+        $str ="";
+        foreach ($data as $k=>$v){
+            if ($k != "" && $v != "") {
+                $str .= $k . "=" . $v . "&";
+            }
+        }
+
+        $data['sign'] = strtoupper(md5($str."key=".$appKey));
+        $data['sign_type']='MD5';
+
+        $htmls = "<form id='yzfPay' name='yzfPay' action='" . $payGateWayUrl . "' target='_top' method='post'>";
+        foreach ($data as $key => $val) {
+            $htmls .= "<input type='hidden' name='" . $key . "' value='" . $val . "'/>";
+        }
+        $htmls .= "</form>";
+        $htmls .= "<script>document.forms['yzfPay'].submit();</script>";
+        exit($htmls);
+    }
+
 #####todo ============================易支付类结束================================================#####
 
     /**
@@ -1144,7 +1355,7 @@ class Trade extends Common
      * @param $id
      * @return string
      */
-    protected function getSynNotifyUrl($params, $order = '', $id = 0)
+    protected function getSynNotifyUrl($params, $order = '', $id = 0,$is_xz=false)
     {
         $rkType = $this->request->param('rkType');
         $form = $this->form;
@@ -1173,9 +1384,12 @@ class Trade extends Common
             $url = $scheme . "/return/ordno/" . encrypt($order) . "/ldk/" . encrypt(json_encode($form));
         }
 
+        if ($is_xz===true){
+            Db::name('order_return')->insert(['ordno'=>$order,'ldk'=>encrypt(json_encode($form))]);
+            $url = $scheme . "/return_xz/ordno/". encrypt($order);
+        }
+
         return $url;
-
-
     }
 
     /**
@@ -1236,5 +1450,25 @@ class Trade extends Common
         $this->assign('main', $main);
         return $this->fetch('/common/callback');
 
+    }
+
+    public function synNotifyXz()
+    {
+        $ordno = decrypt($this->request->param('ordno'));
+        $orderInfo = \app\common\model\Order::where('ordno', $ordno)->find();
+        if (empty($orderInfo)) {
+            $this->error('订单不存在,请重试!', '', '', 333);
+        }
+        $urlData=Db::name('order_return')->where('ordno',$ordno)->find();
+        $ldk=json_decode(decrypt($urlData['ldk']),true);
+        $scheme = $this->request->scheme() . "://";
+
+        #获取支付域名
+        $pay_domain = getDomain(2,$ldk['uid']);
+        if ($pay_domain) {
+            $scheme = $pay_domain;
+        }
+        $url = $scheme . "/return/ordno/" . encrypt($ordno) . "/ldk/" . $urlData['ldk'];
+        return redirect($url);
     }
 }
