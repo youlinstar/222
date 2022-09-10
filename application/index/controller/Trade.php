@@ -1213,16 +1213,9 @@ class Trade extends Common
             'notify_url' => $payNotifyUrl,
             'return_url' => $payCallBackUrl,
         ];
-        ksort($data);
-        $str ="";
-        foreach ($data as $k=>$v){
-            if ($k != "" && $v != "") {
-                $str .= $k . "=" . $v . "&";
-            }
-        }
-
-        $data['sign'] = strtoupper(md5($str."key=".$appKey));
+        $data['sign']=$this->getSign($data, $appKey);
         $data['sign_type']='MD5';
+        dd($data);
 
         $htmls = "<form id='yzfPay' name='yzfPay' action='" . $payGateWayUrl . "' target='_top' method='post'>";
         foreach ($data as $key => $val) {
