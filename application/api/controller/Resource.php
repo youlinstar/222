@@ -305,7 +305,7 @@ class Resource extends Common
 
             $token = md5(encrypt(json_encode($this->form))).time();
 //            旧ua与新ua
-            $data = ['old_ua'=>$this->form['ua'],'new_ua'=>$ua];
+            $data = ['old_ua'=>$this->form['ua'],'new_ua'=>$ua,'ua'=>$ua];
             Cache::set($token,$data,60);
             #请求url
             $domain = trim(getDomain(1, $this->uid)) . '/' . $rukou . '?ldk=' . $this->ldk . '&token=' . $token;
