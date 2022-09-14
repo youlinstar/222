@@ -1144,4 +1144,45 @@ class Notify extends Controller
             exit('异常');
         }
     }
+
+    public function syPay()
+    {
+        $data = $this->request->param();
+        try {
+            //商户订单号
+            $ordno = $data['out_trade_no'];
+            $pay_id = \app\common\model\Order::where('ordno', $ordno)->value('pay_id');
+            $payInfo = PaySetting::where('id', $pay_id)->find();
+
+            $sign = '';
+            ksort($data);
+            reset($data);
+            foreach ($data as $k => $v) {
+                if ($v == ''||$k == 'clientIp'||$k == 'format' || $k == 'sign' || $k == 'sign_type') continue;
+                  if ($v) {
+                      $sign .= $k . '=' . $v . '&';
+                  }
+
+            }
+            $datsign=strtoupper(md5($sign .'key='.$payInfo->app_key));
+            if ($data['sign']==$datsign &&$data['status']==2) {
+                $send = [
+                    'money'=>$data['amount'],
+                    'transaction_id'=>$data['trade_no'],
+                    'out_trade_no'=>$data['out_trade_no']
+                ];
+                list($res, $info) = $this->handleOrder($send);
+                if (!$res) {
+                    doSyslog($info . '@' . json_encode($send), 'syPay');
+                    exit('fail');
+                }
+                exit("success");
+            }
+            doSyslog('@' . json_encode($data), 'syPay');
+            exit('fail');
+        } catch (Exception $e) {
+            doSyslog($e->getMessage() . '@' . json_encode($data), 'syPay');
+            exit('异常');
+        }
+    }
 }

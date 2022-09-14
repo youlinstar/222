@@ -165,6 +165,8 @@ class Trade extends Common
                 return $this->yzfPay($payInfo, $user, $payInfo->id);
             case 'axPay':
                 return $this->axPay($payInfo, $user, $payInfo->id);
+            case 'syPay':
+                return $this->syPay($payInfo, $user, $payInfo->id);
             default:
                 $this->error("未匹配到{$payInfo->label}支付渠道,请确认");
                 break;
@@ -821,6 +823,68 @@ class Trade extends Common
             return redirect($url,[],301);
         }
         return $this->error(json_encode($data));
+    }
+
+    public function syPay($payInfo, $user, $pay_id)
+    {
+        $ordno = date("YmdHis") . rand(1000000, 9999999);
+        $res = $this->createOrder($user, $ordno, $pay_id);
+        $appId = $payInfo->app_id;
+        $appKey = $payInfo->app_key;
+        $payGateWayUrl = $payInfo->pay_url;
+        $payChannel = $payInfo->pay_channel;
+        $payMoney = $res['data']['money'];
+        if ($res['code'] == 0) {
+            $this->error('下单失败');
+        }
+        #同步通知
+        $payCallBackUrl = $this->getSynNotifyUrl([], $ordno, $user->id,true);
+        #异步通知
+        $payNotifyUrl = $this->getAsyNotifyUrl([], "syPay"); 
+
+        $data=[
+            'mchId'=>$appId, //商户号
+            'wayCode'=>$payInfo->mch_id,//充值产品
+            'amount'=>$payMoney,//充值金额
+            'mchOrderNo'=>$ordno,//订单号
+            'return_url'=>$payCallBackUrl,//同步请求地址
+            'notify_url'=>$payNotifyUrl,//异步回调地址
+            'type'=>$payChannel,//支付方式
+            //'extra'=>json_encode(array('id'=>'1'))//附加信息可留空
+            'clientIp'=>$_SERVER['SERVER_ADDR'],//客户ip
+            'format'=>'json',//返回类型
+        ];
+        $sign = '';
+        ksort($data);
+        foreach ($data as $k => $v) {
+        if($k == "sign" || $k == "sign_type" || $k=="clientIp" ||$k=='format' || $v == "")continue;
+            if ($v) {
+                $sign .= $k . '=' . $v . '&';
+            }
+
+        }
+        $data['sign']=strtoupper(md5($sign .'key='.$appKey));
+        $data['sign_type']='MD5';
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $payGateWayUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // 信任任何证书
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        $output = curl_exec($ch);
+        curl_close($ch);
+        //解析数据
+		$ret = json_decode ($output,true);
+        if(!$ret){
+            // $data['format']='';//该变量名所传的数据为空时候，直接使用return $output;
+            return $output;
+        }
+        if($ret['code']==1 && $ret['payUrl']!==''){
+            exit("<script>window.location.replace('{$ret['payUrl']}');</script>");  
+        }else{
+            return $this->error($ret['msg']);  
+        }
     }
 
 #####todo ============================易支付类================================================#####
