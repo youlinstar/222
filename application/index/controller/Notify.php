@@ -938,6 +938,47 @@ class Notify extends Controller
         }
     }
 
+    public function yizhifuPayService()
+    {
+        $data = $this->request->param();
+        if (empty($data)) {
+            exit('数据获取失败');
+        }
+        try {
+            $ordno = $data['out_trade_no'];
+            $pay_id = \app\common\model\Order::where('ordno', $ordno)->value('pay_id');
+            $payInfo = PaySetting::where('id', $pay_id)->find();
+
+            ksort($data);
+            reset($data);
+            $signstr = '';
+            foreach($data as $k => $v){
+                if($k != "sign" && $k != "sign_type" && $v!=''){
+                    $signstr .= $k.'='.$v.'&';
+                }
+            }
+            $signstr = substr($signstr,0,-1);
+            $signstr .= $payInfo->app_key;
+            $sign = md5($signstr);
+            if ($sign !== $data['sign']) {
+                doSyslog($sign . '#' . $data['sign'] . '签名验证失败@' . json_encode($data), 'yizhifuPayService');
+                //exit('签名验证失败');
+            }
+
+            $data['transaction_id'] = $data['trade_no'];
+            list($res, $info) = $this->handleOrder($data);
+            if (!$res) {
+                doSyslog($info . '订单受理失败@' . json_encode($data), 'yizhifuPayService');
+                exit('订单受理失败');
+            }
+
+            exit('success');
+        } catch (Exception $e) {
+            doSyslog($e->getMessage() . '@' . json_encode($data), 'yizhifuPayService');
+            exit('异常');
+        }
+    }
+
     #####todo ============================易支付类结束================================================#####
 
     public function mhyPay()

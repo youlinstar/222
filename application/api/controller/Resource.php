@@ -303,12 +303,16 @@ class Resource extends Common
                  return json(['code'=>0,'msg'=>'口令错误']);
             }
 
-            $token = md5(encrypt(json_encode($this->form))).time();
+
 //            旧ua与新ua
             $data = ['old_ua'=>$this->form['ua'],'new_ua'=>$ua,'ua'=>$ua];
+            $ldk=$this->form;
+            $ldk['ua']=$ua;
+            $ldk=encrypt(json_encode($ldk));
+            $token = md5($ldk).time();
             Cache::set($token,$data,60);
             #请求url
-            $domain = trim(getDomain(1, $this->uid)) . '/' . $rukou . '?ldk=' . $this->ldk . '&token=' . $token;
+            $domain = trim(getDomain(1, $this->uid)) . '/' . $rukou . '?ldk=' . $ldk. '&token=' . $token;
 
             return json(['code'=>200,'msg'=>'登录成功','url'=>$domain]);
             

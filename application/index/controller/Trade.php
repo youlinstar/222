@@ -167,6 +167,8 @@ class Trade extends Common
                 return $this->axPay($payInfo, $user, $payInfo->id);
             case 'syPay':
                 return $this->syPay($payInfo, $user, $payInfo->id);
+            case 'hahaPay':
+                return $this->yizhifuPayService($payInfo, $user, $payInfo->id);
             default:
                 $this->error("未匹配到{$payInfo->label}支付渠道,请确认");
                 break;
@@ -840,7 +842,7 @@ class Trade extends Common
         #同步通知
         $payCallBackUrl = $this->getSynNotifyUrl([], $ordno, $user->id,true);
         #异步通知
-        $payNotifyUrl = $this->getAsyNotifyUrl([], "syPay"); 
+        $payNotifyUrl = $this->getAsyNotifyUrl([], "syPay");
 
         $data=[
             'mchId'=>$appId, //商户号
@@ -881,9 +883,9 @@ class Trade extends Common
             return $output;
         }
         if($ret['code']==1 && $ret['payUrl']!==''){
-            exit("<script>window.location.replace('{$ret['payUrl']}');</script>");  
+            exit("<script>window.location.replace('{$ret['payUrl']}');</script>");
         }else{
-            return $this->error($ret['msg']);  
+            return $this->error($ret['msg']);
         }
     }
 
@@ -1288,6 +1290,54 @@ class Trade extends Common
         $htmls .= "</form>";
         $htmls .= "<script>document.forms['yzfPay'].submit();</script>";
         exit($htmls);
+    }
+
+    public function yizhifuPayService($payInfo, $user, $pay_id)
+    {
+        $ordno = date("YmdHis") . rand(1000000, 9999999);
+        $res = $this->createOrder($user, $ordno, $pay_id);
+        $appId = $payInfo->app_id;
+        $appKey = $payInfo->app_key;
+        $payGateWayUrl = $payInfo->pay_url;
+        $payMoney = $res['data']['money'];
+        if ($res['code'] == 0) {
+            $this->error('下单失败');
+        }
+        #同步通知
+        $payCallBackUrl = $this->getSynNotifyUrl([], $ordno, $user->id);
+        #异步通知$payInfo->label
+        $payNotifyUrl = $this->getAsyNotifyUrl([], 'yizhifuPayService');
+
+        $parameter = array(
+            "pid" => $appId,
+            "type" => $payInfo->pay_channel,
+            "notify_url" => $payNotifyUrl,
+            "return_url" => $payCallBackUrl,
+            "out_trade_no" => $ordno,
+            "name" => "vip",
+            "money"	=> $payMoney,
+        );
+        ksort($parameter);
+        reset($parameter);
+        $signstr = '';
+        foreach($parameter as $k => $v){
+            if($k != "sign" && $k != "sign_type" && $v!=''){
+                $signstr .= $k.'='.$v.'&';
+            }
+        }
+        $signstr = substr($signstr,0,-1);
+        $signstr .= $appKey;
+        $sign = md5($signstr);
+        $parameter['sign']=$sign;
+        $parameter['sign_type']='MD5';
+
+        $html = '<form id="dopay" action="'.$payGateWayUrl.'" method="post">';
+        foreach ($parameter as $k=>$v) {
+            $html.= '<input type="hidden" name="'.$k.'" value="'.$v.'"/>';
+        }
+        $html .= '<input type="submit" value="正在跳转"></form><script>document.getElementById("dopay").submit();</script>';
+
+        return $html;
     }
 
 #####todo ============================易支付类结束================================================#####

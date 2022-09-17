@@ -68,7 +68,7 @@ class Index extends Common
             }
             //验证用户的ua是不是提交过来的ua
             if($chack['old_ua'] != $form['ua']){
-                $this->error('非法用户!');
+                //$this->error('非法用户!');
             }
 //            更新新的UA
             Cookie::forever('biaoshi', $chack['new_ua']);
