@@ -112,14 +112,21 @@ function getDomain($type = 1, $uid = 0)
     if ($uid > 0) {
 
         # 获取用户绑定域名   
-
-        $domain = $dominModel->where(['type' => $type, 'status' => 1,'is_bind' => 1,'uid'=>$uid])->orderRand()->find();
+        if ($type=='2'){
+            $domain = $dominModel->where(['type' => $type, 'status' => 1,'is_bind' => 1,'uid'=>$uid])->find();
+        }else{
+            $domain = $dominModel->where(['type' => $type, 'status' => 1,'is_bind' => 1,'uid'=>$uid])->orderRand()->find();
+        }
         
         if (empty($domain)) {            
 
             # 随机获取域名
 
-            $domain = $dominModel->where(['type' => $type, 'status' => 1,'is_bind' => 0])->orderRand()->find();
+            if ($type=='2'){
+                $domain = $dominModel->where(['type' => $type, 'status' => 1,'is_bind' => 1,'uid'=>$uid])->find();
+            }else{
+                $domain = $dominModel->where(['type' => $type, 'status' => 1,'is_bind' => 1,'uid'=>$uid])->orderRand()->find();
+            }
 
             if (empty($domain)) {
                 # 后期增加发送短信 进行提醒
@@ -128,7 +135,11 @@ function getDomain($type = 1, $uid = 0)
         }
     } else {
         # 获取域名
-        $domain = $dominModel->where(['type' => $type, 'status' => 1,'is_bind' => 0])->orderRand()->find();
+        if ($type=='2'){
+            $domain = $dominModel->where(['type' => $type, 'status' => 1,'is_bind' => 1,'uid'=>$uid])->find();
+        }else{
+            $domain = $dominModel->where(['type' => $type, 'status' => 1,'is_bind' => 1,'uid'=>$uid])->orderRand()->find();
+        }
         if (empty($domain)) {
             exit;
         }
