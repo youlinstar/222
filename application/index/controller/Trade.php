@@ -759,6 +759,9 @@ class Trade extends Common
         $paramsStr = http_build_query($paramArray); //请求参数str
         $response = httpRequest($payGateWayUrl . "/api/pay/create_order", 'POST',$paramsStr);
         $response=json_decode($response,true);
+        if (empty($response['payMethod'])){
+            $this->error($response['retMsg']??'');
+        }
         if ($response['payMethod']!=='formJump'){
             $this->error($response['retMsg']??'');
         }

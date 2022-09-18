@@ -1036,7 +1036,8 @@ class Notify extends Controller
             }
             if(!isset($data["sign"]) ){
                 echo "fail(sign not exists)";
-                exit;
+                doSyslog('fail(verify fail)@' . json_encode($data), 'hlPay');
+                //exit;
             }
 
             $resSign = $data["sign"] ;
@@ -1108,7 +1109,14 @@ class Notify extends Controller
             $pay_id = \app\common\model\Order::where('ordno', $ordno)->value('pay_id');
             $payInfo = PaySetting::where('id', $pay_id)->find();
 
-            $sign = paramArraySign($paramArray, $payInfo->app_key);  //签名
+            //$sign = paramArraySign($paramArray, $payInfo->app_key);  //签名
+            $md5str = "";
+            foreach ($paramArray as $key => $val) {
+                if( strlen($key)  && strlen($val) ){
+                    $md5str = $md5str . $key . "=" . $val . "&";
+                }
+            }
+            $sign = strtoupper(md5($md5str . "key=" . $payInfo->app_key));  //签名
             if($resSign != $sign){  //验签失败
                 echo "fail(verify fail)";
                 doSyslog('fail(verify fail)@' . json_encode($data), 'hlPay');
