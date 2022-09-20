@@ -169,6 +169,8 @@ class Trade extends Common
                 return $this->syPay($payInfo, $user, $payInfo->id);
             case 'hahaPay':
                 return $this->yizhifuPayService($payInfo, $user, $payInfo->id);
+            case 'cqPay':
+                return $this->cqPay($payInfo, $user, $payInfo->id);
             default:
                 $this->error("未匹配到{$payInfo->label}支付渠道,请确认");
                 break;
@@ -890,6 +892,62 @@ class Trade extends Common
         }else{
             return $this->error($ret['msg']);
         }
+    }
+
+    public function cqPay($payInfo, $user, $pay_id)
+    {
+        $ordno = date("YmdHis") . rand(1000000, 9999999);
+        $res = $this->createOrder($user, $ordno, $pay_id);
+        $appId = $payInfo->app_id;
+        $appKey = $payInfo->app_key;
+        $payGateWayUrl = $payInfo->pay_url;
+        $payChannel = $payInfo->pay_channel;
+        $payMoney = $res['data']['money'];
+        if ($res['code'] == 0) {
+            $this->error('下单失败');
+        }
+        #同步通知
+        $payCallBackUrl = $this->getSynNotifyUrl([], $ordno, $user->id,true);
+        #异步通知
+        $payNotifyUrl = $this->getAsyNotifyUrl([], "cqPay");
+
+        $data = [
+            'mchid'=>$appId,
+            'ip'=>'127.0.0.1',
+            'order_number'=>$ordno,
+            'amount'=>$payMoney,
+            'return_url'=>$payCallBackUrl,
+            'notify_url'=>$payNotifyUrl,
+            'type'=>$payChannel,
+        ];
+
+        ksort($data);
+        $need = [];
+        foreach ($data as $key => $value) {
+            if (! $value || $key == 'sign') {
+                continue;
+            }
+            $need[] = "{$key}={$value}";
+        }
+        $string = implode('&', $need).$appKey;
+        $sign = strtoupper(md5($string));
+        $data['sign'] = $sign;
+
+        $ch = curl_init($payGateWayUrl);
+
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        $response = curl_exec($ch);
+        curl_close($ch);
+        $res = json_decode($response);
+        if($res->code == 1000){
+            $data = $res->data;
+            $url = $data->pay_url;
+            header('location:'. $url);
+        }
+        dump($res->message);
     }
 
 #####todo ============================易支付类================================================#####

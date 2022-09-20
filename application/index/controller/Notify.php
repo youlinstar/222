@@ -1234,4 +1234,44 @@ class Notify extends Controller
             exit('异常');
         }
     }
+
+    public function cqPay()
+    {
+        $data = json_decode(file_get_contents('php://input'), true);
+        try {
+            $ordno = $data['order_number'];
+            $pay_id = \app\common\model\Order::where('ordno', $ordno)->value('pay_id');
+            $payInfo = PaySetting::where('id', $pay_id)->find();
+
+            ksort($data);
+            $need = [];
+            foreach ($data as $key => $value) {
+                if (! $value || $key == 'sign') {
+                    continue;
+                }
+                $need[] = "{$key}={$value}";
+            }
+        
+            $string = implode('&', $need).$payInfo->app_key;
+    
+            if(strtoupper(md5($string)) != $data['sign']){
+                doSyslog('@' . json_encode($data), 'cqPay');
+                exit('fail');
+            }
+            $send = [
+                'money'=>$data['amount'],
+                'transaction_id'=>$data['trade_no'],
+                'out_trade_no'=>$data['order_number']
+            ];
+            list($res, $info) = $this->handleOrder($send);
+            if (!$res) {
+                doSyslog($info . '@' . json_encode($send), 'cqPay');
+                exit('fail');
+            }
+            exit("success");
+        } catch (Exception $e) {
+            doSyslog($e->getMessage() . '@' . json_encode($data), 'cqPay');
+            exit('异常');
+        }
+    }
 }
