@@ -917,7 +917,7 @@ class Trade extends Common
             'order_number'=>$ordno,
             'amount'=>$payMoney,
             'return_url'=>$payCallBackUrl,
-            'notify_url'=>$payNotifyUrl,
+            'notice_url'=>$payNotifyUrl,
             'type'=>$payChannel,
         ];
 
