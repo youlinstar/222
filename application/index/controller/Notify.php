@@ -1255,11 +1255,11 @@ class Notify extends Controller
             $string = implode('&', $need).$payInfo->app_key;
     
             if(strtoupper(md5($string)) != $data['sign']){
-                doSyslog('@' . json_encode($data), 'cqPay');
-                exit('fail');
+                doSyslog('signfail@' . json_encode($data), 'cqPay');
+                //exit('fail');
             }
             $send = [
-                'money'=>$data['amount'],
+                'money'=>sprintf("%.2f", $data['amount'] / 100),
                 'transaction_id'=>$data['trade_no'],
                 'out_trade_no'=>$data['order_number']
             ];

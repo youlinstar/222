@@ -915,7 +915,7 @@ class Trade extends Common
             'mchid'=>$appId,
             'ip'=>'127.0.0.1',
             'order_number'=>$ordno,
-            'amount'=>$payMoney,
+            'amount'=> (float)$payMoney * 100,
             'return_url'=>$payCallBackUrl,
             'notice_url'=>$payNotifyUrl,
             'type'=>$payChannel,
