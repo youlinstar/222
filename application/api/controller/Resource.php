@@ -239,6 +239,14 @@ class Resource extends Common
                 ->field('v_id,etime,is_day,is_week,is_month')
                 ->select()
                 ->toArray();
+        if (empty($pay)){
+            $pay = (new PayShow())->where('etime', '>', time())
+                ->where('uid', $this->uid)
+                ->where('ip',getIp())
+                ->field('v_id,etime,is_day,is_week,is_month')
+                ->select()
+                ->toArray();
+        }
 
         foreach ($pay as $k => $item) {
             
