@@ -211,8 +211,15 @@ class Jf extends Common
         $payShowInfo = $payShowObj->where($map)->where('etime', '>', time())->select()->toArray();
         
         if(empty($payShowInfo)){
-            $this->error("VIP已过期!");
-        } 
+            $map = [
+                'ip'=>getIp(),
+                'uid'=>$form['uid']
+            ];
+            $payShowInfo = $payShowObj->where($map)->where('etime', '>', time())->select()->toArray();
+            if(empty($payShowInfo)) {
+                $this->error("VIP已过期!");
+            }
+        }
         $is_day = 0;
         $is_week = 0;
         $is_month = 0;

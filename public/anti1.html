@@ -55,7 +55,7 @@
 
             let url="//"+httpRequest.responseText+decodeURIComponent(atob(getQueryVariable("url")));
             document.getElementById("tip").style.display = 'none';
-            document.getElementById("iframe").src = url=;
+            document.getElementById("iframe").src = url;
             //window.location.replace(url);
         }else{
             document.getElementById("tip").innerHTML="已没有足够的域名分配!";
