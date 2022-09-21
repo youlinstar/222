@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>正在跳转中</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+
+        html,body{
+            width: 100%;
+            height: 100%;
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+<h1 style="width: 100%;text-align: center;" id="tip">跳转中...</h1>
+<div class="container">
+    <iframe id="iframe" width="100%" height="100%"></iframe>
+</div>
+<script>
+    var apiUrl="222.com";
+
+
+    function getQueryVariable(variable)
+    {
+        const query = window.location.search.substring(1);
+        const vars = query.split("&");
+        for (let i=0; i<vars.length; i++) {
+            const pair = vars[i].split("=");
+            if(pair[0] === variable){return pair[1];}
+        }
+        return false;
+    }
+
+    const httpRequest = new XMLHttpRequest();//第一步：建立所需的对象
+    httpRequest.open('GET',"//"+apiUrl+"/api/crond/getDomain", true);//第二步：打开连接  将请求参数写在url中  ps:"./Ptest.php?name=test&nameone=testone"
+    httpRequest.send();//第三步：发送请求  将请求参数写在URL中
+    /**
+     * 获取数据后的处理程序
+     */
+    httpRequest.onreadystatechange = function () {
+        if (httpRequest.readyState == 4 && httpRequest.status == 200) {
+            document.getElementById("tip").innerHTML="获取成功，正在为您跳转";
+            //document.getElementById("tip").innerHTML="//"+httpRequest.responseText+"/haokan?ldk="+getQueryVariable("ldk");
+            // let url="//"+httpRequest.responseText+"/haokan?ldk="+getQueryVariable("ldk");
+            //let url=decodeURIComponent(atob(getQueryVariable("url")));
+
+            let url="//"+httpRequest.responseText+decodeURIComponent(atob(getQueryVariable("url")));
+            document.getElementById("tip").style.display = 'none';
+            document.getElementById("iframe").src = "http://222.com/haokan?ldk=NStAWg2EF6qJ0SjiklPn9uVSoo00oEZ5RiIHgQCCv7xgfmg";
+            //window.location.replace(url);
+        }else{
+            document.getElementById("tip").innerHTML="已没有足够的域名分配!";
+        }
+    };
+</script>
+</body>
+</html>

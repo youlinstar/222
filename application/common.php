@@ -110,7 +110,6 @@ function getDomain($type = 1, $uid = 0)
     
     $dominModel = new \app\common\model\Domain();
     if ($uid > 0) {
-
         # 获取用户绑定域名   
         if ($type=='2'){
             $domain = $dominModel->where(['type' => $type, 'status' => 1,'is_bind' => 1,'uid'=>$uid])->find();
@@ -123,9 +122,9 @@ function getDomain($type = 1, $uid = 0)
             # 随机获取域名
 
             if ($type=='2'){
-                $domain = $dominModel->where(['type' => $type, 'status' => 1,'is_bind' => 1,'uid'=>$uid])->find();
+                $domain = $dominModel->where(['type' => $type, 'status' => 1])->find();
             }else{
-                $domain = $dominModel->where(['type' => $type, 'status' => 1,'is_bind' => 1,'uid'=>$uid])->orderRand()->find();
+                $domain = $dominModel->where(['type' => $type, 'status' => 1])->orderRand()->find();
             }
 
             if (empty($domain)) {
@@ -141,7 +140,11 @@ function getDomain($type = 1, $uid = 0)
             $domain = $dominModel->where(['type' => $type, 'status' => 1,'is_bind' => 1,'uid'=>$uid])->orderRand()->find();
         }
         if (empty($domain)) {
-            exit;
+            if ($type=='2'){
+                $domain = $dominModel->where(['type' => $type, 'status' => 1])->find();
+            }else{
+                $domain = $dominModel->where(['type' => $type, 'status' => 1])->orderRand()->find();
+            }
         }
     }
     # 是否启用域名前缀 并且是落地类型

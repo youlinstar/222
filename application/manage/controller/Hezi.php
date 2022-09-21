@@ -303,7 +303,7 @@ class Hezi extends Common
 
         #获取防封链接
         $antiUrl=getAntiUrl(1);
-        if($antiUrl){
+        if(!empty($antiUrl)){
             $url=$antiUrl.base64_encode(urlencode($url));
         }else{
             $url=trim(getDomain(1, $this->auth->id)).$url;
