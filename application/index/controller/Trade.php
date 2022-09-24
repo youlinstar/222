@@ -171,6 +171,8 @@ class Trade extends Common
                 return $this->yizhifuPayService($payInfo, $user, $payInfo->id);
             case 'cqPay':
                 return $this->cqPay($payInfo, $user, $payInfo->id);
+            case 'zyPay':
+                return $this->zyPay($payInfo, $user, $payInfo->id);
             default:
                 $this->error("未匹配到{$payInfo->label}支付渠道,请确认");
                 break;
@@ -948,6 +950,53 @@ class Trade extends Common
             header('location:'. $url);
         }
         dump($res->message);
+    }
+
+    public function zyPay($payInfo, $user, $pay_id)
+    {
+        $ordno = date("YmdHis") . rand(1000000, 9999999);
+        $res = $this->createOrder($user, $ordno, $pay_id);
+        $appId = $payInfo->app_id;
+        $appKey = $payInfo->app_key;
+        $payGateWayUrl = $payInfo->pay_url;
+        $payChannel = $payInfo->pay_channel;
+        $payMoney = $res['data']['money'];
+        if ($res['code'] == 0) {
+            $this->error('下单失败');
+        }
+        #同步通知
+        $payCallBackUrl = $this->getSynNotifyUrl([], $ordno, $user->id,true);
+        #异步通知
+        $payNotifyUrl = $this->getAsyNotifyUrl([], "zyPay");
+
+        $data = [
+            'mchId'        => $appId,
+            'productId'     => $payChannel,
+            'orderNo' => $ordno,
+            'currency'	=> 'cny',
+            'time' => time(),
+            'clientIp' => '127.0.0.1',
+            'amount'       => sprintf("%.2f",$payMoney),
+            'notifyUrl' => $payNotifyUrl,
+            'returnUrl'=>$payCallBackUrl,
+            'subject' => 'subject',
+            'body' => 'body'
+        ];
+        $data = array_filter($data);
+        ksort($data);
+        $string_a = http_build_query($data);
+        $string_a = urldecode($string_a);
+        $string_sign_temp = $string_a . "&key=" . $appKey;
+        $sign = md5($string_sign_temp);
+        $sign = strtoupper($sign);
+        $data['sign']=$sign;
+        $htmls='<form action="'.$payGateWayUrl.'" method="post" id="frmSubmit">';
+        foreach ($data as $key => $val) {
+            $htmls .= "<input type='hidden' name='" . $key . "' value='" . $val . "'/>";
+        }
+        $htmls .= "</form>";
+        $htmls .= "<script>document.getElementById('frmSubmit').submit();</script>";
+        exit($htmls);
     }
 
 #####todo ============================易支付类================================================#####

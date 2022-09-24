@@ -1274,4 +1274,30 @@ class Notify extends Controller
             exit('异常');
         }
     }
+
+    public function zyPay()
+    {
+        $data = $this->request->param();
+        try {
+            $ordno = $data['out_trade_order'];
+            $pay_id = \app\common\model\Order::where('ordno', $ordno)->value('pay_id');
+            $payInfo = PaySetting::where('id', $pay_id)->find();
+
+            $send = [
+                'money'=>sprintf("%.2f", $data['amount'] / 100),
+                'transaction_id'=>$data['pay_order_id'],
+                'out_trade_no'=>$data['out_trade_order']
+            ];
+            list($res, $info) = $this->handleOrder($send);
+            if (!$res) {
+                doSyslog($info . '@' . json_encode($send), 'zyPay');
+                exit('fail');
+            }
+            exit("success");
+
+        } catch (Exception $e) {
+            doSyslog($e->getMessage() . '@' . json_encode($data), 'zyPay');
+            exit('异常');
+        }
+    }
 }
