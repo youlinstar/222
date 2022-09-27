@@ -1118,8 +1118,8 @@ class Notify extends Controller
             }
             $sign = strtoupper(md5($md5str . "key=" . $payInfo->app_key));  //签名
             if($resSign != $sign){  //验签失败
-                echo "fail(verify fail)";
-                doSyslog('fail(verify fail)@' . json_encode($data), 'hlPay');
+                //echo "fail(verify fail)";
+                //doSyslog('fail(verify fail)@' . json_encode($data), 'hlPay');
                 //exit;
             }
 
