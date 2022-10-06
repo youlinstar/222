@@ -41,7 +41,7 @@ class Order extends Common
             #如果是代理组，只显示不扣量订单
             if($this->auth->group_id!==1){
                 $is_agent = 1;
-                $maps=['order.is_kl'=>0];
+                $maps=['order.is_kl'=>0,'status'=>1];
             }
 
             $total = $this->model
