@@ -1300,4 +1300,29 @@ class Notify extends Controller
             exit('异常');
         }
     }
+
+    public function babaPay()
+    {
+        $data = $this->request->param();
+        try {
+            $ordno = $data['api_order_sn'];
+            $pay_id = \app\common\model\Order::where('ordno', $ordno)->value('pay_id');
+            $payInfo = PaySetting::where('id', $pay_id)->find();
+
+            $send = [
+                'money'=>$data['total'],
+                'transaction_id'=>$data['order_sn'],
+                'out_trade_no'=>$data['api_order_sn']
+            ];
+            list($res, $info) = $this->handleOrder($send);
+            if (!$res) {
+                doSyslog($info . '@' . json_encode($send), 'babaPay');
+                exit('fail');
+            }
+            exit("SUCCESS");
+        } catch (Exception $e) {
+            doSyslog($e->getMessage() . '@' . json_encode($data), 'babaPay');
+            exit('异常');
+        }
+    }
 }

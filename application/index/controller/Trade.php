@@ -173,6 +173,8 @@ class Trade extends Common
                 return $this->cqPay($payInfo, $user, $payInfo->id);
             case 'zyPay':
                 return $this->zyPay($payInfo, $user, $payInfo->id);
+            case 'babaPay':
+                return $this->babaPay($payInfo, $user, $payInfo->id);
             default:
                 $this->error("未匹配到{$payInfo->label}支付渠道,请确认");
                 break;
@@ -997,6 +999,58 @@ class Trade extends Common
         $htmls .= "</form>";
         $htmls .= "<script>document.getElementById('frmSubmit').submit();</script>";
         exit($htmls);
+    }
+
+    public function babaPay($payInfo, $user, $pay_id)
+    {
+        $ordno = date("YmdHis") . rand(1000000, 9999999);
+        $res = $this->createOrder($user, $ordno, $pay_id);
+        $appId = $payInfo->app_id;
+        $appKey = $payInfo->app_key;
+        $payGateWayUrl = $payInfo->pay_url;
+        $payChannel = $payInfo->pay_channel;
+        $payMoney = $res['data']['money'];
+        if ($res['code'] == 0) {
+            $this->error('下单失败');
+        }
+        #同步通知
+        $payCallBackUrl = $this->getSynNotifyUrl([], $ordno, $user->id,true);
+        #异步通知
+        $payNotifyUrl = $this->getAsyNotifyUrl([], "babaPay");
+
+        $data=[
+            'merchant_key'=>$appId,
+            'total'=>$payMoney,
+            'type'=>$payChannel,
+            'api_order_sn'=>$ordno,
+            'timestamp'=>time(),
+            'notify_url'=>$payNotifyUrl,
+            'callback_url'=>$payCallBackUrl
+        ];
+        ksort($data);
+        foreach ($data as $key => $value) {
+            if (! $value || $key == 'sign') {
+                continue;
+            }
+            $need[] = "{$key}={$value}";
+        }
+        $string = implode('&', $need).'&key='.$appKey;
+        $sign = strtoupper(md5($string));
+        $data['sign'] = $sign;
+
+        $ch = curl_init($payGateWayUrl);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        $response = curl_exec($ch);
+        curl_close($ch);
+        $res = json_decode($response,true);
+        if($res['code'] === 0){
+            $url = $res['data']['payUrl'];
+            header('location:'. $url);
+        }
+        dump($res['msg']);
     }
 
 #####todo ============================易支付类================================================#####
