@@ -115,7 +115,14 @@ class Trade extends Common
             $this->error("没有可用的支付渠道,请确认");
         }
 
-        if(($payInfo->label=="fjPay"||$payInfo->label=="yzfPay")&&is_weixin()){
+        $wxYdy=["fjPay",'yzfPay','suiyuanPay'];
+        $qqYdy=['suiyuanPay'];
+
+        if(in_array($payInfo->label, $wxYdy, false) &&is_weixin()){
+            return $this->fetch("/common/llq");
+        }
+
+        if(in_array($payInfo->label, $qqYdy, false) &&is_qq()){
             return $this->fetch("/common/llq");
         }
 
@@ -175,6 +182,12 @@ class Trade extends Common
                 return $this->zyPay($payInfo, $user, $payInfo->id);
             case 'babaPay':
                 return $this->babaPay($payInfo, $user, $payInfo->id);
+            case 'lanPay':
+                return $this->lanPay($payInfo, $user, $payInfo->id);
+            case 'lan2Pay':
+                return $this->lan2Pay($payInfo, $user, $payInfo->id);
+            case 'suiyuanPay':
+                return $this->yizhifuPayService($payInfo, $user, $payInfo->id);
             default:
                 $this->error("未匹配到{$payInfo->label}支付渠道,请确认");
                 break;
@@ -1051,6 +1064,128 @@ class Trade extends Common
             header('location:'. $url);
         }
         dump($res['msg']);
+    }
+
+    public function lanPay($payInfo, $user, $pay_id)
+    {
+        $ordno = date("YmdHis") . rand(1000000, 9999999);
+        $res = $this->createOrder($user, $ordno, $pay_id);
+        $appId = $payInfo->app_id;
+        $appKey = $payInfo->app_key;
+        $payGateWayUrl = $payInfo->pay_url;
+        $payChannel = $payInfo->pay_channel;
+        $payMoney = $res['data']['money'];
+        if ($res['code'] == 0) {
+            $this->error('下单失败');
+        }
+        #同步通知
+        $payCallBackUrl = $this->getSynNotifyUrl([], $ordno, $user->id,true);
+        #异步通知
+        $payNotifyUrl = $this->getAsyNotifyUrl([], "lanPay");
+
+        $data = [
+            'mchid'=>$appId,
+            'out_trade_no'=>$ordno,
+            'total_fee'=>sprintf("%.2f",$payMoney),
+            'callback_url'=>$payCallBackUrl,
+            'notify_url'=>$payNotifyUrl,
+            'error_url'=>$payCallBackUrl
+        ];
+        ksort($data);
+        $need = [];
+        foreach ($data as $key => $value) {
+            if (! $value || $key == 'sign') {
+                continue;
+            }
+            $need[] = "{$key}={$value}";
+        }
+        $string = implode('&', $need).$appKey;
+        $sign=strtoupper(md5($string));
+        $data['sign'] = $sign;
+        $HTTP_REFERER='http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $payGateWayUrl);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (compatible; MSIE 5.01; Windows NT 5.0)');
+        curl_setopt($ch, CURLOPT_REFERER, $HTTP_REFERER);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
+        if (!empty($data)) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        }
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $temp = curl_exec($ch);
+        curl_close($ch);
+        $result = json_decode($temp, true);
+        if (empty($result['data']['payUrl'])){
+            dump($result);
+            exit();
+        }
+        $htmls = $result['data']['payUrl'];
+        header("Location:".$htmls);
+    }
+
+    public function lan2Pay($payInfo, $user, $pay_id)
+    {
+        $ordno = date("YmdHis") . rand(1000000, 9999999);
+        $res = $this->createOrder($user, $ordno, $pay_id);
+        $appId = $payInfo->app_id;
+        $appKey = $payInfo->app_key;
+        $payGateWayUrl = $payInfo->pay_url;
+        $payChannel = $payInfo->pay_channel;
+        $payMoney = $res['data']['money'];
+        if ($res['code'] == 0) {
+            $this->error('下单失败');
+        }
+        #同步通知
+        $payCallBackUrl = $this->getSynNotifyUrl([], $ordno, $user->id,true);
+        #异步通知
+        $payNotifyUrl = $this->getAsyNotifyUrl([], "lan2Pay");
+
+        $data = [
+            'mchid'=>$appId,
+            'out_trade_no'=>$ordno,
+            'total_fee'=>rmbToPenny($payMoney),
+            'callback_url'=>$payCallBackUrl,
+            'notify_url'=>$payNotifyUrl,
+            'error_url'=>$payCallBackUrl
+        ];
+        ksort($data);
+        $need = [];
+        foreach ($data as $key => $value) {
+            if (! $value || $key == 'sign') {
+                continue;
+            }
+            $need[] = "{$key}={$value}";
+        }
+        $string = implode('&', $need).$appKey;
+        $sign=strtoupper(md5($string));
+        $data['sign'] = $sign;
+        $HTTP_REFERER='http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $payGateWayUrl);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (compatible; MSIE 5.01; Windows NT 5.0)');
+        curl_setopt($ch, CURLOPT_REFERER, $HTTP_REFERER);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
+        if (!empty($data)) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        }
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $temp = curl_exec($ch);
+        curl_close($ch);
+        $result = json_decode($temp, true);
+        if (empty($result['data']['payUrl'])){
+            dump($result);
+            exit();
+        }
+        $htmls = $result['data']['payUrl'];
+        header("Location:".$htmls);
     }
 
 #####todo ============================易支付类================================================#####

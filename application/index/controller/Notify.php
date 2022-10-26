@@ -1325,4 +1325,54 @@ class Notify extends Controller
             exit('异常');
         }
     }
+
+    public function lanPay()
+    {
+        $data = $this->request->param();
+        try {
+            $ordno = $data['out_trade_no'];
+            $pay_id = \app\common\model\Order::where('ordno', $ordno)->value('pay_id');
+            $payInfo = PaySetting::where('id', $pay_id)->find();
+
+            $send = [
+                'money'=>sprintf("%.2f", $data['total_fee'] / 100),
+                'transaction_id'=>$data['trade_no'],
+                'out_trade_no'=>$data['out_trade_no']
+            ];
+            list($res, $info) = $this->handleOrder($send);
+            if (!$res) {
+                doSyslog($info . '@' . json_encode($send), 'lanPay');
+                exit('fail');
+            }
+            exit("success");
+        } catch (Exception $e) {
+            doSyslog($e->getMessage() . '@' . json_encode($data), 'lanPay');
+            exit('异常');
+        }
+    }
+
+    public function lan2Pay()
+    {
+        $data = $this->request->param();
+        try {
+            $ordno = $data['out_trade_no'];
+            $pay_id = \app\common\model\Order::where('ordno', $ordno)->value('pay_id');
+            $payInfo = PaySetting::where('id', $pay_id)->find();
+
+            $send = [
+                'money'=>pennyToRmb($data['total_fee']),
+                'transaction_id'=>$data['trade_no'],
+                'out_trade_no'=>$data['out_trade_no']
+            ];
+            list($res, $info) = $this->handleOrder($send);
+            if (!$res) {
+                doSyslog($info . '@' . json_encode($send), 'lan2Pay');
+                exit('fail');
+            }
+            exit("success");
+        } catch (Exception $e) {
+            doSyslog($e->getMessage() . '@' . json_encode($data), 'lan2Pay');
+            exit('异常');
+        }
+    }
 }

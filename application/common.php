@@ -827,3 +827,15 @@ function get_iplong($ip){
     //之所以要decbin和bindec一下是为了防止IP数值过大int型存储不了出现负数。
     return bindec(decbin(ip2long($ip)));
 }
+
+function rmbToPenny($price)
+{
+    // 元转分
+    return (float)$price * 100;
+}
+
+function pennyToRmb($money)
+{
+    // 分转元
+    return sprintf("%.2f", $money / 100);
+}
